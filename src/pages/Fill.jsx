@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { supabase } from '../lib/supabase'
 import { parseSolicitation, buildOutline } from '../lib/solicitationParser'
-import { aiEnabled, analyzeSolicitation, draftSection } from '../lib/aiClient'
+import { aiEnabled, analyzeSolicitation, draftSection, extractFromImages } from '../lib/aiClient'
 import {
   ArrowLeft, Sun, Moon, Plus, FileText, CheckSquare, Square,
   Clock, AlertTriangle, Trash2, Save, ChevronRight, Printer,
   X, Edit2, Building2, Award, Calendar, Send, Loader2, ClipboardList,
-  HelpCircle, Sparkles, Copy, Check,
+  HelpCircle, Sparkles, Copy, Check, Camera,
 } from 'lucide-react'
 import './Fill.css'
 
@@ -225,6 +225,7 @@ export default function Fill() {
   const { session, signOut } = useAuth()
   const { theme, toggle: toggleTheme } = useTheme()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const isDark = theme === 'dark'
 
   const [topTab, setTopTab] = useState('matrix') // matrix | capability
@@ -233,6 +234,9 @@ export default function Fill() {
   const [mode, setMode] = useState('list') // list | input | results
   const [activeDoc, setActiveDoc] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [incomingSource, setIncomingSource] = useState('')
+  const [extracting, setExtracting] = useState(false)
+  const [extractError, setExtractError] = useState('')
 
   const [form, setForm] = useState({ title: '', agency: '', solicitation_number: '', raw_input: '' })
 
@@ -247,6 +251,23 @@ export default function Fill() {
   const [draftingId, setDraftingId] = useState(null)
 
   useEffect(() => { loadDocs(); loadProfile() }, [])
+
+  // Continuity from WARDOG: a SAM.gov card or an Other Sources link can
+  // hand off straight into a new solicitation here, with whatever it
+  // already knows (title/agency/notice id) prefilled, or just a tag
+  // saying which outside portal the user is about to paste from.
+  useEffect(() => {
+    if (!searchParams.get('new')) return
+    setForm({
+      title: searchParams.get('title') || '',
+      agency: searchParams.get('agency') || '',
+      solicitation_number: searchParams.get('solnum') || '',
+      raw_input: '',
+    })
+    setIncomingSource(searchParams.get('source') || '')
+    setActiveDoc(null)
+    setMode('input')
+  }, []) // eslint-disable-line
 
   async function loadDocs() {
     setLoading(true)
@@ -290,6 +311,32 @@ export default function Fill() {
       solicitation_number: 'SSA-BAL-2026-0142',
       raw_input: SAMPLE_TEXT,
     })
+  }
+
+  // Screenshot continuity: for sources behind a login (FedConnect, Unison,
+  // DIBBS) there's nothing to fetch server-side, but the user is already
+  // looking at the page — a screenshot transcribed by the vision model
+  // lands in the exact same textarea a paste would, then flows through
+  // the same regex parser untouched.
+  async function handleScreenshotUpload(e) {
+    const files = e.target.files
+    if (!files || !files.length) return
+    setExtracting(true)
+    setExtractError('')
+    try {
+      const result = await extractFromImages(files)
+      setForm(prev => ({
+        ...prev,
+        raw_input: prev.raw_input.trim()
+          ? `${prev.raw_input}\n\n--- from screenshot ---\n${result.raw_text}`
+          : result.raw_text,
+      }))
+    } catch (err) {
+      setExtractError(err.message || 'Could not read the screenshot — try pasting the text manually instead.')
+    } finally {
+      setExtracting(false)
+      e.target.value = '' // allow re-selecting the same file(s)
+    }
   }
 
   function runParse() {
@@ -513,6 +560,11 @@ export default function Fill() {
               <div className="fl-input-view">
                 <button className="fl-sub-back" onClick={() => setMode('list')}><ArrowLeft size={13} /> Back</button>
                 <h2>New Solicitation</h2>
+                {incomingSource && (
+                  <div className="fl-source-banner">
+                    <ClipboardList size={14} /> Continuing from <strong>{incomingSource}</strong> — paste the solicitation text you copied there into the box below. Same compliance matrix either way.
+                  </div>
+                )}
                 <p className="fl-input-sub">
                   Paste <strong>Section L</strong> (Instructions to Offerors), <strong>Section M</strong> (Evaluation Criteria), or the full <strong>PWS/SOW</strong> (the work statement). The more text, the better the matrix.
                 </p>
@@ -532,6 +584,26 @@ export default function Fill() {
                   <input className="fl-input" placeholder="Agency" value={form.agency} onChange={e => setForm({ ...form, agency: e.target.value })} />
                   <input className="fl-input" placeholder="Solicitation #" value={form.solicitation_number} onChange={e => setForm({ ...form, solicitation_number: e.target.value })} />
                 </div>
+
+                {aiEnabled() && (
+                  <div className="fl-screenshot-row">
+                    <label className={`fl-screenshot-btn ${extracting ? 'disabled' : ''}`}>
+                      {extracting ? <Loader2 size={13} className="spin" /> : <Camera size={13} />}
+                      {extracting ? 'Reading screenshot…' : 'Or upload a screenshot instead'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        disabled={extracting}
+                        onChange={handleScreenshotUpload}
+                      />
+                    </label>
+                    <span className="fl-screenshot-hint">For portals you can't copy text from — FedConnect, Unison, DIBBS, anything behind a login.</span>
+                  </div>
+                )}
+                {extractError && (
+                  <div className="fl-warn"><AlertTriangle size={14} /><span>{extractError}</span></div>
+                )}
 
                 <textarea
                   className="fl-textarea"

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Search, RefreshCw, ExternalLink, Calendar, Building2, Tag } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Search, RefreshCw, ExternalLink, Calendar, Building2, Tag, ClipboardList } from 'lucide-react'
 import './Wardog.css'
 
 const SAM_API_KEY = import.meta.env.VITE_SAM_API_KEY || ''
@@ -435,6 +436,12 @@ export default function Wardog() {
                 >
                   Run R-E-A-D →
                 </a>
+                <Link
+                  to={`/fill?new=1&title=${encodeURIComponent(opp.title)}&agency=${encodeURIComponent(opp.fullParentPathName || opp.department || '')}&solnum=${encodeURIComponent(opp.noticeId)}`}
+                  className="btn-outline wd-bid-btn"
+                >
+                  <ClipboardList size={13} /> Send to FASS FILL
+                </Link>
               </div>
             </div>
           ))}
@@ -452,17 +459,29 @@ export default function Wardog() {
               SAM.gov is the only feed above pulled live — it's the only one of these with a public API.
               The sources below don't offer one (vendor-only portals, or — in DIBBS' case — no sanctioned
               developer access), so they're listed here as direct links instead of faked as real-time data.
+              Found something on one of these? Copy the solicitation text and bring it straight into FASS
+              FILL — same compliance matrix either way, the source just doesn't matter.
             </p>
             <div className="wd-source-grid">
               {OTHER_SOURCES.map(s => (
-                <a key={s.name} href={s.url} target="_blank" rel="noreferrer" className="wd-source-card">
+                <div key={s.name} className="wd-source-card">
                   <div className="wd-source-top">
                     <span className="wd-source-name">{s.name}</span>
                     <span className="wd-source-tag">{s.tag}</span>
                   </div>
                   <p className="wd-source-desc">{s.desc}</p>
-                  <span className="wd-source-link">Visit site <ExternalLink size={12} /></span>
-                </a>
+                  <div className="wd-source-actions">
+                    <a href={s.url} target="_blank" rel="noreferrer" className="wd-source-link">
+                      Visit site <ExternalLink size={12} />
+                    </a>
+                    <Link
+                      to={`/fill?new=1&source=${encodeURIComponent(s.name)}`}
+                      className="wd-source-link wd-source-fill-link"
+                    >
+                      <ClipboardList size={12} /> Paste into FASS FILL
+                    </Link>
+                  </div>
+                </div>
               ))}
             </div>
           </>

@@ -233,11 +233,16 @@
 .wd-card-actions {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .wd-bid-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.82rem;
   padding: 8px 18px;
+  text-decoration: none;
 }
 
 /* Set-aside multi-select */
@@ -367,6 +372,12 @@
   margin-bottom: 10px;
 }
 
+.wd-source-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .wd-source-link {
   display: flex;
   align-items: center;
@@ -374,6 +385,13 @@
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--teal);
+  text-decoration: none;
+}
+
+.wd-source-link:hover { opacity: 0.75; }
+
+.wd-source-fill-link {
+  color: var(--navy);
 }
 
 /* Spinner */

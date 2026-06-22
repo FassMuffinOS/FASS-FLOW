@@ -234,6 +234,13 @@
 }
 [data-theme="dark"] .fl-warn { color: #FCD34D; background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.25); }
 
+.fl-source-banner {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--light-teal); border: 1px solid transparent;
+  color: var(--dark-teal); border-radius: 10px; padding: 10px 14px; font-size: 0.82rem;
+  margin-bottom: 16px;
+}
+
 /* Eval criteria */
 .fl-eval {
   background: var(--bg-surface);
@@ -481,6 +488,27 @@
 
 .fl-input-actions {
   display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+
+/* ── Screenshot upload (continuity from logged-in portals) ────── */
+.fl-screenshot-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.fl-screenshot-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--light-teal); color: var(--dark-teal);
+  font-size: 0.8rem; font-weight: 600;
+  padding: 6px 12px; border-radius: 8px; cursor: pointer;
+  border: 1px solid transparent;
+}
+.fl-screenshot-btn:hover { opacity: 0.85; }
+.fl-screenshot-btn.disabled { cursor: default; opacity: 0.7; }
+.fl-screenshot-btn input[type="file"] { display: none; }
+
+.fl-screenshot-hint {
+  font-size: 0.76rem; color: var(--gray-400);
 }
 
 /* ── Jargon explainer (details/summary) ──────────── */

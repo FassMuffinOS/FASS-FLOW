@@ -44,3 +44,27 @@ export function draftSection({ sectionName, sectionDescription, solicitationSumm
     past_performance: pastPerformance || [],
   })
 }
+
+// Screenshot → text. `files` is a FileList/array of image File objects
+// (e.g. from a portal that's behind a login, so we can't fetch it
+// server-side — the user is already looking at it in their own browser).
+// Each file is base64-encoded client-side and sent in one request so a
+// multi-screenshot solicitation comes back as one ordered transcript.
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result.split(',')[1]) // strip the data: URI prefix
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+export async function extractFromImages(files) {
+  const images = await Promise.all(
+    Array.from(files).map(async file => ({
+      data: await fileToBase64(file),
+      media_type: file.type || 'image/png',
+    }))
+  )
+  return post('/extract-from-image', { images })
+}
