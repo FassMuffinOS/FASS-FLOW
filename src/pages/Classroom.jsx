@@ -5,10 +5,13 @@ import { useTheme } from '../context/ThemeContext'
 import { supabase } from '../lib/supabase'
 import {
   ArrowLeft, Sun, Moon, Lock, CheckCircle2, ChevronDown,
-  ChevronUp, BookOpen, Target, ClipboardCheck, Star,
+  ChevronUp, BookOpen, Target, ClipboardCheck, Star, Unlock, Rocket,
 } from 'lucide-react'
 import { MASTERCLASS_NIGHTS } from '../data/masterclassNights'
 import './Classroom.css'
+
+const API_BASE = import.meta.env.VITE_API_URL || ''
+const EARLY_UNLOCK_NIGHT = 3
 
 export default function Classroom() {
   const { session } = useAuth()
@@ -21,8 +24,22 @@ export default function Classroom() {
   const [openNight, setOpenNight] = useState(null)
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
+  const [profile, setProfile] = useState(null)
+  const [checkingOut, setCheckingOut] = useState(false)
+  const [checkoutError, setCheckoutError] = useState('')
 
   useEffect(() => { loadProgress() }, [])
+
+  useEffect(() => {
+    const userId = session?.user?.id
+    if (!userId) return
+    let cancelled = false
+    fetch(`${API_BASE}/api/v1/users/${userId}/profile`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (!cancelled) setProfile(data) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [session?.user?.id])
 
   async function loadProgress() {
     setLoading(true)
@@ -35,8 +52,34 @@ export default function Classroom() {
     setLoading(false)
   }
 
+  async function startCheckout(plan) {
+    if (!session?.user) return
+    setCheckingOut(true)
+    setCheckoutError('')
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/subscriptions/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan, user_id: session.user.id, email: session.user.email }),
+      })
+      const data = await res.json()
+      if (data?.url) {
+        window.location.href = data.url
+        return
+      }
+      setCheckoutError('Could not start checkout. Try again in a moment.')
+    } catch {
+      setCheckoutError('Could not start checkout. Try again in a moment.')
+    } finally {
+      setCheckingOut(false)
+    }
+  }
+
   const completedNights = new Set(progress.map(p => p.night))
   const completedCount = completedNights.size
+  const isActive = profile?.subscription_status === 'active'
+  const earlyUnlocked = completedCount >= EARLY_UNLOCK_NIGHT
+  const graduated = completedCount >= MASTERCLASS_NIGHTS.length
 
   function isUnlocked(n) {
     if (n === 1) return true
@@ -112,6 +155,42 @@ export default function Classroom() {
             </div>
             <span className="cr-progress-label">{completedCount} of {MASTERCLASS_NIGHTS.length} nights complete</span>
           </div>
+
+          {graduated ? (
+            <div className="cr-grad">
+              <div className="cr-grad-icon"><Rocket size={28} /></div>
+              <h2>You finished the training. Here's the live system you're trained to use.</h2>
+              <p>
+                You completed all {MASTERCLASS_NIGHTS.length} nights — opportunity scoring, compliance discipline,
+                proposal assembly, all of it. WARDOG, R-E-A-D, Pipeline, and FASS FILL are the tools built to run
+                what you just learned, every day, on autopilot.
+              </p>
+              {isActive ? (
+                <button className="cr-grad-cta" onClick={() => navigate('/dashboard#wardog')}>
+                  Go to WARDOG <ArrowLeft size={15} style={{ transform: 'rotate(180deg)' }} />
+                </button>
+              ) : (
+                <>
+                  <button className="cr-grad-cta" disabled={checkingOut} onClick={() => startCheckout('starter')}>
+                    {checkingOut ? 'Starting checkout…' : 'Upgrade to FASS Flow — $99/mo'}
+                  </button>
+                  <p className="cr-grad-note">14-day free trial. Cancel anytime.</p>
+                  {checkoutError && <p className="cr-grad-error">{checkoutError}</p>}
+                </>
+              )}
+            </div>
+          ) : earlyUnlocked && !isActive && (
+            <div className="cr-early-banner">
+              <div className="cr-early-icon"><Unlock size={18} /></div>
+              <div className="cr-early-text">
+                <strong>Night {EARLY_UNLOCK_NIGHT} complete — WARDOG is unlocked early.</strong>
+                <span>You don't have to wait until graduation. See live opportunities matching your NAICS code right now.</span>
+              </div>
+              <button className="cr-early-cta" onClick={() => navigate('/dashboard#wardog')}>
+                Open WARDOG
+              </button>
+            </div>
+          )}
 
           {loading ? (
             <p className="cr-loading">Loading your progress…</p>

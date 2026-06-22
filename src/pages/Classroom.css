@@ -136,6 +136,140 @@
   font-size: 14px;
 }
 
+/* Early-unlock banner (night 3) */
+.cr-early-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--light-teal);
+  border: 1px solid var(--teal);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+}
+
+.cr-early-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.cr-early-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cr-early-text strong {
+  font-size: 13.5px;
+  color: var(--text-primary);
+}
+
+.cr-early-text span {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.cr-early-cta {
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cr-early-cta:hover {
+  background: var(--dark-teal);
+}
+
+/* Graduation / activation gate */
+.cr-grad {
+  text-align: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--teal);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  padding: 40px 32px;
+  margin-bottom: 28px;
+}
+
+.cr-grad-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--light-teal);
+  color: var(--teal);
+  margin-bottom: 18px;
+}
+
+.cr-grad h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 12px;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cr-grad p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 520px;
+  margin: 0 auto 24px;
+}
+
+.cr-grad-cta {
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 13px 28px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cr-grad-cta:hover {
+  background: var(--dark-teal);
+}
+
+.cr-grad-cta:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.cr-grad-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 10px 0 0;
+}
+
+.cr-grad-error {
+  font-size: 12.5px;
+  color: var(--coral, #e35454);
+  margin: 10px 0 0;
+}
+
 /* Night cards */
 .cr-nights {
   display: flex;
