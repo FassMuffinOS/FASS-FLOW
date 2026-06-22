@@ -4,7 +4,7 @@ import Wardog from './Wardog'
 import './Dashboard.css'
 
 const TOOLS = [
-  { name: 'WARDOG', sub: 'Opportunity intelligence', status: 'live', desc: 'Daily SAM.gov + eMMA sweep matching your NAICS codes and geography.', href: '#wardog' },
+  { name: 'WARDOG', sub: 'Opportunity intelligence', status: 'live', desc: 'Live SAM.gov sweep matching your NAICS codes and geography, plus a curated directory of FedConnect, Unison, DIBBS, eMMA, and local/university procurement sources.', href: '#wardog' },
   { name: 'R-E-A-D', sub: 'Bid discipline', status: 'live', desc: 'Six-question bid/no-bid scoring for every flagged opportunity.', href: '/read' },
   { name: 'PIPELINE', sub: 'CRM & tracking', status: 'live', desc: 'Kanban + list view of every bid in motion. Drag, drop, and monitor.', href: '/pipeline' },
   { name: 'FASS FILL', sub: 'Execution capacity', status: 'live', desc: 'Paste a solicitation, get an instant compliance matrix, outline, and capability statement.', href: '/fill' },

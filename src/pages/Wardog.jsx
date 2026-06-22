@@ -85,6 +85,76 @@ const SET_ASIDE_LABELS = {
   'EDWOSB': 'EDWOSB',
 }
 
+const SET_ASIDE_OPTIONS = Object.entries(SET_ASIDE_LABELS).map(([code, label]) => ({ code, label }))
+
+const PROCUREMENT_TYPES = ['Solicitation', 'Sources Sought', 'Combined Synopsis/Solicitation', 'Presolicitation', 'Award Notice']
+
+const DUE_WITHIN_OPTIONS = [
+  { value: '', label: 'Any time' },
+  { value: '7', label: 'Within 7 days' },
+  { value: '14', label: 'Within 14 days' },
+  { value: '30', label: 'Within 30 days' },
+]
+
+const ALL_STATES = [
+  ['', 'All States'], ['AL','Alabama'], ['AK','Alaska'], ['AZ','Arizona'], ['AR','Arkansas'],
+  ['CA','California'], ['CO','Colorado'], ['CT','Connecticut'], ['DE','Delaware'], ['DC','Washington DC'],
+  ['FL','Florida'], ['GA','Georgia'], ['HI','Hawaii'], ['ID','Idaho'], ['IL','Illinois'],
+  ['IN','Indiana'], ['IA','Iowa'], ['KS','Kansas'], ['KY','Kentucky'], ['LA','Louisiana'],
+  ['ME','Maine'], ['MD','Maryland'], ['MA','Massachusetts'], ['MI','Michigan'], ['MN','Minnesota'],
+  ['MS','Mississippi'], ['MO','Missouri'], ['MT','Montana'], ['NE','Nebraska'], ['NV','Nevada'],
+  ['NH','New Hampshire'], ['NJ','New Jersey'], ['NM','New Mexico'], ['NY','New York'], ['NC','North Carolina'],
+  ['ND','North Dakota'], ['OH','Ohio'], ['OK','Oklahoma'], ['OR','Oregon'], ['PA','Pennsylvania'],
+  ['RI','Rhode Island'], ['SC','South Carolina'], ['SD','South Dakota'], ['TN','Tennessee'], ['TX','Texas'],
+  ['UT','Utah'], ['VT','Vermont'], ['VA','Virginia'], ['WA','Washington'], ['WV','West Virginia'],
+  ['WI','Wisconsin'], ['WY','Wyoming'],
+]
+
+// ── Other gov contracting sources without a public live-data API ──
+// SAM.gov is the only source above pulled live. These don't expose a
+// public developer API (FedConnect/Unison are vendor portals; DIBBS has
+// no sanctioned API; state/local/university procurement is fragmented
+// across 50+ independent systems) — so they're listed as a curated
+// directory of direct links rather than faked as "live."
+const OTHER_SOURCES = [
+  {
+    name: 'FedConnect',
+    tag: 'Federal',
+    url: 'https://www.fedconnect.net',
+    desc: 'Buyer-seller portal used by NASA, DHS, and other agencies for solicitations and Q&A. Many notices cross-post to SAM.gov, but some agency-specific attachments only live here.',
+  },
+  {
+    name: 'Unison Marketplace',
+    tag: 'Federal / GSA',
+    url: 'https://www.unisonmarketplace.com',
+    desc: 'GSA-affiliated reverse-auction and bid platform federal buyers use for simplified acquisitions, often under the micro-purchase and simplified acquisition thresholds.',
+  },
+  {
+    name: 'DIBBS (DLA)',
+    tag: 'Defense',
+    url: 'https://www.dibbs.bsm.dla.mil',
+    desc: "Defense Logistics Agency's bid board for spare parts, supplies, and DoD material RFQs. High volume, fast turnaround, good for manufacturers and suppliers.",
+  },
+  {
+    name: 'eMMA (Maryland)',
+    tag: 'State — MD',
+    url: 'https://emma.maryland.gov',
+    desc: "Maryland's state procurement portal. Required registration for bidding on MD state contracts and grants.",
+  },
+  {
+    name: 'Baltimore City Procurement',
+    tag: 'Local — MD',
+    url: 'https://bids.baltimorecity.gov',
+    desc: 'City of Baltimore open solicitations — smaller dollar value, less competition than federal opportunities.',
+  },
+  {
+    name: 'University Procurement (UMD / Johns Hopkins)',
+    tag: 'University',
+    url: 'https://www.iam.umd.edu/procurement/',
+    desc: 'Public and private universities run their own bid boards for facilities, food service, IT, and event contracts — often overlooked but lower-barrier-to-entry.',
+  },
+]
+
 function formatDate(str) {
   if (!str) return '—'
   return new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -111,20 +181,42 @@ export default function Wardog() {
 
   // Filters
   const [naics, setNaics] = useState('561720')
+  const [naicsText, setNaicsText] = useState('')
   const [state, setState] = useState('MD')
   const [keyword, setKeyword] = useState('')
+  const [setAsides, setSetAsides] = useState([])
+  const [procType, setProcType] = useState('')
+  const [dueWithin, setDueWithin] = useState('')
+  const [showSetAsideMenu, setShowSetAsideMenu] = useState(false)
+  const [showSources, setShowSources] = useState(false)
+
+  function toggleSetAside(code) {
+    setSetAsides(prev => prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code])
+  }
+
+  function passesPostFilters(o) {
+    if (setAsides.length && !setAsides.includes(o.typeOfSetAside)) return false
+    if (procType && o.type !== procType) return false
+    if (dueWithin) {
+      const days = daysUntil(o.responseDeadLine)
+      if (days === null || days < 0 || days > Number(dueWithin)) return false
+    }
+    return true
+  }
 
   const fetchOpps = useCallback(async () => {
     setLoading(true)
     setError('')
 
+    const effectiveNaics = naicsText.trim() || naics
+
     // Use mock data when no API key is configured
     if (!SAM_API_KEY) {
       await new Promise(r => setTimeout(r, 600)) // simulate network
       const filtered = MOCK_OPPS.filter(o => {
-        const matchNaics = !naics || o.naicsCode === naics
+        const matchNaics = !effectiveNaics || o.naicsCode === effectiveNaics
         const matchKeyword = !keyword.trim() || o.title.toLowerCase().includes(keyword.toLowerCase()) || o.description.toLowerCase().includes(keyword.toLowerCase())
-        return matchNaics && matchKeyword
+        return matchNaics && matchKeyword && passesPostFilters(o)
       })
       setOpps(filtered)
       setLastFetch(new Date())
@@ -135,9 +227,9 @@ export default function Wardog() {
     try {
       const params = new URLSearchParams({
         api_key: SAM_API_KEY,
-        limit: '25',
+        limit: '50',
         postedFrom: formatPostedFrom(),
-        naics: naics,
+        naics: effectiveNaics,
         state: state,
         active: 'true',
       })
@@ -148,14 +240,14 @@ export default function Wardog() {
       if (!res.ok) throw new Error(`SAM.gov API error: ${res.status}`)
 
       const data = await res.json()
-      setOpps(data.opportunitiesData || [])
+      setOpps((data.opportunitiesData || []).filter(passesPostFilters))
       setLastFetch(new Date())
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }, [naics, state, keyword])
+  }, [naics, naicsText, state, keyword, setAsides, procType, dueWithin])
 
   function formatPostedFrom() {
     const d = new Date()
@@ -172,7 +264,7 @@ export default function Wardog() {
       <div className="wd-top">
         <div>
           <h1 className="wd-title">WARDOG</h1>
-          <p className="wd-sub">Live SAM.gov opportunities matching your profile · {lastFetch ? `Updated ${lastFetch.toLocaleTimeString()}` : 'Not yet fetched'}</p>
+          <p className="wd-sub">Live SAM.gov opportunities, plus federal/state/local source directory below · {lastFetch ? `Updated ${lastFetch.toLocaleTimeString()}` : 'Not yet fetched'}</p>
         </div>
         <button className="wd-refresh btn-outline" onClick={fetchOpps} disabled={loading}>
           <RefreshCw size={15} className={loading ? 'spin' : ''} />
@@ -192,13 +284,63 @@ export default function Wardog() {
         </div>
 
         <div className="wd-filter-group">
+          <label>NAICS (custom)</label>
+          <input
+            type="text"
+            placeholder="e.g. 541512"
+            value={naicsText}
+            onChange={e => setNaicsText(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && fetchOpps()}
+          />
+        </div>
+
+        <div className="wd-filter-group">
           <label>State</label>
           <select value={state} onChange={e => setState(e.target.value)}>
-            <option value="MD">Maryland</option>
-            <option value="DC">Washington DC</option>
-            <option value="VA">Virginia</option>
-            <option value="">All States</option>
+            {ALL_STATES.map(([code, label]) => (
+              <option key={code || 'all'} value={code}>{label}</option>
+            ))}
           </select>
+        </div>
+
+        <div className="wd-filter-group">
+          <label>Procurement Type</label>
+          <select value={procType} onChange={e => setProcType(e.target.value)}>
+            <option value="">Any type</option>
+            {PROCUREMENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+
+        <div className="wd-filter-group">
+          <label>Due</label>
+          <select value={dueWithin} onChange={e => setDueWithin(e.target.value)}>
+            {DUE_WITHIN_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+        </div>
+
+        <div className="wd-filter-group wd-filter-setaside">
+          <label>Set-Aside</label>
+          <button
+            type="button"
+            className="wd-setaside-trigger"
+            onClick={() => setShowSetAsideMenu(v => !v)}
+          >
+            {setAsides.length ? `${setAsides.length} selected` : 'Any set-aside'}
+          </button>
+          {showSetAsideMenu && (
+            <div className="wd-setaside-menu">
+              {SET_ASIDE_OPTIONS.map(o => (
+                <label key={o.code} className="wd-setaside-option">
+                  <input
+                    type="checkbox"
+                    checked={setAsides.includes(o.code)}
+                    onChange={() => toggleSetAside(o.code)}
+                  />
+                  {o.label}
+                </label>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="wd-filter-group wd-filter-search">
@@ -298,6 +440,34 @@ export default function Wardog() {
           ))}
         </div>
       )}
+
+      {/* Other sources directory */}
+      <div className="wd-other-sources">
+        <button className="wd-other-toggle" onClick={() => setShowSources(v => !v)}>
+          {showSources ? '− Hide' : '+ Show'} other government contracting sources (not live-pulled)
+        </button>
+        {showSources && (
+          <>
+            <p className="wd-other-note">
+              SAM.gov is the only feed above pulled live — it's the only one of these with a public API.
+              The sources below don't offer one (vendor-only portals, or — in DIBBS' case — no sanctioned
+              developer access), so they're listed here as direct links instead of faked as real-time data.
+            </p>
+            <div className="wd-source-grid">
+              {OTHER_SOURCES.map(s => (
+                <a key={s.name} href={s.url} target="_blank" rel="noreferrer" className="wd-source-card">
+                  <div className="wd-source-top">
+                    <span className="wd-source-name">{s.name}</span>
+                    <span className="wd-source-tag">{s.tag}</span>
+                  </div>
+                  <p className="wd-source-desc">{s.desc}</p>
+                  <span className="wd-source-link">Visit site <ExternalLink size={12} /></span>
+                </a>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   )
 }
