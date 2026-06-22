@@ -8,8 +8,9 @@ whether to bid, organizing the pipeline, and drafting a compliant proposal.
 
 ## Live URL
 
-The current production deployment is on Vercel. (Add the exact production
-domain here once confirmed.)
+https://fass-flow-frontend.vercel.app
+
+(No custom domain attached yet — this is the default Vercel subdomain.)
 
 ## Tech stack
 
