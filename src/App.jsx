@@ -12,6 +12,7 @@ import Dashboard from './pages/Dashboard'
 import Read from './pages/Read'
 import Pipeline from './pages/Pipeline'
 import Fill from './pages/Fill'
+import Classroom from './pages/Classroom'
 import './index.css'
 import './App.css'
 
@@ -55,6 +56,9 @@ function AppRoutes() {
       } />
       <Route path="/fill" element={
         <ProtectedRoute><Fill /></ProtectedRoute>
+      } />
+      <Route path="/classroom" element={
+        <ProtectedRoute><Classroom /></ProtectedRoute>
       } />
     </Routes>
   )
