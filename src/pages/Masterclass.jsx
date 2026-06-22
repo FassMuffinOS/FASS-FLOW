@@ -4,6 +4,13 @@ import './Masterclass.css'
 // ── Replace this with your real Stripe Payment Link once created ──
 const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/6oU00cerM1VQd6UfAffnO0c'
 
+// ── Founding-100 promo: full price is $350; while we scale to our first
+// 100 students, it's 50% off at $175. Once the Stripe price/coupon for
+// this is live, point STRIPE_PAYMENT_LINK at the discounted link/coupon. ──
+const FULL_PRICE = 350
+const PROMO_PRICE = 175
+const PROMO_LABEL = 'Founding 100 pricing — 50% off while we scale'
+
 const NIGHTS = [
   { n: '01', title: 'Why government contracts exist for you', body: 'Who buys services from small businesses, why set-asides matter, and why the market is larger than you think.' },
   { n: '02', title: 'Entity registration: SAM.gov and Maryland eMMA', body: 'Step-by-step registration, common mistakes that kill eligibility, and what active status actually means.' },
@@ -45,16 +52,19 @@ export default function Masterclass() {
             Most service businesses lose before they start — wrong codes, wrong forms, no bid discipline.
             This Masterclass fixes that. We assume you know nothing and build the foundation correctly.
           </p>
+          <span className="mc-promo-badge">{PROMO_LABEL}</span>
           <div className="mc-price-block">
-            <span className="mc-price">$350</span>
+            <span className="mc-price-old">${FULL_PRICE}</span>
+            <span className="mc-price">${PROMO_PRICE}</span>
             <span className="mc-price-note">One-time. No subscription.</span>
           </div>
           <a href={STRIPE_PAYMENT_LINK} className="btn-primary mc-cta">
-            Enroll now — $350
+            Enroll now — ${PROMO_PRICE}
             <ArrowRight size={18} />
           </a>
           <p className="mc-bd-note">
-            BD Partner support available for graduates ready to move from learning to active pursuit.
+            This rate locks in only for our first 100 students — price returns to ${FULL_PRICE} once we hit
+            that mark. BD Partner support available for graduates ready to move from learning to active pursuit.
           </p>
         </div>
       </section>
@@ -137,9 +147,12 @@ export default function Masterclass() {
       <section className="mc-bottom-cta">
         <div className="container mc-bottom-cta-inner">
           <h2>Ready to start?</h2>
-          <p>$350. 10 nights. The system that puts Maryland service businesses in the room.</p>
+          <p>
+            <span className="mc-bottom-old-price">${FULL_PRICE}</span> ${PROMO_PRICE} for our first 100 students.
+            10 nights. The system that puts Maryland service businesses in the room.
+          </p>
           <a href={STRIPE_PAYMENT_LINK} className="btn-primary mc-cta">
-            Enroll now — $350
+            Enroll now — ${PROMO_PRICE}
             <ArrowRight size={18} />
           </a>
           <p className="mc-legal">

@@ -1,0 +1,183 @@
+.sup { color: var(--navy); }
+
+.sup-hero {
+  background: linear-gradient(160deg, var(--navy) 0%, #0d1f38 70%, #0a3d2b 100%);
+  padding: 64px 0 56px;
+  text-align: center;
+}
+
+.sup-hero-inner {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.sup-hero-icon {
+  color: var(--teal);
+  margin-bottom: 14px;
+}
+
+.sup-hero h1 {
+  font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 14px;
+}
+
+.sup-hero p {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.7;
+}
+
+.sup-section {
+  padding: 56px 0;
+}
+
+.sup-section-alt {
+  background: var(--gray-50);
+}
+
+.sup-section-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 8px;
+}
+
+.sup-section-sub {
+  font-size: 0.92rem;
+  color: var(--gray-600);
+  margin-bottom: 24px;
+}
+
+.sup-tip-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  max-width: 600px;
+}
+
+.sup-tip-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  padding: 22px 24px;
+  text-decoration: none;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+
+.sup-tip-card:hover {
+  border-color: var(--teal);
+  box-shadow: 0 4px 16px rgba(29,158,117,0.12);
+  transform: translateY(-2px);
+}
+
+.sup-tip-name {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--navy);
+}
+
+.sup-tip-handle {
+  font-size: 0.92rem;
+  color: var(--dark-teal);
+  font-weight: 600;
+}
+
+.sup-tip-go {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--teal);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 6px;
+}
+
+.sup-offer-card {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  background: var(--white);
+  border: 1px solid var(--teal);
+  border-radius: 16px;
+  padding: 28px 30px;
+  max-width: 680px;
+}
+
+.sup-offer-icon {
+  color: var(--teal);
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.sup-offer-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--dark-teal);
+  background: var(--light-teal);
+  border-radius: 20px;
+  padding: 4px 10px;
+  margin-bottom: 8px;
+}
+
+.sup-offer-title {
+  margin-bottom: 10px;
+}
+
+.sup-offer-body p {
+  font-size: 0.94rem;
+  color: var(--gray-600);
+  line-height: 1.65;
+  margin-bottom: 14px;
+}
+
+.sup-offer-promo {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--light-teal);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.88rem;
+  color: var(--dark-teal);
+  line-height: 1.55;
+  margin-bottom: 18px;
+}
+
+.sup-offer-promo svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.sup-offer-cta {
+  display: inline-flex;
+}
+
+.sup-bottom {
+  text-align: center;
+}
+
+.sup-bottom p {
+  font-size: 0.92rem;
+  color: var(--gray-600);
+}
+
+.sup-bottom a {
+  color: var(--teal);
+  font-weight: 700;
+}
+
+@media (max-width: 600px) {
+  .sup-tip-grid { grid-template-columns: 1fr; }
+  .sup-offer-card { flex-direction: column; }
+}

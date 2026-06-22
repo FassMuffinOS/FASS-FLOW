@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { BookOpen, Compass, GraduationCap, X } from 'lucide-react'
+import OnboardingChecklist from '../components/OnboardingChecklist'
 import './Dashboard.css'
 
 const TOOLS = [
@@ -49,6 +50,8 @@ export default function Dashboard() {
       <main className="dash-main">
         <div className="dash-container">
 
+          <OnboardingChecklist />
+
           {isNewStudent && !bannerDismissed && (
             <div className="dash-welcome-banner">
               <button className="dash-welcome-close" onClick={dismissBanner} aria-label="Dismiss">
@@ -94,6 +97,9 @@ export default function Dashboard() {
             <p>Questions about your engagement or pipeline?</p>
             <a href="mailto:admin@fass.systems" className="btn-outline">
               Contact admin@fass.systems
+            </a>
+            <a href="/support" className="btn-outline">
+              Support FASS
             </a>
           </div>
         </div>

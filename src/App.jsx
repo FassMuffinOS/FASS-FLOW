@@ -5,6 +5,7 @@ import Hero from './components/Hero'
 import HowItWorks from './components/HowItWorks'
 import Footer from './components/Footer'
 import Masterclass from './pages/Masterclass'
+import Support from './pages/Support'
 import BDPartner from './pages/BDPartner'
 import ThankYou from './pages/ThankYou'
 import SignIn from './pages/SignIn'
@@ -42,6 +43,7 @@ function AppRoutes() {
       {/* Public routes with Nav + Footer */}
       <Route path="/" element={<><Nav /><main><Landing /></main><Footer /></>} />
       <Route path="/masterclass" element={<><Nav /><main><Masterclass /></main><Footer /></>} />
+      <Route path="/support" element={<><Nav /><main><Support /></main><Footer /></>} />
       <Route path="/bd-partner" element={<><Nav /><main><BDPartner /></main><Footer /></>} />
       <Route path="/thank-you" element={<><Nav /><main><ThankYou /></main><Footer /></>} />
 

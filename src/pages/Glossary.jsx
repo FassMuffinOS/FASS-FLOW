@@ -1,7 +1,20 @@
 import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, BookOpen, ExternalLink } from 'lucide-react'
+import { Search, BookOpen, ExternalLink, Download, Check, Lock } from 'lucide-react'
 import './Glossary.css'
+
+const FREE_INCLUDES = [
+  'The full searchable glossary on this page — every term, no login wall',
+  'A free downloadable Opportunity Response Worksheet (one page, one opportunity)',
+  'Browsing WARDOG\'s live opportunity feed and curated platform directory',
+]
+
+const MASTERCLASS_UNLOCKS = [
+  'All 10 Nights of the curriculum — entity setup through closeout, in order',
+  'The full R-E-A-D bid/no-bid workflow, walked through step by step',
+  'A worked capabilities-statement example and the complete Proposal Assembly Checklist',
+  'Direct instructor access (live cohort) or the self-paced ebook on your own schedule',
+]
 
 // ── Govcon nomenclature, grouped by what a brand-new bidder actually
 // runs into first: where the work is posted, what the posting is called,
@@ -281,12 +294,39 @@ export default function Glossary() {
         </div>
       ))}
 
+      <div className="gloss-value">
+        <div className="gloss-value-col">
+          <span className="gloss-value-label">Free, right now</span>
+          <ul className="gloss-value-list">
+            {FREE_INCLUDES.map(item => (
+              <li key={item}><Check size={14} className="gloss-value-icon gloss-value-icon-free" />{item}</li>
+            ))}
+          </ul>
+          <a
+            href="/downloads/FASS-Opportunity-Response-Worksheet.pdf"
+            download
+            className="btn-outline gloss-download-btn"
+          >
+            <Download size={15} /> Download the free worksheet (PDF)
+          </a>
+        </div>
+        <div className="gloss-value-col gloss-value-col-locked">
+          <span className="gloss-value-label gloss-value-label-locked">What the Masterclass unlocks</span>
+          <ul className="gloss-value-list">
+            {MASTERCLASS_UNLOCKS.map(item => (
+              <li key={item}><Lock size={13} className="gloss-value-icon gloss-value-icon-locked" />{item}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
       <div className="gloss-cta">
         <div>
           <h3>Ready to stop looking terms up and start using them?</h3>
           <p>
             The 10-Night Masterclass walks through bid strategy, compliance, and pricing night by night —
-            or grab the self-paced ebook and work through it on your own schedule.
+            or grab the self-paced ebook and work through it on your own schedule. Founding pricing is
+            currently $175 (50% off $350) while we scale to our first 100 students.
           </p>
         </div>
         <div className="gloss-cta-actions">

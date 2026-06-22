@@ -1,0 +1,217 @@
+.onb {
+  position: relative;
+  background: linear-gradient(160deg, var(--navy) 0%, #0d1f38 70%, #0a3d2b 100%);
+  border-radius: 16px;
+  padding: 24px 26px 20px;
+  margin-bottom: 24px;
+  color: #fff;
+}
+
+.onb-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(255,255,255,0.1);
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+}
+
+.onb-close:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+.onb-hook {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding-right: 24px;
+}
+
+.onb-hook-icon {
+  color: var(--teal);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.onb-hook p {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: rgba(255,255,255,0.85);
+  margin: 0;
+}
+
+.onb-hook strong { color: #fff; }
+
+.onb-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.onb-progress-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.12);
+  overflow: hidden;
+}
+
+.onb-progress-fill {
+  height: 100%;
+  background: var(--teal);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.onb-progress-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.6);
+  white-space: nowrap;
+}
+
+.onb-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.onb-step {
+  display: flex;
+  gap: 12px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.onb-step-done {
+  background: rgba(29,158,117,0.12);
+  border-color: rgba(29,158,117,0.4);
+}
+
+.onb-step-num {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.7);
+}
+
+.onb-step-done .onb-step-num {
+  background: var(--teal);
+  color: var(--navy);
+}
+
+.onb-step-body { flex: 1; min-width: 0; }
+
+.onb-step-top {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.onb-step-icon { color: var(--teal); flex-shrink: 0; }
+
+.onb-step-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.onb-step-free {
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--navy);
+  background: var(--teal);
+  border-radius: 8px;
+  padding: 2px 7px;
+}
+
+.onb-step-desc {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.onb-step-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--teal);
+  background: rgba(29,158,117,0.12);
+  border: 1px solid rgba(29,158,117,0.35);
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.onb-step-action:hover {
+  background: var(--teal);
+  color: var(--navy);
+}
+
+.onb-step-action-btn {
+  font-family: inherit;
+}
+
+.onb-placeholder-note {
+  display: block;
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.35);
+  margin-top: 6px;
+  font-style: italic;
+}
+
+.onb-celebrate {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  background: rgba(29,158,117,0.15);
+  border: 1px solid var(--teal);
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: #fff;
+  flex-wrap: wrap;
+}
+
+.onb-celebrate svg { color: var(--teal); flex-shrink: 0; }
+
+.onb-celebrate div { flex: 1; font-size: 0.85rem; line-height: 1.5; }
+
+.onb-celebrate-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .onb { padding: 20px 18px 18px; }
+  .onb-step { flex-direction: column; }
+  .onb-step-num { display: none; }
+}

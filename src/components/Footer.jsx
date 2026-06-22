@@ -39,6 +39,7 @@ export default function Footer() {
               <li><a href="#">Blog</a></li>
               <li><a href="#">Careers</a></li>
               <li><a href="#">Press</a></li>
+              <li><a href="/support">Support FASS</a></li>
             </ul>
           </div>
           <div className="footer-col">
