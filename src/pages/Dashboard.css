@@ -159,6 +159,59 @@
   color: var(--navy);
 }
 
+/* Tool launcher grid — each card routes to its own page */
+.dash-tool-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.dash-tool-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  padding: 20px 22px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+
+.dash-tool-card:hover:not(.dash-tab-coming) {
+  border-color: var(--teal);
+  box-shadow: 0 4px 16px rgba(29,158,117,0.12);
+  transform: translateY(-2px);
+}
+
+.dash-tool-card.dash-tab-coming { cursor: default; }
+
+.dash-tab-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.dash-tab-sub {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--teal);
+  margin-bottom: 8px;
+}
+
+.dash-tab-desc {
+  font-size: 0.84rem;
+  color: var(--gray-600);
+  line-height: 1.55;
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .dash-tool-grid { grid-template-columns: 1fr; }
+}
+
 /* Dashboard section */
 .dash-section {
   background: var(--white);

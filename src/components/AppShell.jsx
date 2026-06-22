@@ -9,12 +9,10 @@ import './AppShell.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
 
-// Single source of truth for every module's nav entry. WARDOG lives inside
-// the Dashboard page as a scroll-to section rather than its own route, so
-// its link points at /dashboard#wardog and Dashboard.jsx scrolls to it on load.
+// Single source of truth for every module's nav entry.
 const NAV_ITEMS = [
   { name: 'Dashboard', icon: Compass, to: '/dashboard', match: ['/dashboard'] },
-  { name: 'WARDOG', icon: Compass, to: '/dashboard#wardog', match: [] },
+  { name: 'WARDOG', icon: Compass, to: '/wardog', match: ['/wardog'] },
   { name: 'R-E-A-D', icon: ClipboardCheck, to: '/read', match: ['/read'] },
   { name: 'Pipeline', icon: Kanban, to: '/pipeline', match: ['/pipeline'] },
   { name: 'FASS FILL', icon: ClipboardList, to: '/fill', match: ['/fill'] },

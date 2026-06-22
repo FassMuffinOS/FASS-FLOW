@@ -9,6 +9,7 @@ import BDPartner from './pages/BDPartner'
 import ThankYou from './pages/ThankYou'
 import SignIn from './pages/SignIn'
 import Dashboard from './pages/Dashboard'
+import Wardog from './pages/Wardog'
 import Read from './pages/Read'
 import Pipeline from './pages/Pipeline'
 import Fill from './pages/Fill'
@@ -54,6 +55,9 @@ function AppRoutes() {
       {/* Protected routes — no Nav/Footer (dashboard has its own header) */}
       <Route path="/dashboard" element={
         <ProtectedRoute><Dashboard /></ProtectedRoute>
+      } />
+      <Route path="/wardog" element={
+        <ProtectedRoute><Wardog /></ProtectedRoute>
       } />
       <Route path="/read" element={
         <ProtectedRoute><Read /></ProtectedRoute>

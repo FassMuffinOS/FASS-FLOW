@@ -3,11 +3,10 @@ import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { BookOpen, Compass, X } from 'lucide-react'
-import Wardog from './Wardog'
 import './Dashboard.css'
 
 const TOOLS = [
-  { name: 'WARDOG', sub: 'Opportunity intelligence', status: 'live', desc: 'Live SAM.gov sweep matching your NAICS codes and geography, plus a curated directory of FedConnect, Unison, DIBBS, eMMA, and local/university procurement sources.', href: '#wardog' },
+  { name: 'WARDOG', sub: 'Opportunity intelligence', status: 'live', desc: 'Live SAM.gov sweep matching your NAICS codes and geography, plus a curated directory of FedConnect, Unison, DIBBS, eMMA, and local/university procurement sources.', href: '/wardog' },
   { name: 'R-E-A-D', sub: 'Bid discipline', status: 'live', desc: 'Six-question bid/no-bid scoring for every flagged opportunity.', href: '/read' },
   { name: 'PIPELINE', sub: 'CRM & tracking', status: 'live', desc: 'Kanban + list view of every bid in motion. Drag, drop, and monitor.', href: '/pipeline' },
   { name: 'FASS FILL', sub: 'Execution capacity', status: 'live', desc: 'Paste a solicitation, get an instant compliance matrix, outline, and capability statement.', href: '/fill' },
@@ -22,17 +21,6 @@ export default function Dashboard() {
   const [bannerDismissed, setBannerDismissed] = useState(
     () => localStorage.getItem('fass_welcome_dismissed') === '1'
   )
-
-  // Scroll to WARDOG when arriving via a #wardog link from another page
-  // (e.g. the sidebar's WARDOG entry, which always routes through here).
-  useEffect(() => {
-    if (window.location.hash === '#wardog') {
-      const t = setTimeout(() => {
-        document.querySelector('#wardog')?.scrollIntoView({ behavior: 'smooth' })
-      }, 150)
-      return () => clearTimeout(t)
-    }
-  }, [])
 
   // First-login detection: no masterclass progress yet and no proposals
   // in the pipeline means this is very likely a brand-new student.
@@ -71,37 +59,32 @@ export default function Dashboard() {
                 <button className="btn-primary" onClick={() => navigate('/classroom')}>
                   <BookOpen size={15} /> Start Classroom — Night 1
                 </button>
-                <button className="btn-outline" onClick={() => document.querySelector('#wardog')?.scrollIntoView({ behavior: 'smooth' })}>
+                <button className="btn-outline" onClick={() => navigate('/wardog')}>
                   <Compass size={15} /> Browse WARDOG
                 </button>
               </div>
             </div>
           )}
 
-          {/* Tool nav */}
-          <div className="dash-tool-nav">
+          {/* Tool launcher — each tile routes to its own page now */}
+          <div className="dash-tool-grid">
             {TOOLS.map(tool => (
               <div
                 key={tool.name}
-                className={`dash-tool-tab ${tool.status === 'coming' ? 'dash-tab-coming' : ''}`}
-                onClick={() => {
-                  if (!tool.href) return
-                  if (tool.href.startsWith('/')) navigate(tool.href)
-                  else document.querySelector(tool.href)?.scrollIntoView({ behavior: 'smooth' })
-                }}
+                className={`dash-tool-card ${tool.status === 'coming' ? 'dash-tab-coming' : ''}`}
+                onClick={() => tool.href && navigate(tool.href)}
               >
-                <span className="dash-tab-name">{tool.name}</span>
-                <span className={`dash-tool-badge ${tool.status === 'live' ? 'badge-live' : 'badge-coming'}`}>
-                  {tool.status === 'live' ? 'Live' : 'Soon'}
-                </span>
+                <div className="dash-tab-top">
+                  <span className="dash-tab-name">{tool.name}</span>
+                  <span className={`dash-tool-badge ${tool.status === 'live' ? 'badge-live' : 'badge-coming'}`}>
+                    {tool.status === 'live' ? 'Live' : 'Soon'}
+                  </span>
+                </div>
+                <span className="dash-tab-sub">{tool.sub}</span>
+                <p className="dash-tab-desc">{tool.desc}</p>
               </div>
             ))}
           </div>
-
-          {/* WARDOG */}
-          <section id="wardog" className="dash-section">
-            <Wardog />
-          </section>
 
           <div className="dash-support">
             <p>Questions about your engagement or pipeline?</p>
