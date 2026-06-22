@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabase'
 import './SignIn.css'
 
 export default function SignIn() {
@@ -10,6 +11,12 @@ export default function SignIn() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // Forgot-password flow — collapsed into the same card so a student who
+  // can't remember their password doesn't have to leave the page or guess
+  // where to go. Reuses whatever's already typed in the email field.
+  const [showReset, setShowReset] = useState(false)
+  const [resetStatus, setResetStatus] = useState('') // '' | 'sending' | 'sent' | error message
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -26,6 +33,19 @@ export default function SignIn() {
     }
   }
 
+  async function handleResetPassword(e) {
+    e.preventDefault()
+    if (!email.trim()) {
+      setResetStatus('Enter your email above first, then click "Send reset link."')
+      return
+    }
+    setResetStatus('sending')
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/signin`,
+    })
+    setResetStatus(error ? error.message : 'sent')
+  }
+
   return (
     <div className="signin">
       <div className="signin-card">
@@ -35,7 +55,7 @@ export default function SignIn() {
         </a>
 
         <h1 className="signin-title">Welcome back</h1>
-        <p className="signin-sub">Sign in to your FASS Flow account</p>
+        <p className="signin-sub">Sign in to pick up where you left off — WARDOG opportunities, your pipeline, and the Masterclass are all waiting.</p>
 
         <form className="signin-form" onSubmit={handleSubmit}>
           <div className="signin-field">
@@ -52,7 +72,16 @@ export default function SignIn() {
           </div>
 
           <div className="signin-field">
-            <label htmlFor="password">Password</label>
+            <div className="signin-field-row">
+              <label htmlFor="password">Password</label>
+              <button
+                type="button"
+                className="signin-forgot-link"
+                onClick={() => { setShowReset(v => !v); setResetStatus('') }}
+              >
+                Forgot password?
+              </button>
+            </div>
             <input
               id="password"
               type="password"
@@ -71,8 +100,34 @@ export default function SignIn() {
           </button>
         </form>
 
+        {showReset && (
+          <div className="signin-reset">
+            {resetStatus === 'sent' ? (
+              <p className="signin-reset-success">Check your inbox — we sent a reset link to {email}.</p>
+            ) : (
+              <>
+                <p className="signin-reset-hint">We'll email a reset link to the address above.</p>
+                <button
+                  type="button"
+                  className="btn-outline signin-reset-btn"
+                  onClick={handleResetPassword}
+                  disabled={resetStatus === 'sending'}
+                >
+                  {resetStatus === 'sending' ? 'Sending…' : 'Send reset link'}
+                </button>
+                {resetStatus && resetStatus !== 'sending' && (
+                  <p className="signin-error">{resetStatus}</p>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
         <p className="signin-contact">
           Need access? <a href="mailto:admin@fass.systems">Contact admin@fass.systems</a>
+        </p>
+        <p className="signin-contact">
+          New to FASS Flow? <a href="/masterclass">See plans &amp; the Masterclass</a>
         </p>
       </div>
     </div>

@@ -3,7 +3,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gray-50);
+  background:
+    radial-gradient(circle at 15% 20%, rgba(29,158,117,0.10), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(15,42,68,0.08), transparent 45%),
+    var(--gray-50);
   padding: 40px 16px;
 }
 
@@ -64,6 +67,48 @@
   color: var(--navy);
 }
 
+.signin-field-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.signin-forgot-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--teal);
+  cursor: pointer;
+}
+
+.signin-forgot-link:hover { text-decoration: underline; }
+
+.signin-reset {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.signin-reset-hint {
+  font-size: 0.85rem;
+  color: var(--gray-600);
+}
+
+.signin-reset-success {
+  font-size: 0.88rem;
+  color: var(--dark-teal);
+  font-weight: 600;
+}
+
+.signin-reset-btn { width: 100%; }
+
 .signin-field input {
   padding: 12px 14px;
   border: 1px solid var(--gray-200);
@@ -103,11 +148,13 @@
 }
 
 .signin-contact {
-  margin-top: 24px;
+  margin-top: 14px;
   text-align: center;
   font-size: 0.82rem;
   color: var(--gray-400);
 }
+
+.signin-contact:first-of-type { margin-top: 24px; }
 
 .signin-contact a {
   color: var(--teal);

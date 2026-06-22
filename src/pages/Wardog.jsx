@@ -3,7 +3,12 @@ import { Link } from 'react-router-dom'
 import { Search, RefreshCw, ExternalLink, Calendar, Building2, Tag, ClipboardList } from 'lucide-react'
 import './Wardog.css'
 
-const SAM_API_KEY = import.meta.env.VITE_SAM_API_KEY || ''
+// The SAM.gov key lives only in the backend's environment now — calling
+// api.sam.gov straight from the browser with a VITE_-prefixed key would
+// ship it in the public JS bundle for anyone to read. WARDOG_LIVE just
+// tracks whether the backend proxy is reachable/configured; the actual
+// key never touches the frontend.
+const API_BASE = import.meta.env.VITE_API_URL || ''
 
 // ── Realistic mock data — mirrors real SAM.gov response shape ──
 const MOCK_OPPS = [
@@ -179,6 +184,7 @@ export default function Wardog() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [lastFetch, setLastFetch] = useState(null)
+  const [isLive, setIsLive] = useState(false)
 
   // Filters
   const [naics, setNaics] = useState('561720')
@@ -211,50 +217,49 @@ export default function Wardog() {
 
     const effectiveNaics = naicsText.trim() || naics
 
-    // Use mock data when no API key is configured
-    if (!SAM_API_KEY) {
-      await new Promise(r => setTimeout(r, 600)) // simulate network
+    function useMockFallback() {
       const filtered = MOCK_OPPS.filter(o => {
         const matchNaics = !effectiveNaics || o.naicsCode === effectiveNaics
         const matchKeyword = !keyword.trim() || o.title.toLowerCase().includes(keyword.toLowerCase()) || o.description.toLowerCase().includes(keyword.toLowerCase())
         return matchNaics && matchKeyword && passesPostFilters(o)
       })
       setOpps(filtered)
+      setIsLive(false)
       setLastFetch(new Date())
-      setLoading(false)
-      return
     }
 
     try {
       const params = new URLSearchParams({
-        api_key: SAM_API_KEY,
         limit: '50',
-        postedFrom: formatPostedFrom(),
         naics: effectiveNaics,
         state: state,
-        active: 'true',
       })
+      if (keyword.trim()) params.set('keyword', keyword.trim())
 
-      if (keyword.trim()) params.set('q', keyword.trim())
+      const res = await fetch(`${API_BASE}/api/v1/wardog/search?${params}`)
 
-      const res = await fetch(`https://api.sam.gov/opportunities/v2/search?${params}`)
-      if (!res.ok) throw new Error(`SAM.gov API error: ${res.status}`)
+      if (res.status === 503) {
+        // Backend proxy is up but no SAM.gov key configured yet — fall
+        // back to demo data instead of treating this as an error.
+        await new Promise(r => setTimeout(r, 400))
+        useMockFallback()
+        return
+      }
+      if (!res.ok) throw new Error(`WARDOG search error: ${res.status}`)
 
       const data = await res.json()
-      setOpps((data.opportunitiesData || []).filter(passesPostFilters))
+      setOpps((data.opportunities || []).filter(passesPostFilters))
+      setIsLive(true)
       setLastFetch(new Date())
     } catch (err) {
+      // Backend unreachable for some other reason — still fall back to
+      // demo data so the page stays usable, but surface the error too.
       setError(err.message)
+      useMockFallback()
     } finally {
       setLoading(false)
     }
   }, [naics, naicsText, state, keyword, setAsides, procType, dueWithin])
-
-  function formatPostedFrom() {
-    const d = new Date()
-    d.setDate(d.getDate() - 30)
-    return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`
-  }
 
   useEffect(() => {
     fetchOpps()
@@ -364,9 +369,9 @@ export default function Wardog() {
       </div>
 
       {/* Demo banner */}
-      {!SAM_API_KEY && (
+      {!loading && !isLive && (
         <div className="wd-demo-banner">
-          ⚡ Demo mode — showing sample opportunities. Live SAM.gov feed activates once API key is configured.
+          ⚡ Demo mode — showing sample opportunities. Live SAM.gov feed activates once the API key is configured.
         </div>
       )}
 

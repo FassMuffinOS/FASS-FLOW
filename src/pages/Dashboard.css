@@ -81,6 +81,50 @@
   color: var(--gray-600);
 }
 
+/* First-login welcome banner */
+.dash-welcome-banner {
+  position: relative;
+  background: var(--light-teal);
+  border: 1px solid var(--teal);
+  border-radius: 14px;
+  padding: 22px 26px;
+  margin-bottom: 24px;
+}
+
+.dash-welcome-banner h3 {
+  font-size: 1.1rem;
+  color: var(--dark-teal);
+  margin-bottom: 8px;
+}
+
+.dash-welcome-banner p {
+  font-size: 0.88rem;
+  color: var(--gray-600);
+  line-height: 1.6;
+  max-width: 640px;
+  margin-bottom: 16px;
+}
+
+.dash-welcome-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dash-welcome-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: none;
+  border: none;
+  color: var(--dark-teal);
+  cursor: pointer;
+  opacity: 0.6;
+  padding: 4px;
+}
+
+.dash-welcome-close:hover { opacity: 1; }
+
 /* Tool nav tabs */
 .dash-tool-nav {
   display: flex;

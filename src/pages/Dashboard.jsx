@@ -1,5 +1,8 @@
+import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
+import { BookOpen, Compass, X } from 'lucide-react'
 import Wardog from './Wardog'
 import './Dashboard.css'
 
@@ -13,33 +16,67 @@ const TOOLS = [
 ]
 
 export default function Dashboard() {
-  const { session, signOut } = useAuth()
+  const { session } = useAuth()
   const navigate = useNavigate()
+  const [isNewStudent, setIsNewStudent] = useState(false)
+  const [bannerDismissed, setBannerDismissed] = useState(
+    () => localStorage.getItem('fass_welcome_dismissed') === '1'
+  )
 
-  async function handleSignOut() {
-    await signOut()
-    navigate('/')
+  // Scroll to WARDOG when arriving via a #wardog link from another page
+  // (e.g. the sidebar's WARDOG entry, which always routes through here).
+  useEffect(() => {
+    if (window.location.hash === '#wardog') {
+      const t = setTimeout(() => {
+        document.querySelector('#wardog')?.scrollIntoView({ behavior: 'smooth' })
+      }, 150)
+      return () => clearTimeout(t)
+    }
+  }, [])
+
+  // First-login detection: no masterclass progress yet and no proposals
+  // in the pipeline means this is very likely a brand-new student.
+  useEffect(() => {
+    if (!session?.user?.id) return
+    let cancelled = false
+    async function checkNewStudent() {
+      const [{ count: progressCount }, { count: proposalCount }] = await Promise.all([
+        supabase.from('masterclass_progress').select('*', { count: 'exact', head: true }).eq('user_id', session.user.id),
+        supabase.from('proposals').select('*', { count: 'exact', head: true }).eq('user_id', session.user.id),
+      ])
+      if (!cancelled) setIsNewStudent(!progressCount && !proposalCount)
+    }
+    checkNewStudent()
+    return () => { cancelled = true }
+  }, [session?.user?.id])
+
+  function dismissBanner() {
+    setBannerDismissed(true)
+    localStorage.setItem('fass_welcome_dismissed', '1')
   }
-
-  const email = session?.user?.email ?? ''
 
   return (
     <div className="dash">
-      <header className="dash-header">
-        <div className="dash-header-inner">
-          <a href="/" className="dash-logo">
-            <span className="dash-logo-icon">⬡</span>
-            <span>FASS <strong>Flow</strong></span>
-          </a>
-          <div className="dash-user">
-            <span className="dash-email">{email}</span>
-            <button className="dash-signout" onClick={handleSignOut}>Sign out</button>
-          </div>
-        </div>
-      </header>
-
       <main className="dash-main">
         <div className="dash-container">
+
+          {isNewStudent && !bannerDismissed && (
+            <div className="dash-welcome-banner">
+              <button className="dash-welcome-close" onClick={dismissBanner} aria-label="Dismiss">
+                <X size={14} />
+              </button>
+              <h3>Welcome to FASS Flow — let's get you oriented.</h3>
+              <p>New here? Two good places to start: work through Night 1 of the Masterclass to learn the fundamentals, or jump straight into WARDOG below to see live opportunities matching your NAICS codes.</p>
+              <div className="dash-welcome-actions">
+                <button className="btn-primary" onClick={() => navigate('/classroom')}>
+                  <BookOpen size={15} /> Start Classroom — Night 1
+                </button>
+                <button className="btn-outline" onClick={() => document.querySelector('#wardog')?.scrollIntoView({ behavior: 'smooth' })}>
+                  <Compass size={15} /> Browse WARDOG
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Tool nav */}
           <div className="dash-tool-nav">

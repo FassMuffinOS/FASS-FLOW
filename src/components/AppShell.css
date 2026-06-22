@@ -1,0 +1,151 @@
+.shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-base);
+}
+
+.shell-sidebar {
+  width: 224px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  padding: 20px 16px;
+  z-index: 50;
+}
+
+.shell-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--navy);
+  text-decoration: none;
+  padding: 0 4px;
+  margin-bottom: 24px;
+}
+
+.shell-logo-icon { font-size: 1.3rem; color: var(--teal); }
+
+.shell-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.shell-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+a.shell-nav-item:hover {
+  background: var(--light-teal);
+  color: var(--dark-teal);
+}
+
+.shell-nav-active {
+  background: var(--light-teal);
+  color: var(--dark-teal) !important;
+}
+
+.shell-nav-soon {
+  opacity: 0.5;
+  cursor: default;
+  justify-content: space-between;
+}
+
+.shell-soon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.shell-user {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shell-plan-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 8px;
+  border-radius: 6px;
+  width: fit-content;
+}
+
+.plan-active { background: var(--light-teal); color: var(--dark-teal); }
+.plan-inactive { background: var(--gray-100); color: var(--gray-400); }
+
+.shell-email {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shell-signout {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 10px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.shell-signout:hover { border-color: var(--navy); color: var(--navy); }
+
+.shell-content {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .shell { flex-direction: column; }
+  .shell-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    flex-direction: row;
+    align-items: center;
+    overflow-x: auto;
+    padding: 12px 16px;
+  }
+  .shell-logo { margin-bottom: 0; margin-right: 16px; }
+  .shell-nav { flex-direction: row; flex: 0; }
+  .shell-nav-item { white-space: nowrap; padding: 8px 10px; }
+  .shell-user { border-top: none; margin-top: 0; margin-left: auto; flex-direction: row; align-items: center; }
+  .shell-email { display: none; }
+}

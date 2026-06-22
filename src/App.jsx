@@ -14,6 +14,7 @@ import Pipeline from './pages/Pipeline'
 import Fill from './pages/Fill'
 import Classroom from './pages/Classroom'
 import Admin from './pages/Admin'
+import AppShell from './components/AppShell'
 import './index.css'
 import './App.css'
 
@@ -30,7 +31,7 @@ function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
   if (loading) return null
   if (!session) return <Navigate to="/signin" replace />
-  return children
+  return <AppShell>{children}</AppShell>
 }
 
 function AppRoutes() {
