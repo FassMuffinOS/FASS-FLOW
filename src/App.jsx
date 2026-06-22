@@ -13,6 +13,7 @@ import Read from './pages/Read'
 import Pipeline from './pages/Pipeline'
 import Fill from './pages/Fill'
 import Classroom from './pages/Classroom'
+import Admin from './pages/Admin'
 import './index.css'
 import './App.css'
 
@@ -43,6 +44,11 @@ function AppRoutes() {
 
       {/* Auth routes — no Nav/Footer */}
       <Route path="/signin" element={<SignIn />} />
+
+      {/* Admin-only — gated by ADMIN_SECRET on the backend, not by Supabase
+          session, since you may be onboarding someone before they have an
+          account at all. Not linked anywhere in nav. */}
+      <Route path="/admin" element={<Admin />} />
 
       {/* Protected routes — no Nav/Footer (dashboard has its own header) */}
       <Route path="/dashboard" element={
