@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { BookOpen, Compass, X } from 'lucide-react'
+import { BookOpen, Compass, GraduationCap, X } from 'lucide-react'
 import './Dashboard.css'
 
 const TOOLS = [
   { name: 'WARDOG', sub: 'Opportunity intelligence', status: 'live', desc: 'Live SAM.gov sweep matching your NAICS codes and geography, plus a curated directory of FedConnect, Unison, DIBBS, eMMA, and local/university procurement sources.', href: '/wardog' },
+  { name: 'GLOSSARY', sub: 'Learn the language', status: 'live', desc: 'New to govcon? Plain-English explanations of RFQs, RFPs, set-asides, DIBBS, NAICS codes, and every other term you\'ll hit in a solicitation. Free to browse.', href: '/glossary' },
   { name: 'R-E-A-D', sub: 'Bid discipline', status: 'live', desc: 'Six-question bid/no-bid scoring for every flagged opportunity.', href: '/read' },
   { name: 'PIPELINE', sub: 'CRM & tracking', status: 'live', desc: 'Kanban + list view of every bid in motion. Drag, drop, and monitor.', href: '/pipeline' },
   { name: 'FASS FILL', sub: 'Execution capacity', status: 'live', desc: 'Paste a solicitation, get an instant compliance matrix, outline, and capability statement.', href: '/fill' },
@@ -54,13 +55,16 @@ export default function Dashboard() {
                 <X size={14} />
               </button>
               <h3>Welcome to FASS Flow — let's get you oriented.</h3>
-              <p>New here? Two good places to start: work through Night 1 of the Masterclass to learn the fundamentals, or jump straight into WARDOG below to see live opportunities matching your NAICS codes.</p>
+              <p>New here? Work through Night 1 of the Masterclass to learn the fundamentals, jump into WARDOG to see live opportunities matching your NAICS codes, or check the Glossary first if the jargon's the holdup.</p>
               <div className="dash-welcome-actions">
                 <button className="btn-primary" onClick={() => navigate('/classroom')}>
                   <BookOpen size={15} /> Start Classroom — Night 1
                 </button>
                 <button className="btn-outline" onClick={() => navigate('/wardog')}>
                   <Compass size={15} /> Browse WARDOG
+                </button>
+                <button className="btn-outline" onClick={() => navigate('/glossary')}>
+                  <GraduationCap size={15} /> Learn the terms
                 </button>
               </div>
             </div>
