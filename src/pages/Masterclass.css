@@ -1,0 +1,269 @@
+.mc { color: var(--navy); }
+
+.mc-label {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 14px;
+}
+
+/* ── Hero ── */
+.mc-hero {
+  background: linear-gradient(160deg, var(--navy) 0%, #0d1f38 70%, #0a3d2b 100%);
+  padding: 80px 0 72px;
+  text-align: center;
+}
+
+.mc-hero-inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.mc-headline {
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+}
+
+.mc-subhead {
+  font-size: 1.05rem;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.7;
+  max-width: 600px;
+  margin: 0 auto 36px;
+}
+
+.mc-price-block {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.mc-price {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+}
+
+.mc-price-note {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.45);
+}
+
+.mc-cta {
+  font-size: 1.1rem;
+  padding: 16px 36px;
+  margin-bottom: 16px;
+}
+
+.mc-bd-note {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.35);
+  margin-top: 8px;
+}
+
+/* ── Fit section ── */
+.mc-fit {
+  padding: 72px 0;
+  background: var(--gray-50);
+}
+
+.mc-fit-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+}
+
+.mc-section-title {
+  font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 24px;
+  line-height: 1.2;
+}
+
+.mc-checklist {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mc-checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.95rem;
+  color: var(--gray-600);
+  line-height: 1.55;
+}
+
+.mc-check {
+  color: var(--teal);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.mc-ex {
+  color: var(--gray-400);
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.mc-fit-not .mc-section-title {
+  color: var(--gray-600);
+}
+
+/* ── Nights ── */
+.mc-nights {
+  padding: 80px 0;
+  background: var(--white);
+}
+
+.mc-nights-title {
+  margin-bottom: 40px;
+}
+
+.mc-nights-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.mc-night-card {
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  padding: 24px 28px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.mc-night-card:hover {
+  border-color: var(--teal);
+  box-shadow: 0 4px 20px rgba(29,158,117,0.08);
+}
+
+.mc-night-num {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--teal);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.mc-night-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.mc-night-body {
+  font-size: 0.88rem;
+  color: var(--gray-600);
+  line-height: 1.65;
+}
+
+/* ── Outcome ── */
+.mc-outcome {
+  padding: 80px 0;
+  background: var(--light-teal);
+}
+
+.mc-outcome-inner {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 56px;
+  align-items: center;
+}
+
+.mc-outcome-text p {
+  font-size: 0.98rem;
+  color: var(--gray-600);
+  line-height: 1.7;
+}
+
+.mc-outcome-modules {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.mc-module {
+  background: var(--white);
+  border: 1px solid rgba(29,158,117,0.25);
+  border-radius: 10px;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mc-module-name {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.mc-module-sub {
+  font-size: 0.75rem;
+  color: var(--teal);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+/* ── Bottom CTA ── */
+.mc-bottom-cta {
+  padding: 80px 0;
+  background: var(--navy);
+  text-align: center;
+}
+
+.mc-bottom-cta-inner {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.mc-bottom-cta h2 {
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 800;
+  color: #fff;
+}
+
+.mc-bottom-cta p {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.6);
+}
+
+.mc-legal {
+  font-size: 0.75rem !important;
+  color: rgba(255,255,255,0.3) !important;
+  line-height: 1.6;
+  margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+  .mc-fit-inner { grid-template-columns: 1fr; gap: 40px; }
+  .mc-nights-grid { grid-template-columns: 1fr; }
+  .mc-outcome-inner { grid-template-columns: 1fr; }
+  .mc-outcome-modules { grid-template-columns: 1fr 1fr; }
+}

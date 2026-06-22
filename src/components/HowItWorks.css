@@ -1,0 +1,128 @@
+.hiw {
+  padding: 96px 0;
+  background: var(--gray-50);
+}
+
+.section-label {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 12px;
+}
+
+.hiw-header {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 64px;
+}
+
+.hiw-title {
+  font-size: clamp(1.75rem, 3.5vw, 2.4rem);
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 16px;
+}
+
+.hiw-desc {
+  font-size: 1rem;
+  color: var(--gray-600);
+  line-height: 1.7;
+}
+
+/* Steps list */
+.hiw-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+
+.step-card {
+  display: grid;
+  grid-template-columns: 48px 56px 1fr;
+  gap: 0 20px;
+  align-items: start;
+  position: relative;
+  padding-bottom: 40px;
+}
+.step-card:last-child { padding-bottom: 0; }
+
+/* Vertical connector line */
+.step-connector {
+  position: absolute;
+  left: 68px; /* 48 + 20/2 */
+  top: 56px;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--teal), transparent);
+  opacity: 0.25;
+}
+
+.step-number {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--teal);
+  letter-spacing: 0.05em;
+  padding-top: 18px;
+  text-align: right;
+}
+
+.step-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: var(--white);
+  border: 2px solid var(--light-teal);
+  color: var(--teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(29,158,117,0.12);
+  flex-shrink: 0;
+}
+
+.step-content {
+  padding-top: 12px;
+}
+
+.step-name-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.step-name {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.step-tagline {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--teal);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.step-desc {
+  font-size: 0.95rem;
+  color: var(--gray-600);
+  line-height: 1.7;
+  max-width: 600px;
+}
+
+@media (max-width: 600px) {
+  .step-card {
+    grid-template-columns: 36px 48px 1fr;
+    gap: 0 12px;
+  }
+  .step-icon-wrap { width: 48px; height: 48px; }
+}

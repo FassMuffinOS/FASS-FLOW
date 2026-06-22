@@ -1,0 +1,446 @@
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
+import { supabase } from '../lib/supabase'
+import {
+  LayoutGrid, List, Sun, Moon, ArrowLeft,
+  ChevronUp, ChevronDown, ExternalLink,
+  CheckCircle, XCircle, AlertCircle, Clock,
+  Trophy, Ban, Search, RefreshCw
+} from 'lucide-react'
+import './Pipeline.css'
+
+// ── Stage config ──────────────────────────────────────────
+const STAGES = [
+  { id: 'flagged',   label: 'Flagged',   color: 'stage-flagged',   icon: Clock,        desc: 'From WARDOG, not yet scored' },
+  { id: 'scored',    label: 'Scored',    color: 'stage-scored',    icon: AlertCircle,  desc: 'R-E-A-D complete, decision made' },
+  { id: 'pursuing',  label: 'Pursuing',  color: 'stage-pursuing',  icon: CheckCircle,  desc: 'Building the proposal' },
+  { id: 'submitted', label: 'Submitted', color: 'stage-submitted', icon: ExternalLink, desc: 'Bid submitted, awaiting decision' },
+  { id: 'awarded',   label: 'Awarded',   color: 'stage-awarded',   icon: Trophy,       desc: 'Contract won' },
+  { id: 'passed',    label: 'Passed',    color: 'stage-passed',    icon: Ban,          desc: 'Decided not to bid' },
+]
+
+const STAGE_MAP = Object.fromEntries(STAGES.map(s => [s.id, s]))
+
+function scoreVariant(score) {
+  if (score == null) return 'score-null'
+  if (score >= 4.5) return 'score-go'
+  if (score >= 3.0) return 'score-maybe'
+  return 'score-no'
+}
+
+function ScorePill({ score }) {
+  if (score == null) return <span className="pl-score pl-score-null">—</span>
+  return (
+    <span className={`pl-score ${scoreVariant(score)}`}>
+      {Number(score).toFixed(1)}
+    </span>
+  )
+}
+
+function StageBadge({ stageId }) {
+  const s = STAGE_MAP[stageId]
+  if (!s) return null
+  return <span className={`pl-stage-badge ${s.color}`}>{s.label}</span>
+}
+
+function formatDate(str) {
+  if (!str) return '—'
+  return new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function daysLeft(str) {
+  if (!str) return null
+  return Math.ceil((new Date(str) - new Date()) / 86400000)
+}
+
+// ── Kanban Card ───────────────────────────────────────────
+function KanbanCard({ record, onDragStart, onClick }) {
+  const days = daysLeft(record.due_date)
+
+  return (
+    <div
+      className="kn-card"
+      draggable
+      onDragStart={e => onDragStart(e, record.id)}
+      onClick={() => onClick(record)}
+    >
+      <div className="kn-card-top">
+        <ScorePill score={record.read_score} />
+        {days !== null && (
+          <span className={`kn-due ${days <= 5 ? 'due-urgent' : days <= 14 ? 'due-soon' : 'due-ok'}`}>
+            {days <= 0 ? 'Closed' : `${days}d`}
+          </span>
+        )}
+      </div>
+      <h4 className="kn-card-title">{record.title}</h4>
+      {record.agency && <p className="kn-card-agency">{record.agency}</p>}
+      <div className="kn-card-foot">
+        <span className="kn-card-date">{formatDate(record.due_date)}</span>
+        {record.naics_code && <span className="kn-card-naics">NAICS {record.naics_code}</span>}
+      </div>
+    </div>
+  )
+}
+
+// ── Kanban Column ─────────────────────────────────────────
+function KanbanColumn({ stage, records, onDragStart, onDrop, onDragOver, onCardClick }) {
+  const Icon = stage.icon
+  return (
+    <div
+      className={`kn-col`}
+      onDragOver={onDragOver}
+      onDrop={e => onDrop(e, stage.id)}
+    >
+      <div className={`kn-col-header ${stage.color}`}>
+        <div className="kn-col-title">
+          <Icon size={14} />
+          <span>{stage.label}</span>
+        </div>
+        <span className="kn-col-count">{records.length}</span>
+      </div>
+      <div className="kn-col-body">
+        {records.map(r => (
+          <KanbanCard
+            key={r.id}
+            record={r}
+            onDragStart={onDragStart}
+            onClick={onCardClick}
+          />
+        ))}
+        {records.length === 0 && (
+          <div className="kn-empty">Drop here</div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── List Row ──────────────────────────────────────────────
+function ListRow({ record, onStageChange, onClick }) {
+  const days = daysLeft(record.due_date)
+  return (
+    <tr className="lv-row" onClick={() => onClick(record)}>
+      <td className="lv-title-cell">
+        <span className="lv-title">{record.title}</span>
+        {record.agency && <span className="lv-agency">{record.agency}</span>}
+      </td>
+      <td><ScorePill score={record.read_score} /></td>
+      <td><StageBadge stageId={record.stage} /></td>
+      <td>
+        <span className={`lv-due ${days === null ? '' : days <= 5 ? 'due-urgent' : days <= 14 ? 'due-soon' : 'due-ok'}`}>
+          {record.due_date ? (days <= 0 ? 'Closed' : `${days}d — ${formatDate(record.due_date)}`) : '—'}
+        </span>
+      </td>
+      <td className="lv-naics">{record.naics_code || '—'}</td>
+      <td className="lv-date">{formatDate(record.created_at)}</td>
+      <td className="lv-actions" onClick={e => e.stopPropagation()}>
+        <select
+          className="lv-stage-select"
+          value={record.stage}
+          onChange={e => onStageChange(record.id, e.target.value)}
+        >
+          {STAGES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+        </select>
+      </td>
+    </tr>
+  )
+}
+
+// ── Detail Modal ──────────────────────────────────────────
+function RecordModal({ record, onClose, onStageChange }) {
+  if (!record) return null
+  const ws = record.read_worksheet || {}
+  const answers = ws.answers || {}
+  const notes = ws.notes || {}
+  const LABELS = {
+    sam_active:'SAM.gov active', naics_match:'NAICS match', setaside_qual:'Set-aside qual',
+    licenses:'Licenses & certs', past_perf:'Past performance', mandatory_met:'Mandatory reqs met',
+    staff:'Staff available', equipment:'Equipment', bandwidth:'Bandwidth',
+    response_time:'Response time', start_date:'Start date', period:'Period of performance',
+    cost_known:'Cost known', margin:'Margin 12%+', risk:'Cost risk acceptable',
+    references:'References', personnel:'Key personnel', approach:'Technical approach',
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <div>
+            <span className="modal-label">Pipeline Record</span>
+            <h2 className="modal-title">{record.title}</h2>
+          </div>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+
+        <div className="modal-meta">
+          <ScorePill score={record.read_score} />
+          <StageBadge stageId={record.stage} />
+          {record.agency && <span className="modal-agency">{record.agency}</span>}
+          <span className="modal-date">Due {formatDate(record.due_date)}</span>
+        </div>
+
+        <div className="modal-stage-change">
+          <label>Move stage</label>
+          <select
+            value={record.stage}
+            onChange={e => onStageChange(record.id, e.target.value)}
+          >
+            {STAGES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+          </select>
+        </div>
+
+        {Object.keys(answers).length > 0 && (
+          <div className="modal-worksheet">
+            <p className="modal-section-label">R-E-A-D Answers</p>
+            <div className="modal-answers">
+              {Object.entries(answers).map(([k, v]) => (
+                <div key={k} className={`modal-answer modal-answer-${v}`}>
+                  <span className="modal-answer-label">{LABELS[k] || k}</span>
+                  <span className="modal-answer-val">{v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {Object.keys(notes).filter(k => notes[k]).length > 0 && (
+          <div className="modal-notes">
+            <p className="modal-section-label">Section Notes</p>
+            {Object.entries(notes).filter(([, v]) => v).map(([k, v]) => (
+              <div key={k} className="modal-note">
+                <span className="modal-note-key">{k}</span>
+                <p className="modal-note-text">{v}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Main Pipeline Page ────────────────────────────────────
+export default function Pipeline() {
+  const { session, signOut } = useAuth()
+  const { theme, toggle: toggleTheme } = useTheme()
+  const navigate = useNavigate()
+
+  const [records, setRecords] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [view, setView] = useState(() => localStorage.getItem('fass-pipeline-view') || 'kanban')
+  const [search, setSearch] = useState('')
+  const [sortKey, setSortKey] = useState('created_at')
+  const [sortDir, setSortDir] = useState('desc')
+  const [selected, setSelected] = useState(null)
+  const dragId = useRef(null)
+
+  useEffect(() => { loadRecords() }, [])
+
+  async function loadRecords() {
+    setLoading(true)
+    const { data } = await supabase
+      .from('proposals')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false })
+    setRecords(data || [])
+    setLoading(false)
+  }
+
+  async function updateStage(id, stage) {
+    setRecords(prev => prev.map(r => r.id === id ? { ...r, stage } : r))
+    await supabase.from('proposals').update({ stage }).eq('id', id)
+    if (selected?.id === id) setSelected(prev => ({ ...prev, stage }))
+  }
+
+  function switchView(v) {
+    setView(v)
+    localStorage.setItem('fass-pipeline-view', v)
+  }
+
+  // Drag and drop
+  function onDragStart(e, id) { dragId.current = id }
+  function onDragOver(e) { e.preventDefault() }
+  function onDrop(e, stage) {
+    e.preventDefault()
+    if (dragId.current) updateStage(dragId.current, stage)
+    dragId.current = null
+  }
+
+  // Sorting
+  function handleSort(key) {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortKey(key); setSortDir('asc') }
+  }
+
+  const filtered = records.filter(r =>
+    !search || r.title?.toLowerCase().includes(search.toLowerCase()) ||
+    r.agency?.toLowerCase().includes(search.toLowerCase())
+  )
+
+  const sorted = [...filtered].sort((a, b) => {
+    const av = a[sortKey] ?? '', bv = b[sortKey] ?? ''
+    return sortDir === 'asc' ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1)
+  })
+
+  const byStage = Object.fromEntries(STAGES.map(s => [s.id, sorted.filter(r => r.stage === s.id)]))
+
+  function SortIcon({ k }) {
+    if (sortKey !== k) return null
+    return sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
+  }
+
+  const isDark = theme === 'dark'
+
+  return (
+    <div className="pl">
+      {/* Header */}
+      <header className="pl-header">
+        <div className="pl-header-inner">
+          <button className="pl-back" onClick={() => navigate('/dashboard')}>
+            <ArrowLeft size={15} /> Dashboard
+          </button>
+
+          <div className="pl-header-center">
+            <span className="pl-logo-icon">⬡</span>
+            <span className="pl-logo-text">FASS <strong>Pipeline</strong></span>
+          </div>
+
+          <div className="pl-header-right">
+            {/* View toggle */}
+            <div className="pl-view-toggle">
+              <button
+                className={`pl-toggle-btn ${view === 'kanban' ? 'active' : ''}`}
+                onClick={() => switchView('kanban')}
+                title="Kanban view"
+              >
+                <LayoutGrid size={15} />
+              </button>
+              <button
+                className={`pl-toggle-btn ${view === 'list' ? 'active' : ''}`}
+                onClick={() => switchView('list')}
+                title="List view"
+              >
+                <List size={15} />
+              </button>
+            </div>
+
+            {/* Theme toggle */}
+            <button className="pl-theme-btn" onClick={toggleTheme} title={isDark ? 'Light mode' : 'Dark mode'}>
+              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+
+            <button className="pl-refresh" onClick={loadRecords} title="Refresh">
+              <RefreshCw size={15} className={loading ? 'spin' : ''} />
+            </button>
+
+            <button className="pl-signout" onClick={() => { signOut(); navigate('/') }}>Sign out</button>
+          </div>
+        </div>
+      </header>
+
+      {/* Sub-header: search + stats */}
+      <div className="pl-subheader">
+        <div className="pl-subheader-inner">
+          <div className="pl-search-wrap">
+            <Search size={14} className="pl-search-icon" />
+            <input
+              className="pl-search"
+              placeholder="Search opportunities…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="pl-stats">
+            {STAGES.map(s => (
+              <div key={s.id} className="pl-stat">
+                <span className={`pl-stat-dot ${s.color}`} />
+                <span className="pl-stat-label">{s.label}</span>
+                <span className="pl-stat-count">{byStage[s.id]?.length ?? 0}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="pl-content">
+        {loading ? (
+          <div className="pl-loading">
+            <RefreshCw size={20} className="spin" />
+            <span>Loading pipeline…</span>
+          </div>
+        ) : records.length === 0 ? (
+          <div className="pl-empty">
+            <p>No pipeline records yet.</p>
+            <p>Complete a R-E-A-D worksheet and save a decision to start building your pipeline.</p>
+            <button className="btn-primary" style={{ marginTop: 20 }} onClick={() => navigate('/dashboard')}>
+              Go to WARDOG →
+            </button>
+          </div>
+        ) : view === 'kanban' ? (
+          <div className="kn-board">
+            {STAGES.map(stage => (
+              <KanbanColumn
+                key={stage.id}
+                stage={stage}
+                records={byStage[stage.id] || []}
+                onDragStart={onDragStart}
+                onDrop={onDrop}
+                onDragOver={onDragOver}
+                onCardClick={setSelected}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="lv-wrap">
+            <table className="lv-table">
+              <thead>
+                <tr>
+                  <th className="lv-th" onClick={() => handleSort('title')}>
+                    Opportunity <SortIcon k="title" />
+                  </th>
+                  <th className="lv-th" onClick={() => handleSort('read_score')}>
+                    Score <SortIcon k="read_score" />
+                  </th>
+                  <th className="lv-th" onClick={() => handleSort('stage')}>
+                    Stage <SortIcon k="stage" />
+                  </th>
+                  <th className="lv-th" onClick={() => handleSort('due_date')}>
+                    Due Date <SortIcon k="due_date" />
+                  </th>
+                  <th className="lv-th">NAICS</th>
+                  <th className="lv-th" onClick={() => handleSort('created_at')}>
+                    Added <SortIcon k="created_at" />
+                  </th>
+                  <th className="lv-th">Move Stage</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sorted.map(r => (
+                  <ListRow
+                    key={r.id}
+                    record={r}
+                    onStageChange={updateStage}
+                    onClick={setSelected}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Detail modal */}
+      {selected && (
+        <RecordModal
+          record={selected}
+          onClose={() => setSelected(null)}
+          onStageChange={(id, stage) => { updateStage(id, stage) }}
+        />
+      )}
+    </div>
+  )
+}

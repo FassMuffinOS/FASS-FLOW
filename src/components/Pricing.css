@@ -1,0 +1,200 @@
+.pricing {
+  padding: 96px 0;
+  background: var(--white);
+}
+
+.pricing-header {
+  text-align: center;
+  max-width: 560px;
+  margin: 0 auto 56px;
+}
+
+.pricing-title {
+  font-size: clamp(1.75rem, 3.5vw, 2.4rem);
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 12px;
+}
+
+.pricing-desc {
+  color: var(--gray-600);
+  font-size: 1rem;
+}
+
+/* Grid */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+/* Base card */
+.plan-card {
+  position: relative;
+  border-radius: 16px;
+  padding: 36px 32px 32px;
+  border: 2px solid var(--gray-200);
+  background: var(--white);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  transition: box-shadow 0.2s;
+}
+.plan-card:hover { box-shadow: 0 16px 40px rgba(27,42,74,0.08); }
+
+/* Featured */
+.plan-featured {
+  border-color: var(--teal);
+  background: var(--navy);
+  transform: scale(1.025);
+  box-shadow: 0 20px 60px rgba(29,158,117,0.25);
+}
+.plan-featured:hover { box-shadow: 0 24px 64px rgba(29,158,117,0.35); }
+
+/* Navy (Team) */
+.plan-navy {
+  border-color: var(--navy);
+  background: var(--white);
+}
+
+/* Badge */
+.plan-badge {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--teal);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 4px 14px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+/* Top section */
+.plan-top { display: flex; flex-direction: column; gap: 4px; }
+
+.plan-name {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+.plan-featured .plan-name { color: #fff; }
+
+.plan-tagline {
+  font-size: 0.82rem;
+  color: var(--gray-400);
+  font-weight: 500;
+}
+.plan-featured .plan-tagline { color: rgba(255,255,255,0.6); }
+
+.plan-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  margin-top: 12px;
+}
+.plan-currency {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--navy);
+  align-self: flex-start;
+  padding-top: 4px;
+}
+.plan-featured .plan-currency { color: #fff; }
+.plan-price {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--navy);
+  line-height: 1;
+}
+.plan-featured .plan-price { color: #fff; }
+.plan-period {
+  font-size: 0.9rem;
+  color: var(--gray-400);
+  font-weight: 500;
+}
+.plan-featured .plan-period { color: rgba(255,255,255,0.5); }
+
+/* Features list */
+.plan-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+.plan-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--gray-600);
+  line-height: 1.5;
+}
+.plan-featured .plan-features li { color: rgba(255,255,255,0.8); }
+.check-icon {
+  color: var(--teal);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.plan-featured .check-icon { color: #6ee7c0; }
+
+/* CTA button */
+.plan-cta {
+  width: 100%;
+  justify-content: center;
+  border-radius: 10px;
+  padding: 13px 20px;
+  font-size: 0.95rem;
+}
+
+.plan-cta-outline {
+  border: 2px solid var(--gray-200);
+  color: var(--navy);
+  background: transparent;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  padding: 13px 20px;
+  font-size: 0.95rem;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.plan-cta-outline:hover { border-color: var(--teal); color: var(--teal); }
+.plan-navy .plan-cta-outline {
+  border-color: var(--navy);
+  color: var(--navy);
+}
+.plan-navy .plan-cta-outline:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+.pricing-note {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 0.85rem;
+  color: var(--gray-400);
+}
+
+@media (max-width: 960px) {
+  .pricing-grid {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+  .plan-featured { transform: scale(1); }
+}

@@ -1,0 +1,109 @@
+.ty {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  padding: 80px 0;
+  background: var(--white);
+}
+
+.ty-inner {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.ty-check {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--light-teal);
+  color: var(--teal);
+  font-size: 1.8rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.ty-headline {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 16px;
+}
+
+.ty-sub {
+  font-size: 1rem;
+  color: var(--gray-600);
+  line-height: 1.7;
+  max-width: 480px;
+  margin: 0 auto 36px;
+}
+
+.ty-download {
+  font-size: 1.05rem;
+  padding: 16px 32px;
+  margin-bottom: 56px;
+}
+
+.ty-next {
+  text-align: left;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  padding: 28px 32px;
+  margin-bottom: 32px;
+}
+
+.ty-next h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.78rem;
+}
+
+.ty-next ol {
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ty-next li {
+  font-size: 0.92rem;
+  color: var(--gray-600);
+  line-height: 1.6;
+}
+
+.ty-next a {
+  color: var(--teal);
+}
+
+.ty-bd {
+  border: 1px solid var(--light-teal);
+  border-radius: 12px;
+  padding: 24px 28px;
+  background: var(--light-teal);
+}
+
+.ty-bd p {
+  font-size: 0.92rem;
+  color: var(--dark-teal);
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+.ty-bd-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--dark-teal);
+  transition: opacity 0.2s;
+}
+.ty-bd-link:hover { opacity: 0.75; }
