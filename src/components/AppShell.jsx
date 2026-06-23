@@ -20,7 +20,7 @@ const NAV_ITEMS = [
   { name: 'Pipeline', icon: Kanban, to: '/pipeline', match: ['/pipeline'] },
   { name: 'FASS FILL', icon: ClipboardList, to: '/fill', match: ['/fill'] },
   { name: 'Network', icon: Network, to: '/network', match: ['/network'] },
-  { name: 'Show Me The Money', icon: DollarSign, to: '/money', match: ['/money'] },
+  { name: 'Funding', icon: DollarSign, to: '/money', match: ['/money'] },
   { name: 'Classroom', icon: BookOpen, to: '/classroom', match: ['/classroom'] },
   { name: 'Glossary', icon: GraduationCap, to: '/glossary', match: ['/glossary'] },
   { name: 'Masterclass', icon: Award, to: '/masterclass', match: ['/masterclass'] },

@@ -146,6 +146,38 @@
 
 .bd-pricing-inner { max-width: 900px; margin: 0 auto; }
 
+.bd-outcome-line {
+  font-size: 1.02rem;
+  color: var(--gray-600);
+  max-width: 620px;
+  line-height: 1.6;
+  margin: -12px 0 24px;
+}
+
+.bd-capacity-meter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--light-teal);
+  color: var(--dark-teal);
+  border: 1px solid rgba(29,158,117,0.3);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.bd-pricing-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
 .bd-pricing-table {
   border: 1px solid var(--gray-200);
   border-radius: 12px;
@@ -214,6 +246,64 @@
   font-size: 0.8rem;
   color: var(--gray-600);
   line-height: 1.5;
+}
+
+/* ── 30-day onboarding timeline ── */
+.bd-onboarding {
+  padding: 80px 0;
+  background: var(--white);
+}
+
+.bd-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin-top: 36px;
+}
+
+.bd-timeline-step {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.bd-timeline-marker {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--light-teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bd-timeline-num {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--teal);
+}
+
+.bd-timeline-week {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--teal);
+}
+
+.bd-timeline-title {
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 4px 0 6px;
+}
+
+.bd-timeline-body {
+  font-size: 0.9rem;
+  color: var(--gray-600);
+  line-height: 1.6;
+  max-width: 560px;
 }
 
 /* ── Fit / not included ── */
