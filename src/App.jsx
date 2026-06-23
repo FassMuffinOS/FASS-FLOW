@@ -23,6 +23,7 @@ import Admin from './pages/Admin'
 import JoinNetwork from './pages/JoinNetwork'
 import Network from './pages/Network'
 import Inbox from './pages/Inbox'
+import Witness from './pages/Witness'
 import AppShell from './components/AppShell'
 import './index.css'
 import './App.css'
@@ -111,6 +112,9 @@ function AppRoutes() {
       } />
       <Route path="/inbox" element={
         <ProtectedRoute><Inbox /></ProtectedRoute>
+      } />
+      <Route path="/witness" element={
+        <ProtectedRoute><Witness /></ProtectedRoute>
       } />
     </Routes>
   )

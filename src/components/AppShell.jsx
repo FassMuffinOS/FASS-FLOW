@@ -26,7 +26,7 @@ const NAV_ITEMS = [
   { name: 'Masterclass', icon: Award, to: '/masterclass', match: ['/masterclass'] },
   { name: 'BD Partner', icon: Handshake, to: '/bd-partner', match: ['/bd-partner'] },
   { name: 'Support', icon: LifeBuoy, to: '/support', match: ['/support'] },
-  { name: 'Witness', icon: ShieldCheck, to: null, match: [], soon: true },
+  { name: 'Witness', icon: ShieldCheck, to: '/witness', match: ['/witness'] },
 ]
 
 const PLAN_LABELS = {

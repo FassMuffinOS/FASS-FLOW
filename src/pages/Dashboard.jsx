@@ -17,7 +17,7 @@ const TOOLS = [
   { name: 'PIPELINE', sub: 'CRM & tracking', status: 'live', desc: 'Kanban + list view of every bid in motion. Drag, drop, and monitor.', href: '/pipeline' },
   { name: 'FASS FILL', sub: 'Execution capacity', status: 'live', desc: 'Paste a solicitation, get an instant compliance matrix, outline, and capability statement.', href: '/fill' },
   { name: 'CLASSROOM', sub: '10-Night Masterclass', status: 'live', desc: 'Work through the full Government Contracting Masterclass, night by night, with progress tracking.', href: '/classroom' },
-  { name: 'WITNESS', sub: 'Closeout proof', status: 'coming', desc: 'Past-performance evidence collection after every completed contract.', href: null },
+  { name: 'WITNESS', sub: 'Execute the award', status: 'live', desc: 'Milestones, documents, vendors, and insurance/bonding resources for every awarded contract from Pipeline.', href: '/witness' },
 ]
 
 export default function Dashboard() {
