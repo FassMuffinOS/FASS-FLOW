@@ -8,15 +8,16 @@ import './JoinNetwork.css'
 // lets a contractor logged into /network see "we are signing business up"
 // instead of a static directory scraped from public award data.
 const TRADE_CATEGORIES = [
-  'Electrical', 'Concrete', 'HVAC', 'Roofing', 'Plumbing', 'Janitorial',
-  'Generators & Power', 'Landscaping & Grounds', 'Security Services',
-  'IT & Low Voltage', 'Trucking & Logistics', 'General Labor', 'Other',
+  'Framing', 'Drywall', 'Electrical', 'Concrete', 'HVAC', 'Roofing', 'Plumbing',
+  'General Contractor', 'Janitorial', 'Generators & Power', 'Landscaping & Grounds',
+  'Security Services', 'IT & Low Voltage', 'Trucking & Logistics', 'General Labor', 'Other',
 ]
 
 export default function JoinNetwork() {
   const [form, setForm] = useState({
     company_name: '', trade_category: '', city: '', state: '',
-    certifications: '', capacity_notes: '',
+    certifications: '', capacity_notes: '', crew_size: '',
+    workers_comp_on_file: false, liability_coverage_amount: '', umbrella_coverage_amount: '',
     contact_name: '', contact_email: '', contact_phone: '',
   })
   const [submitting, setSubmitting] = useState(false)
@@ -42,6 +43,10 @@ export default function JoinNetwork() {
       state: form.state.trim() || null,
       certifications: form.certifications.trim() || null,
       capacity_notes: form.capacity_notes.trim() || null,
+      crew_size: form.crew_size ? Number(form.crew_size) : null,
+      workers_comp_on_file: !!form.workers_comp_on_file,
+      liability_coverage_amount: form.liability_coverage_amount ? Number(form.liability_coverage_amount) : null,
+      umbrella_coverage_amount: form.umbrella_coverage_amount ? Number(form.umbrella_coverage_amount) : null,
       contact_name: form.contact_name.trim() || null,
       contact_email: form.contact_email.trim(),
       contact_phone: form.contact_phone.trim() || null,
@@ -129,8 +134,37 @@ export default function JoinNetwork() {
                 rows={3}
                 value={form.capacity_notes}
                 onChange={e => update('capacity_notes', e.target.value)}
-                placeholder="Crew size, typical project size, current availability…"
+                placeholder="Typical project size, current availability…"
               />
+            </div>
+
+            <div className="jn-row">
+              <div className="jn-field">
+                <label>Crew size</label>
+                <input type="number" min="1" value={form.crew_size} onChange={e => update('crew_size', e.target.value)} placeholder="4" />
+              </div>
+              <div className="jn-field">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={form.workers_comp_on_file}
+                    onChange={e => update('workers_comp_on_file', e.target.checked)}
+                    style={{ marginRight: 6 }}
+                  />
+                  Workers' comp coverage on file
+                </label>
+              </div>
+            </div>
+
+            <div className="jn-row">
+              <div className="jn-field">
+                <label>General liability coverage ($)</label>
+                <input type="number" min="0" value={form.liability_coverage_amount} onChange={e => update('liability_coverage_amount', e.target.value)} placeholder="1000000" />
+              </div>
+              <div className="jn-field">
+                <label>Umbrella coverage ($)</label>
+                <input type="number" min="0" value={form.umbrella_coverage_amount} onChange={e => update('umbrella_coverage_amount', e.target.value)} placeholder="2000000" />
+              </div>
             </div>
 
             <div className="jn-row">

@@ -39,6 +39,57 @@
   white-space: nowrap;
 }
 
+.net-quick-trades {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 10px 0 14px;
+}
+
+.net-quick-chip {
+  border: 1px solid var(--gray-300, #d1d5db);
+  background: #fff;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  color: var(--gray-600, #4b5563);
+}
+
+.net-quick-chip-active {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+}
+
+.net-vendor-coverage {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 6px 0;
+}
+
+.net-coverage-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  border-radius: 6px;
+  padding: 3px 7px;
+  background: var(--gray-100, #f3f4f6);
+  color: var(--gray-600, #4b5563);
+}
+
+.net-coverage-good {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.net-coverage-warn {
+  background: #fef3c7;
+  color: #b45309;
+}
+
 .net-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

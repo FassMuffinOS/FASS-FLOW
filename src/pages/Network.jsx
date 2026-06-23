@@ -3,11 +3,21 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import {
   Network as NetworkIcon, Search, Mail, Phone, MapPin, Plus,
-  FileText, Send, CheckCircle2, X, Users,
+  FileText, Send, CheckCircle2, X, Users, ShieldCheck, ShieldAlert, HardHat,
 } from 'lucide-react'
 import './Network.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
+
+// Quick-filter trade chips for the most common small-crew specialties —
+// the rolodex this directory is built to be. Free-text trade_category still
+// supports anything else a vendor signs up under.
+const QUICK_TRADES = ['Framing', 'Plumbing', 'Electrical', 'Drywall', 'General Contractor']
+
+function fmtMoney(n) {
+  if (n == null) return null
+  return `$${Number(n).toLocaleString()}`
+}
 
 const STATUS_LABELS = {
   invited: 'Invited',
@@ -206,6 +216,19 @@ export default function Network() {
             </select>
           </div>
 
+          <div className="net-quick-trades">
+            {QUICK_TRADES.map(t => (
+              <button
+                key={t}
+                type="button"
+                className={`net-quick-chip ${tradeFilter === t ? 'net-quick-chip-active' : ''}`}
+                onClick={() => setTradeFilter(tradeFilter === t ? '' : t)}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+
           {filteredVendors.length === 0 && (
             <p className="net-empty">No vendors match yet — share the sign-up link to start growing the network.</p>
           )}
@@ -223,6 +246,21 @@ export default function Network() {
                     )}
                   </div>
                   {v.certifications && <p className="net-vendor-certs">{v.certifications}</p>}
+                  <div className="net-vendor-coverage">
+                    {v.crew_size != null && (
+                      <span className="net-coverage-chip"><HardHat size={11} /> Crew of {v.crew_size}</span>
+                    )}
+                    {v.workers_comp_on_file ? (
+                      <span className="net-coverage-chip net-coverage-good"><ShieldCheck size={11} /> Workers' comp on file</span>
+                    ) : (
+                      <span className="net-coverage-chip net-coverage-warn"><ShieldAlert size={11} /> No workers' comp on file</span>
+                    )}
+                    {v.umbrella_coverage_amount != null && (
+                      <span className={`net-coverage-chip ${v.umbrella_coverage_amount >= 2000000 ? 'net-coverage-good' : 'net-coverage-warn'}`}>
+                        <ShieldCheck size={11} /> {fmtMoney(v.umbrella_coverage_amount)} umbrella
+                      </span>
+                    )}
+                  </div>
                   <div className="net-vendor-contact">
                     <a href={`mailto:${v.contact_email}`}><Mail size={12} /> {v.contact_email}</a>
                     {v.contact_phone && <span><Phone size={12} /> {v.contact_phone}</span>}
