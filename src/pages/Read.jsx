@@ -246,7 +246,12 @@ function qScore(answers, q) {
 }
 
 function totalScore(answers) {
-  return QUESTIONS.reduce((s, q) => s + qScore(answers, q), 0) / QUESTIONS.length * 6 // normalize to 0–6
+  // Each question scores 0–3; averaging across the 6 questions gives a 0–3
+  // per-question average, so *2 (not *6) is what actually rescales that
+  // onto the 0–6 total scale the recommendation thresholds and axis
+  // labels below assume. The old *6 let the raw total run as high as 18
+  // while everything downstream displayed it as "X / 6.0".
+  return QUESTIONS.reduce((s, q) => s + qScore(answers, q), 0) / QUESTIONS.length * 2
 }
 
 function recommendation(score) {
@@ -713,19 +718,26 @@ export default function Read() {
 
           {/* Questions */}
           <div className="rd-questions">
-            {QUESTIONS.map(q => (
-              <QuestionCard
-                key={q.id}
-                q={q}
-                answers={answers}
-                notes={notes}
-                onAnswer={handleAnswer}
-                onNote={handleNote}
-                ctx={ctx}
-                defaultOpen={!isAdvanced}
-                bulkSignal={bulkSignal}
-              />
-            ))}
+            {QUESTIONS.map(q => {
+              const qAnswered = q.subs.every(s => answers[s.id] !== undefined)
+              return (
+                <QuestionCard
+                  key={q.id}
+                  q={q}
+                  answers={answers}
+                  notes={notes}
+                  onAnswer={handleAnswer}
+                  onNote={handleNote}
+                  ctx={ctx}
+                  // Advanced users get sections collapsed by default to move
+                  // faster — but a section that's still unanswered must never
+                  // start collapsed, or it silently sits incomplete below the
+                  // fold while the Save button stays disabled with no clue why.
+                  defaultOpen={!isAdvanced || !qAnswered}
+                  bulkSignal={bulkSignal}
+                />
+              )
+            })}
           </div>
 
           {/* AI Analysis */}
