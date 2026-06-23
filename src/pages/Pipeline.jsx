@@ -6,8 +6,9 @@ import { supabase } from '../lib/supabase'
 import {
   LayoutGrid, List, Sun, Moon, ArrowLeft,
   ChevronUp, ChevronDown, ExternalLink,
-  CheckCircle, XCircle, AlertCircle, Clock,
-  Trophy, Ban, Search, RefreshCw
+  CheckCircle, AlertCircle, Clock,
+  Trophy, Ban, Search, RefreshCw,
+  History, Pencil, Check, X as XIcon, MessageSquarePlus
 } from 'lucide-react'
 import './Pipeline.css'
 
@@ -55,6 +56,45 @@ function daysLeft(str) {
   return Math.ceil((new Date(str) - new Date()) / 86400000)
 }
 
+function formatMoney(v) {
+  if (v == null || v === '' || isNaN(Number(v))) return null
+  return Number(v).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
+}
+
+function sumValue(records) {
+  return records.reduce((acc, r) => acc + (Number(r.estimated_value) || 0), 0)
+}
+
+// Turn a stored timestamp into "for <input type=date>" (yyyy-mm-dd)
+function toDateInput(str) {
+  if (!str) return ''
+  const d = new Date(str)
+  if (isNaN(d)) return ''
+  return d.toISOString().slice(0, 10)
+}
+
+function relativeTime(str) {
+  const d = new Date(str)
+  const diff = (Date.now() - d) / 1000
+  if (diff < 60) return 'just now'
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+// Human-readable line for one activity event
+function describeEvent(ev) {
+  switch (ev.event_type) {
+    case 'created':      return 'Created this pipeline record'
+    case 'stage_change': return `Moved stage from ${STAGE_MAP[ev.old_value]?.label || ev.old_value || '—'} to ${STAGE_MAP[ev.new_value]?.label || ev.new_value || '—'}`
+    case 'value_change': return `Changed bid value from ${formatMoney(ev.old_value) || '—'} to ${formatMoney(ev.new_value) || '—'}`
+    case 'date_change':  return `Changed due date from ${ev.old_value ? formatDate(ev.old_value) : '—'} to ${ev.new_value ? formatDate(ev.new_value) : '—'}`
+    case 'note':         return ev.note
+    default:             return `${ev.field || 'field'} changed`
+  }
+}
+
 // ── Kanban Card ───────────────────────────────────────────
 function KanbanCard({ record, hasDraft, onDragStart, onClick }) {
   const days = daysLeft(record.due_date)
@@ -76,6 +116,9 @@ function KanbanCard({ record, hasDraft, onDragStart, onClick }) {
       </div>
       <h4 className="kn-card-title">{record.title}</h4>
       {record.agency && <p className="kn-card-agency">{record.agency}</p>}
+      {formatMoney(record.estimated_value) && (
+        <div className="kn-card-value">{formatMoney(record.estimated_value)}</div>
+      )}
       <div className="kn-card-foot">
         <span className="kn-card-date">{formatDate(record.due_date)}</span>
         {record.naics_code && <span className="kn-card-naics">NAICS {record.naics_code}</span>}
@@ -128,6 +171,9 @@ function KanbanColumn({ stage, records, fillDocByProposal, onDragStart, onDrop, 
         </div>
         <span className="kn-col-count">{records.length}</span>
       </div>
+      {sumValue(records) > 0 && (
+        <div className="kn-col-value">{formatMoney(sumValue(records))}</div>
+      )}
       <div className="kn-col-body">
         {records.map(r => (
           <KanbanCard
@@ -177,8 +223,97 @@ function ListRow({ record, onStageChange, onClick }) {
   )
 }
 
+// ── Inline editable field ─────────────────────────────────
+function EditableField({ label, value, type, display, onSave }) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(value ?? '')
+
+  useEffect(() => { setDraft(value ?? '') }, [value])
+
+  function commit() {
+    setEditing(false)
+    const normalized = draft === '' ? null : draft
+    if (String(normalized ?? '') !== String(value ?? '')) onSave(normalized)
+  }
+
+  return (
+    <div className="modal-field">
+      <span className="modal-field-label">{label}</span>
+      {editing ? (
+        <div className="modal-field-edit">
+          <input
+            autoFocus
+            type={type}
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') setEditing(false) }}
+          />
+          <button className="modal-field-ok" onClick={commit}><Check size={14} /></button>
+          <button className="modal-field-cancel" onClick={() => setEditing(false)}><XIcon size={14} /></button>
+        </div>
+      ) : (
+        <button className="modal-field-value" onClick={() => setEditing(true)}>
+          <span>{display ?? '—'}</span>
+          <Pencil size={12} className="modal-field-pencil" />
+        </button>
+      )}
+    </div>
+  )
+}
+
+// ── Activity timeline + notes feed ────────────────────────
+function ActivityFeed({ events, loading, onAddNote }) {
+  const [draft, setDraft] = useState('')
+
+  function submit() {
+    const text = draft.trim()
+    if (!text) return
+    onAddNote(text)
+    setDraft('')
+  }
+
+  return (
+    <div className="modal-activity">
+      <p className="modal-section-label"><History size={13} /> Activity & Notes</p>
+
+      <div className="modal-note-composer">
+        <textarea
+          className="modal-note-input"
+          placeholder="Add a note — a call, a decision, a follow-up…"
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit() }}
+        />
+        <button className="modal-note-add" onClick={submit} disabled={!draft.trim()}>
+          <MessageSquarePlus size={14} /> Add note
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="modal-activity-loading"><RefreshCw size={14} className="spin" /> Loading history…</div>
+      ) : events.length === 0 ? (
+        <p className="modal-activity-empty">No activity recorded yet. Stage moves, value/date edits, and notes will all show up here.</p>
+      ) : (
+        <ul className="modal-timeline">
+          {events.map(ev => (
+            <li key={ev.id} className={`modal-tl-item tl-${ev.event_type}`}>
+              <span className="modal-tl-dot" />
+              <div className="modal-tl-body">
+                <p className="modal-tl-text">{describeEvent(ev)}</p>
+                <p className="modal-tl-meta">
+                  {ev.actor_email || 'someone'} · {relativeTime(ev.created_at)}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 // ── Detail Modal ──────────────────────────────────────────
-function RecordModal({ record, onClose, onStageChange }) {
+function RecordModal({ record, onClose, onStageChange, events, loadingEvents, onAddNote, onEditField }) {
   if (!record) return null
   const ws = record.read_worksheet || {}
   const answers = ws.answers || {}
@@ -207,7 +342,9 @@ function RecordModal({ record, onClose, onStageChange }) {
           <ScorePill score={record.read_score} />
           <StageBadge stageId={record.stage} />
           {record.agency && <span className="modal-agency">{record.agency}</span>}
-          <span className="modal-date">Due {formatDate(record.due_date)}</span>
+          {formatMoney(record.estimated_value) && (
+            <span className="modal-value-tag">{formatMoney(record.estimated_value)}</span>
+          )}
         </div>
 
         <div className="modal-stage-change">
@@ -218,6 +355,24 @@ function RecordModal({ record, onClose, onStageChange }) {
           >
             {STAGES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
           </select>
+        </div>
+
+        {/* Editable tracked fields */}
+        <div className="modal-fields">
+          <EditableField
+            label="Bid value"
+            type="number"
+            value={record.estimated_value ?? ''}
+            display={formatMoney(record.estimated_value)}
+            onSave={v => onEditField('estimated_value', v)}
+          />
+          <EditableField
+            label="Due date"
+            type="date"
+            value={toDateInput(record.due_date)}
+            display={record.due_date ? formatDate(record.due_date) : null}
+            onSave={v => onEditField('due_date', v)}
+          />
         </div>
 
         {Object.keys(answers).length > 0 && (
@@ -245,6 +400,8 @@ function RecordModal({ record, onClose, onStageChange }) {
             ))}
           </div>
         )}
+
+        <ActivityFeed events={events} loading={loadingEvents} onAddNote={onAddNote} />
       </div>
     </div>
   )
@@ -267,9 +424,50 @@ export default function Pipeline() {
   const [sortKey, setSortKey] = useState('created_at')
   const [sortDir, setSortDir] = useState('desc')
   const [selected, setSelected] = useState(null)
+  const [events, setEvents] = useState([])
+  const [loadingEvents, setLoadingEvents] = useState(false)
   const dragId = useRef(null)
 
+  const actorEmail = session?.user?.email || null
+
   useEffect(() => { loadRecords() }, [])
+
+  // Load the activity history whenever a record's detail modal opens.
+  useEffect(() => {
+    if (!selected) { setEvents([]); return }
+    loadEvents(selected.id)
+  }, [selected?.id])
+
+  async function loadEvents(proposalId) {
+    setLoadingEvents(true)
+    const { data } = await supabase
+      .from('proposal_events')
+      .select('*')
+      .eq('proposal_id', proposalId)
+      .order('created_at', { ascending: false })
+    setEvents(data || [])
+    setLoadingEvents(false)
+  }
+
+  // Append an audit row. Best-effort: a logging failure must never block
+  // the underlying edit the user actually cares about.
+  async function logEvent(proposalId, eventType, fields = {}) {
+    const row = {
+      proposal_id: proposalId,
+      user_id: session.user.id,
+      actor_email: actorEmail,
+      event_type: eventType,
+      ...fields,
+    }
+    const { data, error } = await supabase
+      .from('proposal_events')
+      .insert(row)
+      .select()
+      .single()
+    if (!error && data && selected?.id === proposalId) {
+      setEvents(prev => [data, ...prev])
+    }
+  }
 
   async function loadRecords() {
     setLoading(true)
@@ -291,9 +489,36 @@ export default function Pipeline() {
   }
 
   async function updateStage(id, stage) {
+    const prevStage = records.find(r => r.id === id)?.stage
+    if (prevStage === stage) return
     setRecords(prev => prev.map(r => r.id === id ? { ...r, stage } : r))
-    await supabase.from('proposals').update({ stage }).eq('id', id)
     if (selected?.id === id) setSelected(prev => ({ ...prev, stage }))
+    await supabase.from('proposals').update({ stage }).eq('id', id)
+    await logEvent(id, 'stage_change', { field: 'stage', old_value: prevStage, new_value: stage })
+  }
+
+  // Edit a tracked field (bid value or due date) with an audit trail.
+  async function updateField(id, field, value) {
+    const current = records.find(r => r.id === id)
+    const oldValue = current?.[field] ?? null
+    const newValue = value === '' ? null : value
+    if (String(oldValue ?? '') === String(newValue ?? '')) return
+
+    setRecords(prev => prev.map(r => r.id === id ? { ...r, [field]: newValue } : r))
+    if (selected?.id === id) setSelected(prev => ({ ...prev, [field]: newValue }))
+    await supabase.from('proposals').update({ [field]: newValue }).eq('id', id)
+
+    const eventType = field === 'estimated_value' ? 'value_change'
+      : field === 'due_date' ? 'date_change' : 'field_change'
+    await logEvent(id, eventType, {
+      field,
+      old_value: oldValue == null ? null : String(oldValue),
+      new_value: newValue == null ? null : String(newValue),
+    })
+  }
+
+  async function addNote(id, text) {
+    await logEvent(id, 'note', { note: text })
   }
 
   function switchView(v) {
@@ -328,6 +553,9 @@ export default function Pipeline() {
 
   const byStage = Object.fromEntries(STAGES.map(s => [s.id, sorted.filter(r => r.stage === s.id)]))
 
+  // "Open" = still in motion (not yet awarded or passed).
+  const openValue = sumValue(sorted.filter(r => !['awarded', 'passed'].includes(r.stage)))
+
   function SortIcon({ k }) {
     if (sortKey !== k) return null
     return sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
@@ -350,6 +578,10 @@ export default function Pipeline() {
           </div>
 
           <div className="pl-header-right">
+            <button className="pl-awarded-link" onClick={() => navigate('/awarded')} title="Awarded contracts">
+              <Trophy size={14} /> Awarded
+            </button>
+
             {/* View toggle */}
             <div className="pl-view-toggle">
               <button
@@ -395,6 +627,12 @@ export default function Pipeline() {
             />
           </div>
           <div className="pl-stats">
+            {openValue > 0 && (
+              <div className="pl-stat pl-stat-value">
+                <span className="pl-stat-label">Open value</span>
+                <span className="pl-stat-count pl-stat-money">{formatMoney(openValue)}</span>
+              </div>
+            )}
             {STAGES.map(s => (
               <div key={s.id} className="pl-stat">
                 <span className={`pl-stat-dot ${s.color}`} />
@@ -481,6 +719,10 @@ export default function Pipeline() {
           record={selected}
           onClose={() => setSelected(null)}
           onStageChange={(id, stage) => { updateStage(id, stage) }}
+          events={events}
+          loadingEvents={loadingEvents}
+          onAddNote={text => addNote(selected.id, text)}
+          onEditField={(field, value) => updateField(selected.id, field, value)}
         />
       )}
     </div>

@@ -1,0 +1,249 @@
+/* ═══════════════════════════════════════════════════
+   AWARDED  —  FASS Flow
+   Dedicated summary view for won contracts.
+   Tokens inherit from index.css :root / [data-theme="dark"]
+═══════════════════════════════════════════════════ */
+
+.aw {
+  min-height: 100vh;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+.aw-header {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+.aw-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.aw-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+.aw-back:hover { color: var(--teal); background: var(--light-teal); }
+
+.aw-header-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.aw-logo-icon { color: var(--teal); }
+.aw-logo-text { font-size: 0.95rem; color: var(--text-secondary); }
+.aw-logo-text strong { color: var(--text-primary); }
+
+.aw-header-right { display: flex; align-items: center; gap: 8px; }
+.aw-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; height: 32px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--bg-base);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.aw-icon-btn:hover { color: var(--teal); border-color: var(--teal); }
+.aw-signout {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  padding: 6px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.aw-signout:hover { color: var(--text-primary); }
+
+/* ── Content ── */
+.aw-content {
+  flex: 1;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 28px 24px 60px;
+}
+
+/* ── Summary band ── */
+.aw-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.aw-summary-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.aw-summary-money { border-color: var(--teal); background: var(--light-teal); }
+.aw-summary-label {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.aw-summary-value {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.aw-summary-money .aw-summary-value { color: var(--dark-teal); }
+.aw-witness-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.aw-witness-link:hover { background: var(--dark-teal); }
+
+/* ── Grid of awarded cards ── */
+.aw-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+.aw-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: box-shadow 0.15s, transform 0.1s;
+}
+.aw-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.aw-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.aw-card-trophy { color: var(--teal); }
+.aw-card-value {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--dark-teal);
+  font-variant-numeric: tabular-nums;
+}
+.aw-card-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.35;
+}
+.aw-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.aw-card-agency, .aw-card-won {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.aw-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.aw-card-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 7px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--bg-base);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.aw-card-btn:hover { color: var(--teal); border-color: var(--teal); }
+.aw-card-btn-primary {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+}
+.aw-card-btn-primary:hover { background: var(--dark-teal); color: #fff; }
+
+/* ── Loading / empty ── */
+.aw-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  padding: 60px 0;
+  color: var(--text-muted);
+}
+.aw-empty {
+  text-align: center;
+  max-width: 460px;
+  margin: 60px auto;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.aw-empty-icon { color: var(--text-muted); margin-bottom: 10px; }
+.aw-empty-title { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin: 0 0 6px; }
+
+.spin { animation: aw-spin 1s linear infinite; }
+@keyframes aw-spin { to { transform: rotate(360deg); } }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .aw-summary { grid-template-columns: 1fr; }
+  .aw-content { padding: 18px 16px 40px; }
+  .aw-grid { grid-template-columns: 1fr; }
+}

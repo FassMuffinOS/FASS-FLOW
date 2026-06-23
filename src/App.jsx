@@ -14,6 +14,7 @@ import Dashboard from './pages/Dashboard'
 import Wardog from './pages/Wardog'
 import Read from './pages/Read'
 import Pipeline from './pages/Pipeline'
+import Awarded from './pages/Awarded'
 import Fill from './pages/Fill'
 import Classroom from './pages/Classroom'
 import Glossary from './pages/Glossary'
@@ -94,6 +95,9 @@ function AppRoutes() {
       } />
       <Route path="/pipeline" element={
         <ProtectedRoute><Pipeline /></ProtectedRoute>
+      } />
+      <Route path="/awarded" element={
+        <ProtectedRoute><Awarded /></ProtectedRoute>
       } />
       <Route path="/fill" element={
         <ProtectedRoute><Fill /></ProtectedRoute>

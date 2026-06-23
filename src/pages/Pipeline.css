@@ -873,6 +873,245 @@
   background: rgba(99,179,237,0.04);
 }
 
+/* ═══════════════════════════════════════════════════
+   v2 — value tracking, change history, Awarded link
+═══════════════════════════════════════════════════ */
+
+/* Awarded link in header */
+.pl-awarded-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--light-teal);
+  border: 1px solid var(--teal);
+  color: var(--dark-teal);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 7px;
+  transition: background 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+.pl-awarded-link:hover { background: var(--teal); color: #fff; }
+.pl-awarded-link:active { transform: translateY(1px); }
+
+/* Open-value stat chip */
+.pl-stat-value {
+  padding-right: 14px;
+  margin-right: 4px;
+  border-right: 1px solid var(--border);
+}
+.pl-stat-money {
+  color: var(--teal);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Value on kanban cards */
+.kn-card-value {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--dark-teal);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Per-column value total */
+.kn-col-value {
+  padding: 4px 12px 8px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--teal);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Value tag in modal meta */
+.modal-value-tag {
+  background: var(--light-teal);
+  color: var(--dark-teal);
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Editable fields block */
+.modal-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--bg-base);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.modal-field-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.modal-field-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0;
+  text-align: left;
+}
+.modal-field-pencil { color: var(--text-muted); opacity: 0; transition: opacity 0.15s; }
+.modal-field-value:hover .modal-field-pencil { opacity: 1; }
+.modal-field-edit { display: flex; align-items: center; gap: 6px; }
+.modal-field-edit input {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--teal);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+.modal-field-ok, .modal-field-cancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+.modal-field-ok { border-color: var(--teal); color: var(--teal); }
+.modal-field-ok:hover { background: var(--teal); color: #fff; }
+.modal-field-cancel:hover { color: var(--text-primary); }
+
+/* Activity & notes feed */
+.modal-activity { margin-top: 22px; }
+.modal-section-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.modal-note-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0 18px;
+}
+.modal-note-input {
+  width: 100%;
+  min-height: 58px;
+  resize: vertical;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  color: var(--text-primary);
+}
+.modal-note-input:focus { outline: none; border-color: var(--teal); }
+.modal-note-add {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.modal-note-add:disabled { opacity: 0.45; cursor: not-allowed; }
+.modal-note-add:not(:disabled):hover { background: var(--dark-teal); }
+
+.modal-activity-loading,
+.modal-activity-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 6px 0;
+}
+
+.modal-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+.modal-timeline::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--border-subtle);
+}
+.modal-tl-item {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding: 8px 0 8px 0;
+  padding-left: 22px;
+}
+.modal-tl-dot {
+  position: absolute;
+  left: 0;
+  top: 12px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  border: 2px solid var(--bg-surface);
+}
+.tl-stage_change .modal-tl-dot { background: var(--teal); }
+.tl-value_change .modal-tl-dot { background: var(--amber); }
+.tl-date_change  .modal-tl-dot { background: #6366F1; }
+.tl-note         .modal-tl-dot { background: var(--dark-teal); }
+.modal-tl-body { flex: 1; }
+.modal-tl-text {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+.tl-note .modal-tl-text {
+  background: var(--bg-base);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.modal-tl-meta {
+  margin: 3px 0 0;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
 /* ── Responsive ──────────────────────────────────── */
 @media (max-width: 768px) {
   .pl-header-inner { padding: 0 16px; }
@@ -884,5 +1123,7 @@
   .kn-col { flex: 0 0 200px; }
 
   .modal-answers { grid-template-columns: 1fr; }
+  .modal-fields { grid-template-columns: 1fr; }
   .modal-box { border-radius: 12px; }
+  .pl-awarded-link span { display: none; }
 }
