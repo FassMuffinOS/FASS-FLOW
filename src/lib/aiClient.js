@@ -59,6 +59,20 @@ function fileToBase64(file) {
   })
 }
 
+// Show Me The Money's AI breakdown: feeds whatever scope text the proposal
+// already has (from WARDOG/Inbox/FASS FILL) into the LLM for a rough cost
+// estimate, complexity read, and risk flags — no new paste box, no extra
+// data entry from the user.
+export function costBreakdown({ scopeText, title, agency, awardAmount, userId }) {
+  return post('/cost-breakdown', {
+    scope_text: scopeText || '',
+    title: title || '',
+    agency: agency || '',
+    award_amount: awardAmount ?? null,
+    user_id: userId || null,
+  })
+}
+
 export async function extractFromImages(files) {
   const images = await Promise.all(
     Array.from(files).map(async file => ({

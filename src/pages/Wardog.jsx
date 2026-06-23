@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Search, RefreshCw, ExternalLink, Calendar, Building2, Tag, ClipboardList, Bookmark, BookmarkCheck } from 'lucide-react'
+import { Search, RefreshCw, ExternalLink, Calendar, Building2, Tag, ClipboardList, Bookmark, BookmarkCheck, Lock } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import './Wardog.css'
@@ -239,6 +239,28 @@ export default function Wardog() {
   const [savedProposals, setSavedProposals] = useState({})
   const [savingId, setSavingId] = useState(null)
 
+  // Lite plan ($9.99/mo) is read-only: matches show up here, but saving
+  // interest, running R-E-A-D, sending to FASS FILL, and the advanced
+  // filters (set-aside/proc-type/due-within/custom NAICS) are gated behind
+  // Core. Every other plan (starter/pro/team/promo) — and a profile fetch
+  // that hasn't resolved yet — is treated as unrestricted.
+  const [plan, setPlan] = useState(null)
+  const isLite = plan === 'lite'
+
+  useEffect(() => {
+    if (!session?.user?.id) return
+    let cancelled = false
+    supabase
+      .from('profiles')
+      .select('plan')
+      .eq('id', session.user.id)
+      .single()
+      .then(({ data }) => {
+        if (!cancelled) setPlan(data?.plan || null)
+      })
+    return () => { cancelled = true }
+  }, [session?.user?.id])
+
   function toggleSetAside(code) {
     setSetAsides(prev => prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code])
   }
@@ -247,7 +269,7 @@ export default function Wardog() {
   // the full R-E-A-D worksheet. Useful when a first pass doesn't have
   // time to score it yet but you don't want to lose track of it.
   async function saveInterest(opp) {
-    if (!session?.user?.id || savedProposals[opp.noticeId] || savingId) return
+    if (isLite || !session?.user?.id || savedProposals[opp.noticeId] || savingId) return
     setSavingId(opp.noticeId)
     const { data, error } = await supabase.from('proposals').insert({
       user_id: session.user.id,
@@ -272,6 +294,7 @@ export default function Wardog() {
   // — no proposalId, no description, nothing for R-E-A-D's AI synthesis to
   // read. This guarantees the row (and its description) exists first.
   async function goToRead(opp) {
+    if (isLite) { navigate('/pricing'); return }
     let proposalId = savedProposals[opp.noticeId]
     if (!proposalId) {
       proposalId = await saveInterest(opp)
@@ -402,10 +425,12 @@ export default function Wardog() {
           <label>NAICS (custom)</label>
           <input
             type="text"
-            placeholder="e.g. 541512"
+            placeholder={isLite ? 'Core feature' : 'e.g. 541512'}
             value={naicsText}
             onChange={e => setNaicsText(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && fetchOpps()}
+            disabled={isLite}
+            title={isLite ? 'Custom NAICS search is a Core feature' : undefined}
           />
         </div>
 
@@ -420,7 +445,7 @@ export default function Wardog() {
 
         <div className="wd-filter-group">
           <label>Procurement Type</label>
-          <select value={procType} onChange={e => setProcType(e.target.value)}>
+          <select value={procType} onChange={e => setProcType(e.target.value)} disabled={isLite} title={isLite ? 'Advanced filters are a Core feature' : undefined}>
             <option value="">Any type</option>
             {PROCUREMENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
@@ -428,7 +453,7 @@ export default function Wardog() {
 
         <div className="wd-filter-group">
           <label>Due</label>
-          <select value={dueWithin} onChange={e => setDueWithin(e.target.value)}>
+          <select value={dueWithin} onChange={e => setDueWithin(e.target.value)} disabled={isLite} title={isLite ? 'Advanced filters are a Core feature' : undefined}>
             {DUE_WITHIN_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         </div>
@@ -438,11 +463,13 @@ export default function Wardog() {
           <button
             type="button"
             className="wd-setaside-trigger"
-            onClick={() => setShowSetAsideMenu(v => !v)}
+            onClick={() => !isLite && setShowSetAsideMenu(v => !v)}
+            disabled={isLite}
+            title={isLite ? 'Set-aside filtering is a Core feature' : undefined}
           >
             {setAsides.length ? `${setAsides.length} selected` : 'Any set-aside'}
           </button>
-          {showSetAsideMenu && (
+          {showSetAsideMenu && !isLite && (
             <div className="wd-setaside-menu">
               {SET_ASIDE_OPTIONS.map(o => (
                 <label key={o.code} className="wd-setaside-option">
@@ -476,6 +503,14 @@ export default function Wardog() {
           Search
         </button>
       </div>
+
+      {/* Lite plan banner — read-only matches, no saved interest / R-E-A-D / advanced filters */}
+      {isLite && (
+        <div className="wd-demo-banner">
+          <Lock size={14} style={{ marginRight: 6, verticalAlign: '-2px' }} />
+          Lite plan shows read-only matches. <Link to="/pricing">Upgrade to Core</Link> to save opportunities, run R-E-A-D, and unlock full filters.
+        </div>
+      )}
 
       {/* Demo banner */}
       {!loading && !isLive && (
@@ -544,29 +579,37 @@ export default function Wardog() {
               )}
 
               <div className="wd-card-actions">
-                <button
-                  className={`wd-save-btn ${savedProposals[opp.noticeId] ? 'wd-save-btn-saved' : ''}`}
-                  onClick={() => saveInterest(opp)}
-                  disabled={!!savedProposals[opp.noticeId] || savingId === opp.noticeId}
-                  title="Save to Pipeline without scoring it yet"
-                >
-                  {savedProposals[opp.noticeId]
-                    ? <><BookmarkCheck size={13} /> Saved</>
-                    : <><Bookmark size={13} /> {savingId === opp.noticeId ? 'Saving…' : 'Save interest'}</>}
-                </button>
-                <button
-                  type="button"
-                  className="btn-primary wd-bid-btn"
-                  onClick={() => goToRead(opp)}
-                >
-                  Run R-E-A-D →
-                </button>
-                <Link
-                  to={`/fill?new=1&title=${encodeURIComponent(opp.title)}&agency=${encodeURIComponent(opp.fullParentPathName || opp.department || '')}&solnum=${encodeURIComponent(opp.noticeId)}${savedProposals[opp.noticeId] ? `&proposalId=${savedProposals[opp.noticeId]}` : ''}`}
-                  className="btn-outline wd-bid-btn"
-                >
-                  <ClipboardList size={13} /> Send to FASS FILL
-                </Link>
+                {isLite ? (
+                  <Link to="/pricing" className="btn-primary wd-bid-btn">
+                    <Lock size={13} /> Upgrade to Core to act on this
+                  </Link>
+                ) : (
+                  <>
+                    <button
+                      className={`wd-save-btn ${savedProposals[opp.noticeId] ? 'wd-save-btn-saved' : ''}`}
+                      onClick={() => saveInterest(opp)}
+                      disabled={!!savedProposals[opp.noticeId] || savingId === opp.noticeId}
+                      title="Save to Pipeline without scoring it yet"
+                    >
+                      {savedProposals[opp.noticeId]
+                        ? <><BookmarkCheck size={13} /> Saved</>
+                        : <><Bookmark size={13} /> {savingId === opp.noticeId ? 'Saving…' : 'Save interest'}</>}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-primary wd-bid-btn"
+                      onClick={() => goToRead(opp)}
+                    >
+                      Run R-E-A-D →
+                    </button>
+                    <Link
+                      to={`/fill?new=1&title=${encodeURIComponent(opp.title)}&agency=${encodeURIComponent(opp.fullParentPathName || opp.department || '')}&solnum=${encodeURIComponent(opp.noticeId)}${savedProposals[opp.noticeId] ? `&proposalId=${savedProposals[opp.noticeId]}` : ''}`}
+                      className="btn-outline wd-bid-btn"
+                    >
+                      <ClipboardList size={13} /> Send to FASS FILL
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           ))}

@@ -596,9 +596,16 @@ export default function Read() {
             solicitation_text: solicitationText,
             title: oppTitle,
             agency: oppAgency,
+            user_id: session?.user?.id || null,
           }),
         })
-        if (!res.ok) throw new Error(`Synthesis request failed (${res.status})`)
+        if (!res.ok) {
+          if (res.status === 402) {
+            const detail = await res.json().catch(() => ({}))
+            throw new Error(detail.detail || 'AI synthesis quota reached for this billing cycle.')
+          }
+          throw new Error(`Synthesis request failed (${res.status})`)
+        }
         const json = await res.json()
         if (!cancelled) setSynthesisMap(json.synthesis || {})
       } catch (err) {

@@ -26,7 +26,9 @@ const NAV_ITEMS = [
 ]
 
 const PLAN_LABELS = {
-  starter: 'Starter',
+  lite: 'Lite',
+  starter: 'Core', // backend/Stripe key stays "starter" — display renamed
+  // to "Core" once the cheaper "Lite" tier was added below it.
   pro: 'Pro',
   team: 'Team',
   promo: 'Promo Access',

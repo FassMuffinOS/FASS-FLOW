@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
 import HowItWorks from './components/HowItWorks'
+import Pricing from './components/Pricing'
 import Footer from './components/Footer'
 import Masterclass from './pages/Masterclass'
 import Support from './pages/Support'
@@ -52,6 +53,7 @@ function AppRoutes() {
       <Route path="/bd-partner" element={<><Nav /><main><BDPartner /></main><Footer /></>} />
       <Route path="/thank-you" element={<><Nav /><main><ThankYou /></main><Footer /></>} />
       <Route path="/join-network" element={<><Nav /><main><JoinNetwork /></main><Footer /></>} />
+      <Route path="/pricing" element={<><Nav /><main><Pricing /></main><Footer /></>} />
 
       {/* Auth routes — no Nav/Footer */}
       <Route path="/signin" element={<SignIn />} />

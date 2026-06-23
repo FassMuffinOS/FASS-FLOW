@@ -24,6 +24,7 @@ export default function Nav() {
         {/* Desktop links */}
         <ul className="nav-links">
           <li><a href="#how-it-works">Features</a></li>
+          <li><a href="/pricing">Pricing</a></li>
           <li><a href="/masterclass">Masterclass</a></li>
           <li><a href="/bd-partner">BD Partner</a></li>
         </ul>
@@ -50,6 +51,7 @@ export default function Nav() {
       {open && (
         <div className="nav-drawer">
           <a href="#how-it-works" onClick={() => setOpen(false)}>Features</a>
+          <a href="/pricing" onClick={() => setOpen(false)}>Pricing</a>
           <a href="/masterclass" onClick={() => setOpen(false)}>Masterclass</a>
           <a href="/bd-partner" onClick={() => setOpen(false)}>BD Partner</a>
           {session ? (

@@ -1,7 +1,9 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { DollarSign, Calculator, Clock, TrendingUp, Info, Link2 } from 'lucide-react'
+import { DollarSign, Calculator, Clock, TrendingUp, Info, Link2, Sparkles, AlertTriangle, Gauge } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { aiEnabled, costBreakdown } from '../lib/aiClient'
+import { useAuth } from '../context/AuthContext'
 import './ShowMeTheMoney.css'
 
 // FASS Flow's own pricing — kept in sync with Classroom.jsx ($99/mo flow
@@ -23,6 +25,7 @@ function formatMoney(n) {
 export default function ShowMeTheMoney() {
   const [searchParams] = useSearchParams()
   const proposalId = searchParams.get('proposalId')
+  const { session } = useAuth()
 
   const [award, setAward] = useState('250000')
   const [months, setMonths] = useState('12')
@@ -31,6 +34,13 @@ export default function ShowMeTheMoney() {
   const [subPercent, setSubPercent] = useState('0')
   const [linkedProposal, setLinkedProposal] = useState(null)
   const hydratedFromProposal = useRef(false)
+
+  // AI scope breakdown — cost estimate, complexity read, risk flags, all
+  // sourced from whatever scope text the proposal already has rather than
+  // a new paste box.
+  const [aiResult, setAiResult] = useState(null)
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState(null)
 
   // When arriving from a real opportunity (Pipeline/WARDOG/R-E-A-D all pass
   // ?proposalId=), pull that proposal's title and any previously-saved
@@ -42,7 +52,7 @@ export default function ShowMeTheMoney() {
     let cancelled = false
     supabase
       .from('proposals')
-      .select('id, title, agency, estimated_value')
+      .select('id, title, agency, estimated_value, description')
       .eq('id', proposalId)
       .single()
       .then(({ data, error }) => {
@@ -55,6 +65,26 @@ export default function ShowMeTheMoney() {
       })
     return () => { cancelled = true }
   }, [proposalId])
+
+  async function runAiBreakdown() {
+    if (!linkedProposal?.description) return
+    setAiLoading(true)
+    setAiError(null)
+    try {
+      const result = await costBreakdown({
+        scopeText: linkedProposal.description,
+        title: linkedProposal.title,
+        agency: linkedProposal.agency,
+        awardAmount: parseFloat(award) || null,
+        userId: session?.user?.id,
+      })
+      setAiResult(result)
+    } catch (err) {
+      setAiError(err.message || 'Could not generate a breakdown right now.')
+    } finally {
+      setAiLoading(false)
+    }
+  }
 
   // Persist whatever award amount the user settles on back onto the
   // proposal so the next visit (or another tool reading this proposal)
@@ -195,6 +225,104 @@ export default function ShowMeTheMoney() {
             FASS Flow runs {calc.softwarePctOfAward < 0.1 ? '< 0.1' : calc.softwarePctOfAward.toFixed(1)}% of this award's total value — sourcing, scoring, drafting, and tracking the bid that won it in the first place.
           </p>
         </div>
+
+        {aiEnabled() && proposalId && (
+          <div className="smm-card">
+            <div className="smm-card-head">
+              <Sparkles size={16} /> <span>AI scope breakdown</span>
+            </div>
+
+            {!linkedProposal?.description && (
+              <p className="smm-note">No scope text saved on this opportunity yet — pull it through WARDOG, the Inbox, or FASS FILL first, then come back here.</p>
+            )}
+
+            {linkedProposal?.description && !aiResult && !aiLoading && (
+              <>
+                <p className="smm-note">Run the scope of work for {linkedProposal.title || 'this opportunity'} through AI for a rough cost split, a complexity read, and any red flags worth pricing in before you bid.</p>
+                <button type="button" className="smm-pill active" onClick={runAiBreakdown}>
+                  <Sparkles size={13} style={{ marginRight: 6, verticalAlign: '-2px' }} />
+                  Run AI breakdown
+                </button>
+              </>
+            )}
+
+            {aiLoading && <p className="smm-note">Reading the scope of work…</p>}
+
+            {aiError && (
+              <p className="smm-note smm-note-flex">
+                <Info size={13} />
+                <span>{aiError}</span>
+              </p>
+            )}
+
+            {aiResult && !aiLoading && (
+              <>
+                <div className="smm-rows">
+                  <div className="smm-row">
+                    <span><Gauge size={13} style={{ marginRight: 6, verticalAlign: '-2px' }} />Complexity</span>
+                    <span className="smm-row-val">{aiResult.complexity?.level || '—'}</span>
+                  </div>
+                  {aiResult.complexity?.crew_size && (
+                    <div className="smm-row smm-row-sub">
+                      <span>Estimated crew</span>
+                      <span className="smm-row-val">{aiResult.complexity.crew_size}</span>
+                    </div>
+                  )}
+                  {aiResult.complexity?.estimated_duration && (
+                    <div className="smm-row smm-row-sub">
+                      <span>Estimated duration</span>
+                      <span className="smm-row-val">{aiResult.complexity.estimated_duration}</span>
+                    </div>
+                  )}
+                  {(aiResult.cost_estimate?.total_low != null || aiResult.cost_estimate?.total_high != null) && (
+                    <div className="smm-row smm-row-total">
+                      <span>Rough cost range</span>
+                      <span className="smm-row-val">
+                        {aiResult.cost_estimate.total_low != null ? formatMoney(aiResult.cost_estimate.total_low) : '?'}
+                        {' – '}
+                        {aiResult.cost_estimate.total_high != null ? formatMoney(aiResult.cost_estimate.total_high) : '?'}
+                      </span>
+                    </div>
+                  )}
+                  {[
+                    ['Labor', aiResult.cost_estimate?.labor_pct],
+                    ['Materials', aiResult.cost_estimate?.materials_pct],
+                    ['Equipment', aiResult.cost_estimate?.equipment_pct],
+                    ['Overhead + profit', aiResult.cost_estimate?.overhead_profit_pct],
+                  ].filter(([, pct]) => pct != null).map(([label, pct]) => (
+                    <div className="smm-row smm-row-sub" key={label}>
+                      <span>{label}</span>
+                      <span className="smm-row-val">{Math.round(pct)}%</span>
+                    </div>
+                  ))}
+                </div>
+
+                {aiResult.complexity?.rationale && (
+                  <p className="smm-note">{aiResult.complexity.rationale}</p>
+                )}
+                {aiResult.cost_estimate?.basis && (
+                  <p className="smm-note">{aiResult.cost_estimate.basis}</p>
+                )}
+
+                {aiResult.risk_flags?.length > 0 && (
+                  <div className="smm-rows" style={{ marginTop: 12 }}>
+                    {aiResult.risk_flags.map((flag, i) => (
+                      <div className="smm-row smm-row-sub" key={i}>
+                        <span><AlertTriangle size={13} style={{ marginRight: 6, verticalAlign: '-2px' }} />{flag}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <p className="smm-note smm-note-flex">
+                  <Info size={13} />
+                  <span>Rough order-of-magnitude read to start your own estimate with — not a bid price. Re-run anytime the scope text changes.</span>
+                </p>
+                <button type="button" className="smm-pill" onClick={runAiBreakdown}>Run again</button>
+              </>
+            )}
+          </div>
+        )}
 
         <div className="smm-card">
           <div className="smm-card-head">

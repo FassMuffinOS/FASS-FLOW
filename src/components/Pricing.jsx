@@ -1,31 +1,59 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Check, Zap } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
 import './Pricing.css'
 
+const API_BASE = import.meta.env.VITE_API_URL || ''
+
+// "Lite" is the impulse-buy entry point — same price point as the
+// budget govcon-matching tools it competes with directly, but capped on
+// purpose: read-only opportunity matches (no saved-search alerts) and 1
+// AI synthesis per billing cycle, enforced server-side in /ai/*. It exists
+// to catch the same low-intent traffic those tools catch, then upsell into
+// Core once someone's actually chasing a bid.
 const PLANS = [
   {
-    name: 'Starter',
+    key: 'lite',
+    name: 'Lite',
+    price: 9.99,
+    tagline: 'See what\'s out there',
+    color: 'default',
+    features: [
+      'Matched opportunity feed (read-only)',
+      '1 AI scope/bid synthesis per billing cycle',
+      'No saved-search alerts',
+      'No proposal pipeline or team tools',
+      'Upgrade anytime — nothing to migrate',
+    ],
+    cta: 'Start free trial',
+  },
+  {
+    key: 'starter',
+    name: 'Core',
     price: 99,
-    tagline: 'Learn and explore',
+    tagline: 'Actually chase the bid',
     color: 'default',
     features: [
       'Full Academy access (all courses)',
       'Wardog opportunity alerts (10/mo)',
+      'Unlimited AI synthesis (R-E-A-D, FASS FILL, Show Me The Money)',
       'Basic bid templates',
       '1 active proposal',
       'SAM.gov profile auto-fill',
       'Email support',
     ],
     cta: 'Start free trial',
-    priceId: 'price_starter',
   },
   {
+    key: 'pro',
     name: 'Pro',
     price: 200,
     tagline: 'Bid and win',
     color: 'featured',
     badge: 'Most Popular',
     features: [
-      'Everything in Starter',
+      'Everything in Core',
       'Unlimited opportunity alerts',
       'Advanced proposal builder + AI assist',
       'Unlimited active proposals',
@@ -34,9 +62,9 @@ const PLANS = [
       'Priority support + live chat',
     ],
     cta: 'Start free trial',
-    priceId: 'price_pro',
   },
   {
+    key: 'team',
     name: 'Team',
     price: 499,
     tagline: 'Scale your pipeline',
@@ -51,11 +79,47 @@ const PLANS = [
       'White-label client reports',
     ],
     cta: 'Contact sales',
-    priceId: 'price_team',
   },
 ]
 
 export default function Pricing() {
+  const { session } = useAuth()
+  const navigate = useNavigate()
+  const [checkingOut, setCheckingOut] = useState(null) // plan key in flight, or null
+  const [error, setError] = useState('')
+
+  async function handleCta(plan) {
+    if (plan.key === 'team') {
+      window.location.href = 'mailto:admin@fass.systems?subject=FASS%20Flow%20Team%20plan'
+      return
+    }
+    if (!session?.user) {
+      // SignIn always lands on /dashboard after auth (no redirect-back param
+      // wired up yet) — come back to /pricing afterward to finish checkout.
+      navigate('/signin')
+      return
+    }
+    setError('')
+    setCheckingOut(plan.key)
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/subscriptions/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: plan.key, user_id: session.user.id, email: session.user.email }),
+      })
+      const data = await res.json()
+      if (data?.url) {
+        window.location.href = data.url
+        return
+      }
+      setError('Could not start checkout. Try again in a moment.')
+    } catch {
+      setError('Could not start checkout. Try again in a moment.')
+    } finally {
+      setCheckingOut(null)
+    }
+  }
+
   return (
     <section className="pricing" id="pricing">
       <div className="container">
@@ -67,10 +131,10 @@ export default function Pricing() {
           </p>
         </div>
 
-        <div className="pricing-grid">
+        <div className="pricing-grid pricing-grid-4">
           {PLANS.map(plan => (
             <div
-              key={plan.name}
+              key={plan.key}
               className={`plan-card plan-${plan.color}`}
             >
               {plan.badge && (
@@ -99,15 +163,19 @@ export default function Pricing() {
                 ))}
               </ul>
 
-              <a
-                href="/signup"
+              <button
+                type="button"
+                disabled={checkingOut === plan.key}
                 className={`plan-cta ${plan.color === 'featured' ? 'btn-primary' : 'btn-outline plan-cta-outline'}`}
+                onClick={() => handleCta(plan)}
               >
-                {plan.cta}
-              </a>
+                {checkingOut === plan.key ? 'Starting checkout…' : plan.cta}
+              </button>
             </div>
           ))}
         </div>
+
+        {error && <p className="pricing-note" style={{ color: 'var(--danger, #c0392b)' }}>{error}</p>}
 
         <p className="pricing-note">
           All plans include a 14-day free trial. Federal contractor? Ask about our procurement vehicle discounts.
