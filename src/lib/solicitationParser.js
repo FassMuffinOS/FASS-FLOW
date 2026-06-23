@@ -142,3 +142,60 @@ export function buildOutline(parsed) {
 }
 
 export const KNOWN_DOC_KEYWORDS = DOC_KEYWORDS
+
+// ── Email invitation parser (Inbox) ─────────────────────────
+// State/local e-procurement portals (Maryland's eMMA, and similarly
+// structured marketplaces) send a "you're invited to respond" email with a
+// fixed label: value layout rather than a full RFP body. This is a separate,
+// much simpler deterministic parser tuned to that structure — same
+// zero-API-cost philosophy as parseSolicitation above, just for a different
+// document shape. Add new portals here as label variants, not as a rewrite.
+const EMAIL_FIELD_PATTERNS = {
+  rfxName: /RFx name:\s*([^\n]+)/i,
+  bpmId: /BPM ID:\s*([^\n]+)/i,
+  mainCommodity: /Main commodity:\s*([^\n]+)/i,
+  lotNumber: /Lot #:\s*([^\n]+)/i,
+  roundNumber: /Round #:\s*([^\n]+)/i,
+  endDate: /End date:\s*([^\n]+)/i,
+  requester: /Requester:\s*([^\n]+)/i,
+  supplierName: /Supplier name:\s*([^\n]+)/i,
+}
+
+function detectPortal(t) {
+  if (/emma|eMaryland Marketplace/i.test(t)) return 'eMMA'
+  if (/bidnet/i.test(t)) return 'BidNet'
+  if (/instantmarkets/i.test(t)) return 'InstantMarkets'
+  return 'Email'
+}
+
+export function parseEmailInvite(text) {
+  const t = text || ''
+  const get = (re) => {
+    const m = t.match(re)
+    return m ? m[1].trim() : null
+  }
+
+  const linkMatch = t.match(/https?:\/\/[^\s)]+/i)
+
+  const fields = {}
+  for (const [key, re] of Object.entries(EMAIL_FIELD_PATTERNS)) {
+    fields[key] = get(re)
+  }
+
+  const isRecognized = Boolean(fields.rfxName || fields.bpmId)
+
+  return {
+    isRecognized,
+    sourcePortal: detectPortal(t),
+    rfxName: fields.rfxName,
+    bpmId: fields.bpmId,
+    mainCommodity: fields.mainCommodity,
+    lotNumber: fields.lotNumber,
+    roundNumber: fields.roundNumber,
+    endDate: fields.endDate,
+    requester: fields.requester,
+    supplierName: fields.supplierName,
+    link: linkMatch ? linkMatch[0] : null,
+    rawSnippet: t.slice(0, 2000),
+  }
+}

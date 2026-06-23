@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import {
   Compass, ClipboardCheck, Kanban, ClipboardList, BookOpen,
-  ShieldCheck, LogOut, Lock, GraduationCap, IdCard, DollarSign, Network,
+  ShieldCheck, LogOut, Lock, GraduationCap, IdCard, DollarSign, Network, Mail,
 } from 'lucide-react'
 import './AppShell.css'
 
@@ -12,6 +12,7 @@ const API_BASE = import.meta.env.VITE_API_URL || ''
 // Single source of truth for every module's nav entry.
 const NAV_ITEMS = [
   { name: 'Dashboard', icon: Compass, to: '/dashboard', match: ['/dashboard'] },
+  { name: 'Inbox', icon: Mail, to: '/inbox', match: ['/inbox'] },
   { name: 'WARDOG', icon: Compass, to: '/wardog', match: ['/wardog'] },
   { name: 'Passport', icon: IdCard, to: '/passport', match: ['/passport'] },
   { name: 'R-E-A-D', icon: ClipboardCheck, to: '/read', match: ['/read'] },

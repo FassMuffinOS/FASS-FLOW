@@ -21,6 +21,7 @@ import ShowMeTheMoney from './pages/ShowMeTheMoney'
 import Admin from './pages/Admin'
 import JoinNetwork from './pages/JoinNetwork'
 import Network from './pages/Network'
+import Inbox from './pages/Inbox'
 import AppShell from './components/AppShell'
 import './index.css'
 import './App.css'
@@ -90,6 +91,9 @@ function AppRoutes() {
       } />
       <Route path="/network" element={
         <ProtectedRoute><Network /></ProtectedRoute>
+      } />
+      <Route path="/inbox" element={
+        <ProtectedRoute><Inbox /></ProtectedRoute>
       } />
     </Routes>
   )
