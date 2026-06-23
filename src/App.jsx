@@ -26,6 +26,7 @@ import Inbox from './pages/Inbox'
 import Witness from './pages/Witness'
 import Estimator from './pages/Estimator'
 import Foreman from './pages/Foreman'
+import Restoration from './pages/Restoration'
 import AppShell from './components/AppShell'
 import './index.css'
 import './App.css'
@@ -123,6 +124,9 @@ function AppRoutes() {
       } />
       <Route path="/foreman" element={
         <ProtectedRoute><Foreman /></ProtectedRoute>
+      } />
+      <Route path="/restoration" element={
+        <ProtectedRoute><Restoration /></ProtectedRoute>
       } />
     </Routes>
   )

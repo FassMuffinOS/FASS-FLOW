@@ -20,6 +20,7 @@ const TOOLS = [
   { name: 'WITNESS', sub: 'Execute the award', status: 'live', desc: 'Milestones, documents, vendors, and insurance/bonding resources for every awarded contract from Pipeline.', href: '/witness' },
   { name: 'ESTIMATOR', sub: 'Zip-coded cost ranges', status: 'live', desc: 'Build a line-item cost estimate by trade in 15-20 minutes, with a regional adjustment based on the project ZIP code.', href: '/estimator' },
   { name: 'FOREMAN', sub: 'Construction management', status: 'live', desc: 'Schedule of values, AIA payment applications, RFIs, submittals, T&M tickets, and daily logs for every awarded contract.', href: '/foreman' },
+  { name: 'RESTORATION', sub: 'Loss & claims documentation', status: 'live', desc: 'Room-by-room itemized loss list for fire/water/storm jobs — item, quantity, cost to replace, and a photo for verification, with status tracking as repairs happen.', href: '/restoration' },
 ]
 
 export default function Dashboard() {
