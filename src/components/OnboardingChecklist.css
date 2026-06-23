@@ -178,6 +178,67 @@
   font-family: inherit;
 }
 
+.onb-cert-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.onb-cert-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.onb-cert-chip {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.75);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 14px;
+  padding: 5px 11px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.onb-cert-chip:hover { background: rgba(255,255,255,0.14); }
+
+.onb-cert-chip:focus { outline: none; }
+
+.onb-cert-chip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--teal);
+}
+
+.onb-cert-chip.active {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: var(--navy);
+}
+
+.onb-cert-skip {
+  align-self: flex-start;
+  font-size: 0.74rem;
+  color: rgba(255,255,255,0.4);
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.onb-cert-skip:hover { color: rgba(255,255,255,0.65); }
+
+.onb-cert-done-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--teal);
+}
+
 .onb-placeholder-note {
   display: block;
   font-size: 0.68rem;

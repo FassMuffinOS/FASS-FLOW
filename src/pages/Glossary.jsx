@@ -202,6 +202,23 @@ const GROUPS = [
       },
     ],
   },
+  {
+    id: 'money',
+    label: 'Getting paid & teaming up',
+    terms: [
+      {
+        term: 'FAR 32.009 / Accelerated Payments to Small Business Subs',
+        short: 'The "net 15" rule, sort of',
+        body: 'FAR clause 52.232-40 sets a goal — not a hard deadline — for prime contractors to pay small-business subcontractors within 15 days after the prime itself receives an accelerated payment from the government, once it has a proper invoice in hand. It doesn\'t create new Prompt Payment Act rights and doesn\'t change the PPA\'s late-payment interest rules. In practice: it\'s leverage for a sub to ask "why hasn\'t the prime passed this through yet," not a guaranteed 15-day check.',
+        link: 'https://www.acquisition.gov/far/subpart-32.9',
+      },
+      {
+        term: 'Teaming Partner vs. Joint Venture',
+        short: 'Two ways to team up, very different commitment levels',
+        body: 'A teaming arrangement is a contract between two separate companies — one usually bids as prime, the other as sub — that stays in effect for that specific pursuit. Each company keeps its own legal identity, financials, and past performance; the relationship can be as simple as a teaming agreement signed before proposal submission. A joint venture (JV) is a new, separate legal entity the partners create together, sharing in the revenue, risk, and (for small-business programs like the SBA\'s All Small Mentor-Protégé Program) sometimes the ability to bid as if it were a single small business even when one partner is larger. JVs take more paperwork and SBA approval to set up but unlock bigger or set-aside opportunities a single small partner couldn\'t win alone. Default to teaming for a one-off bid; consider a JV when you expect to pursue the same lane repeatedly with the same partner.',
+      },
+    ],
+  },
 ]
 
 export default function Glossary() {

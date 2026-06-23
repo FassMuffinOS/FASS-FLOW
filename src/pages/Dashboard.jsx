@@ -4,10 +4,14 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { BookOpen, Compass, GraduationCap, X } from 'lucide-react'
 import OnboardingChecklist from '../components/OnboardingChecklist'
+import MilestoneBadges from '../components/MilestoneBadges'
+import FunnelTracker from '../components/FunnelTracker'
 import './Dashboard.css'
 
 const TOOLS = [
-  { name: 'WARDOG', sub: 'Opportunity intelligence', status: 'live', desc: 'Live SAM.gov sweep matching your NAICS codes and geography, plus a curated directory of FedConnect, Unison, DIBBS, eMMA, and local/university procurement sources.', href: '/wardog' },
+  { name: 'WARDOG', sub: 'Opportunity intelligence', status: 'live', desc: 'Live SAM.gov sweep matching your NAICS codes and geography, plus a curated directory of FedConnect, Unison, DIBBS, eMMA, BidNet, InstantMarkets, and local/university procurement sources.', href: '/wardog' },
+  { name: 'PASSPORT', sub: 'Your business ID', status: 'live', desc: 'UEI, CAGE code, small-business/set-aside status, and who\'s authorized to sign — the one page you\'ll reference every day.', href: '/passport' },
+  { name: 'SHOW ME THE MONEY', sub: 'Award calculator', status: 'live', desc: 'Punch in an award amount and see what\'s left after FASS Flow and any subs, plus a realistic timeline for when the cash actually lands under Net 15/30/45 terms.', href: '/money' },
   { name: 'GLOSSARY', sub: 'Learn the language', status: 'live', desc: 'New to govcon? Plain-English explanations of RFQs, RFPs, set-asides, DIBBS, NAICS codes, and every other term you\'ll hit in a solicitation. Free to browse.', href: '/glossary' },
   { name: 'R-E-A-D', sub: 'Bid discipline', status: 'live', desc: 'Six-question bid/no-bid scoring for every flagged opportunity.', href: '/read' },
   { name: 'PIPELINE', sub: 'CRM & tracking', status: 'live', desc: 'Kanban + list view of every bid in motion. Drag, drop, and monitor.', href: '/pipeline' },
@@ -50,7 +54,11 @@ export default function Dashboard() {
       <main className="dash-main">
         <div className="dash-container">
 
+          <FunnelTracker />
+
           <OnboardingChecklist />
+
+          <MilestoneBadges />
 
           {isNewStudent && !bannerDismissed && (
             <div className="dash-welcome-banner">

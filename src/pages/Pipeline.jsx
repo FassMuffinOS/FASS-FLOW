@@ -56,7 +56,7 @@ function daysLeft(str) {
 }
 
 // ── Kanban Card ───────────────────────────────────────────
-function KanbanCard({ record, onDragStart, onClick }) {
+function KanbanCard({ record, hasDraft, onDragStart, onClick }) {
   const days = daysLeft(record.due_date)
 
   return (
@@ -80,12 +80,40 @@ function KanbanCard({ record, onDragStart, onClick }) {
         <span className="kn-card-date">{formatDate(record.due_date)}</span>
         {record.naics_code && <span className="kn-card-naics">NAICS {record.naics_code}</span>}
       </div>
+      {hasDraft && <span className="kn-fill-badge">Draft in FASS FILL</span>}
+      <div className="kn-card-links">
+        {record.stage === 'flagged' && (
+          <a
+            className="kn-score-now"
+            onClick={e => e.stopPropagation()}
+            href={`/read?title=${encodeURIComponent(record.title)}&agency=${encodeURIComponent(record.agency || '')}&naics=${encodeURIComponent(record.naics_code || '')}&due=${encodeURIComponent(record.due_date || '')}&proposalId=${record.id}`}
+          >
+            Score with R-E-A-D →
+          </a>
+        )}
+        <a
+          className="kn-score-now"
+          onClick={e => e.stopPropagation()}
+          href={`/fill?proposalId=${record.id}${hasDraft ? '' : `&new=1&title=${encodeURIComponent(record.title)}&agency=${encodeURIComponent(record.agency || '')}`}`}
+        >
+          {hasDraft ? 'Continue in FASS FILL →' : 'Open in FASS FILL →'}
+        </a>
+        {['pursuing', 'submitted', 'awarded'].includes(record.stage) && (
+          <a
+            className="kn-score-now"
+            onClick={e => e.stopPropagation()}
+            href={`/money?proposalId=${record.id}`}
+          >
+            Run the numbers →
+          </a>
+        )}
+      </div>
     </div>
   )
 }
 
 // ── Kanban Column ─────────────────────────────────────────
-function KanbanColumn({ stage, records, onDragStart, onDrop, onDragOver, onCardClick }) {
+function KanbanColumn({ stage, records, fillDocByProposal, onDragStart, onDrop, onDragOver, onCardClick }) {
   const Icon = stage.icon
   return (
     <div
@@ -105,6 +133,7 @@ function KanbanColumn({ stage, records, onDragStart, onDrop, onDragOver, onCardC
           <KanbanCard
             key={r.id}
             record={r}
+            hasDraft={!!fillDocByProposal[r.id]}
             onDragStart={onDragStart}
             onClick={onCardClick}
           />
@@ -228,6 +257,10 @@ export default function Pipeline() {
   const navigate = useNavigate()
 
   const [records, setRecords] = useState([])
+  // proposal_id -> fass_fill_documents.id, so Pipeline cards can show
+  // whether FASS FILL work already exists for that opportunity instead
+  // of leaving the two tools' records invisible to each other.
+  const [fillDocByProposal, setFillDocByProposal] = useState({})
   const [loading, setLoading] = useState(true)
   const [view, setView] = useState(() => localStorage.getItem('fass-pipeline-view') || 'kanban')
   const [search, setSearch] = useState('')
@@ -240,12 +273,20 @@ export default function Pipeline() {
 
   async function loadRecords() {
     setLoading(true)
-    const { data } = await supabase
-      .from('proposals')
-      .select('*')
-      .eq('user_id', session.user.id)
-      .order('created_at', { ascending: false })
+    const [{ data }, { data: fillDocs }] = await Promise.all([
+      supabase
+        .from('proposals')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('fass_fill_documents')
+        .select('id, proposal_id')
+        .eq('user_id', session.user.id)
+        .not('proposal_id', 'is', null),
+    ])
     setRecords(data || [])
+    setFillDocByProposal(Object.fromEntries((fillDocs || []).map(d => [d.proposal_id, d.id])))
     setLoading(false)
   }
 
@@ -375,8 +416,8 @@ export default function Pipeline() {
         ) : records.length === 0 ? (
           <div className="pl-empty">
             <p>No pipeline records yet.</p>
-            <p>Complete a R-E-A-D worksheet and save a decision to start building your pipeline.</p>
-            <button className="btn-primary" style={{ marginTop: 20 }} onClick={() => navigate('/dashboard')}>
+            <p>Score an opportunity with R-E-A-D, or just hit "Save interest" on a WARDOG card to flag it here without scoring it yet.</p>
+            <button className="btn-primary" style={{ marginTop: 20 }} onClick={() => navigate('/wardog')}>
               Go to WARDOG →
             </button>
           </div>
@@ -387,6 +428,7 @@ export default function Pipeline() {
                 key={stage.id}
                 stage={stage}
                 records={byStage[stage.id] || []}
+                fillDocByProposal={fillDocByProposal}
                 onDragStart={onDragStart}
                 onDrop={onDrop}
                 onDragOver={onDragOver}

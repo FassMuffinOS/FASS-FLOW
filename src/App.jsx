@@ -16,6 +16,8 @@ import Pipeline from './pages/Pipeline'
 import Fill from './pages/Fill'
 import Classroom from './pages/Classroom'
 import Glossary from './pages/Glossary'
+import Passport from './pages/Passport'
+import ShowMeTheMoney from './pages/ShowMeTheMoney'
 import Admin from './pages/Admin'
 import AppShell from './components/AppShell'
 import './index.css'
@@ -76,6 +78,12 @@ function AppRoutes() {
       } />
       <Route path="/glossary" element={
         <ProtectedRoute><Glossary /></ProtectedRoute>
+      } />
+      <Route path="/passport" element={
+        <ProtectedRoute><Passport /></ProtectedRoute>
+      } />
+      <Route path="/money" element={
+        <ProtectedRoute><ShowMeTheMoney /></ProtectedRoute>
       } />
     </Routes>
   )

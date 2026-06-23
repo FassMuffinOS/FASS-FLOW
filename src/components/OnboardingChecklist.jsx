@@ -2,12 +2,21 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Download, Check, FileText, ClipboardCheck, Mail, CalendarClock,
-  Sparkles, ArrowRight, X,
+  Sparkles, ArrowRight, X, Award,
 } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabase'
 import './OnboardingChecklist.css'
 
 const STORAGE_KEY = 'fass_onboarding_steps'
 const DISMISS_KEY = 'fass_onboarding_dismissed'
+
+// Same set of certification labels Fill.jsx's capability statement tab
+// uses — keeping the strings identical means whatever gets picked here
+// shows up there (and in WARDOG's set-aside filter) automatically.
+const CERT_OPTIONS = [
+  'Small Business', 'WOSB', 'EDWOSB', 'SDVOSB', 'VOSB', '8(a)', 'HUBZone', 'MBE/DBE',
+]
 
 // ── All 5 of these are free and unlocked the moment you sign up — nothing
 // here is paywalled. Checking each one off is just about building momentum
@@ -50,6 +59,14 @@ const STEPS = [
     kind: 'download',
   },
   {
+    id: 'cert',
+    icon: Award,
+    title: "Tell us your set-aside status",
+    body: '8(a), SDVOSB, WOSB/EDWOSB, HUBZone, Veteran-Owned, or none of the above — this powers your WARDOG filters and capability statement automatically.',
+    action: 'Set status',
+    kind: 'cert',
+  },
+  {
     id: 'call',
     icon: CalendarClock,
     title: 'Book a free strategy call',
@@ -62,6 +79,7 @@ const STEPS = [
 
 export default function OnboardingChecklist() {
   const navigate = useNavigate()
+  const { session } = useAuth()
   const [completed, setCompleted] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}
@@ -72,6 +90,27 @@ export default function OnboardingChecklist() {
   const [dismissed, setDismissed] = useState(
     () => localStorage.getItem(DISMISS_KEY) === '1'
   )
+  const [selectedCerts, setSelectedCerts] = useState([])
+  const [certSaving, setCertSaving] = useState(false)
+
+  function toggleCert(cert) {
+    setSelectedCerts(prev =>
+      prev.includes(cert) ? prev.filter(c => c !== cert) : [...prev, cert]
+    )
+  }
+
+  async function saveCerts() {
+    if (!session?.user?.id) return
+    setCertSaving(true)
+    const { error } = await supabase
+      .from('profiles')
+      .update({ certifications: selectedCerts })
+      .eq('id', session.user.id)
+    setCertSaving(false)
+    if (!error) {
+      markDone('cert')
+    }
+  }
 
   const doneCount = STEPS.filter(s => completed[s.id]).length
   const allDone = doneCount === STEPS.length
@@ -126,7 +165,7 @@ export default function OnboardingChecklist() {
                   <span className="onb-step-free">Free</span>
                 </div>
                 <p className="onb-step-desc">{step.body}</p>
-                {step.kind === 'download' ? (
+                {step.kind === 'download' && (
                   <a
                     href={step.href}
                     download
@@ -135,7 +174,8 @@ export default function OnboardingChecklist() {
                   >
                     <Download size={13} /> {step.action}
                   </a>
-                ) : (
+                )}
+                {step.kind === 'link' && (
                   <a
                     href={step.href}
                     target="_blank"
@@ -145,6 +185,43 @@ export default function OnboardingChecklist() {
                   >
                     <CalendarClock size={13} /> {step.action}
                   </a>
+                )}
+                {step.kind === 'cert' && (
+                  done ? (
+                    <span className="onb-cert-done-label">
+                      <Check size={13} /> Saved — update it any time from FASS FILL
+                    </span>
+                  ) : (
+                    <div className="onb-cert-form">
+                      <div className="onb-cert-chips">
+                        {CERT_OPTIONS.map(c => (
+                          <button
+                            key={c}
+                            type="button"
+                            className={`onb-cert-chip ${selectedCerts.includes(c) ? 'active' : ''}`}
+                            onClick={() => toggleCert(c)}
+                          >
+                            {c}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        className="onb-step-action"
+                        onClick={saveCerts}
+                        disabled={certSaving || selectedCerts.length === 0}
+                      >
+                        <Award size={13} /> {certSaving ? 'Saving…' : step.action}
+                      </button>
+                      <button
+                        type="button"
+                        className="onb-cert-skip"
+                        onClick={() => markDone(step.id)}
+                      >
+                        None of these apply
+                      </button>
+                    </div>
+                  )
                 )}
               </div>
             </div>

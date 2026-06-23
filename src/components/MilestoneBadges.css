@@ -1,0 +1,90 @@
+.mb {
+  margin-bottom: 24px;
+}
+
+.mb-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gray-600);
+  margin-bottom: 10px;
+}
+
+.mb-header-icon { color: var(--teal); }
+
+.mb-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.mb-badge {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  opacity: 0.6;
+  transition: opacity 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.mb-badge-done {
+  opacity: 1;
+  border-color: var(--teal);
+  box-shadow: 0 2px 10px rgba(29,158,117,0.12);
+}
+
+.mb-badge-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gray-200);
+  color: var(--gray-600);
+  margin-bottom: 6px;
+}
+
+.mb-badge-done .mb-badge-icon {
+  background: var(--light-teal);
+  color: var(--dark-teal);
+}
+
+.mb-badge-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.mb-badge-body {
+  font-size: 0.78rem;
+  color: var(--gray-600);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.mb-badge-claim {
+  margin-top: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--dark-teal);
+  background: var(--light-teal);
+  border: 1px solid rgba(29,158,117,0.3);
+  border-radius: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.mb-badge-claim:hover { background: var(--teal); color: #fff; }
+
+@media (max-width: 700px) {
+  .mb-grid { grid-template-columns: 1fr; }
+}

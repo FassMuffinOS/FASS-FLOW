@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import {
   CheckCircle, XCircle, AlertCircle, ChevronDown, ChevronUp,
-  Save, ArrowLeft, Lightbulb, ShieldAlert, TrendingUp, Brain
+  Save, ArrowLeft, Lightbulb, ShieldAlert, TrendingUp, Brain, X, HelpCircle
 } from 'lucide-react'
 import './Read.css'
 
@@ -212,6 +212,32 @@ const QUESTIONS = [
   },
 ]
 
+// ─────────────────────────────────────────────────────────────
+// TAILORED TOOLTIPS — substitutes real opportunity data into the
+// generic guidance above, when WARDOG passed it through
+// ─────────────────────────────────────────────────────────────
+function tailoredTooltip(subId, opt, ctx) {
+  const base = TOOLTIPS[subId]?.[opt] || ''
+  if (!ctx) return base
+
+  if (subId === 'naics_match' && ctx.naics) {
+    if (opt === 'yes') return `Your primary or secondary NAICS code in SAM.gov matches NAICS ${ctx.naics}, the code on this solicitation, exactly.`
+    if (opt === 'partial') return `Your code is adjacent or related to NAICS ${ctx.naics}. You may still be eligible, but your proposal will need to explicitly justify the code alignment.`
+    if (opt === 'no') return `Your registered code doesn't match NAICS ${ctx.naics} on this solicitation. Contracting officers flag non-matching codes as non-responsive. Do not bid.`
+  }
+  if (subId === 'setaside_qual' && ctx.setaside) {
+    if (opt === 'yes') return `You hold the ${ctx.setaside} certification this solicitation requires, or it's open to all businesses.`
+    if (opt === 'partial') return `You may qualify for the ${ctx.setaside} set-aside but certification is pending or in process. Verify the solicitation allows self-certification.`
+    if (opt === 'no') return `You do not meet the ${ctx.setaside} set-aside requirement on this solicitation. Unless it opens to full-and-open competition, pass on this opportunity.`
+  }
+  if (subId === 'response_time' && ctx.daysUntilDue != null) {
+    if (opt === 'yes') return `You have ${ctx.daysUntilDue} day${ctx.daysUntilDue === 1 ? '' : 's'} until the due date — enough time to read, plan, draft, review, and submit a compliant, competitive proposal.`
+    if (opt === 'partial') return `${ctx.daysUntilDue} day${ctx.daysUntilDue === 1 ? '' : 's'} is tight but achievable if you start immediately. Cut scope or complexity from the response to fit the window.`
+    if (opt === 'no') return `With only ${ctx.daysUntilDue} day${ctx.daysUntilDue === 1 ? '' : 's'} left, there isn't enough time for a quality response. A rushed bid is worse than no bid — it signals poor process to the agency.`
+  }
+  return base
+}
+
 const SUB_VALUES = { yes: 1, partial: 0.5, no: 0 }
 
 function qScore(answers, q) {
@@ -236,7 +262,7 @@ function hasHardStop(answers, q) {
 // ─────────────────────────────────────────────────────────────
 // AI SYNTHESIS — rule-based but reads like real analysis
 // ─────────────────────────────────────────────────────────────
-function generateAIAnalysis(answers, score) {
+function generateAIAnalysis(answers, score, ctx) {
   const scores = QUESTIONS.map(q => ({ id: q.id, label: q.category, s: qScore(answers, q) }))
   const sorted = [...scores].sort((a, b) => a.s - b.s)
   const weakest = sorted.slice(0, 2)
@@ -245,17 +271,19 @@ function generateAIAnalysis(answers, score) {
   const noAnswers = Object.values(answers).filter(v => v === 'no').length
   const partialAnswers = Object.values(answers).filter(v => v === 'partial').length
 
+  const oppRef = ctx?.title ? `"${ctx.title}"${ctx.agency ? ` (${ctx.agency})` : ''}` : 'this opportunity'
+
   let posture = ''
   if (score >= 4.5) {
-    posture = `This is a well-positioned bid. Your strongest areas — ${strongest[0].label} and ${strongest[1]?.label ?? 'capacity'} — give you a defensible and competitive foundation. ` +
+    posture = `For ${oppRef}, this is a well-positioned bid. Your strongest areas — ${strongest[0].label} and ${strongest[1]?.label ?? 'capacity'} — give you a defensible and competitive foundation. ` +
       (weakest[0].s < 2 ? `The main area to shore up before submitting is ${weakest[0].label.toLowerCase()}, where partial scores suggest actionable gaps rather than disqualifiers. ` : 'Your weakest sections still clear the threshold for a competitive response. ') +
       `With ${noAnswers} hard No${noAnswers !== 1 ? 's' : ''} and ${partialAnswers} Partials across the worksheet, your principal task is gap documentation and mitigation planning, not re-evaluating whether to pursue.`
   } else if (score >= 3.0) {
-    posture = `This is a conditional bid. Your ${strongest[0].label} position is solid, but ${weakest[0].label.toLowerCase()} and ${weakest[1]?.label.toLowerCase() ?? 'timing'} each show gaps that — unaddressed — will weaken your submission or create performance risk. ` +
+    posture = `For ${oppRef}, this is a conditional bid. Your ${strongest[0].label} position is solid, but ${weakest[0].label.toLowerCase()} and ${weakest[1]?.label.toLowerCase() ?? 'timing'} each show gaps that — unaddressed — will weaken your submission or create performance risk. ` +
       `${hardStops.length > 0 ? `You have ${hardStops.length} hard-stop answer${hardStops.length > 1 ? 's' : ''} that must be resolved before proceeding. ` : ''}` +
-      `A conditional pursue decision is appropriate only if you can close the identified gaps before the due date.`
+      `${ctx?.daysUntilDue != null ? `With ${ctx.daysUntilDue} day${ctx.daysUntilDue === 1 ? '' : 's'} until the due date, ` : 'A '}conditional pursue decision is appropriate only if you can close the identified gaps before the due date.`
   } else {
-    posture = `This opportunity does not clear the FASS bid threshold at this time. With ${noAnswers} hard No${noAnswers !== 1 ? 's' : ''} and a score below 3.0, the combination of eligibility gaps, capacity constraints, or economic risk creates more exposure than the contract value justifies. ` +
+    posture = `${ctx?.title ? `${oppRef} does` : 'This opportunity does'} not clear the FASS bid threshold at this time. With ${noAnswers} hard No${noAnswers !== 1 ? 's' : ''} and a score below 3.0, the combination of eligibility gaps, capacity constraints, or economic risk creates more exposure than the contract value justifies. ` +
       `The right move is to pass, document what would need to change to pursue this type of opportunity, and invest your proposal time in a better-matched solicitation.`
   }
 
@@ -345,14 +373,13 @@ function SectionInsight({ q, answers }) {
   )
 }
 
-function SubQuestion({ sub, value, onChange }) {
-  const tips = TOOLTIPS[sub.id] || {}
+function SubQuestion({ sub, value, onChange, ctx }) {
   return (
     <div className="rd-sub">
       <p className="rd-sub-label">{sub.label}</p>
       <div className="rd-sub-options">
         {['yes', 'partial', 'no'].map(opt => (
-          <Tooltip key={opt} text={tips[opt] || ''}>
+          <Tooltip key={opt} text={tailoredTooltip(sub.id, opt, ctx)}>
             <label className={`rd-option ${value === opt ? `rd-option-${opt}` : ''}`}>
               <input
                 type="radio"
@@ -370,8 +397,13 @@ function SubQuestion({ sub, value, onChange }) {
   )
 }
 
-function QuestionCard({ q, answers, notes, onAnswer, onNote }) {
-  const [open, setOpen] = useState(true)
+function QuestionCard({ q, answers, notes, onAnswer, onNote, ctx, defaultOpen, bulkSignal }) {
+  const [open, setOpen] = useState(defaultOpen)
+
+  useEffect(() => {
+    if (bulkSignal) setOpen(bulkSignal.open)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bulkSignal?.token])
   const answered = q.subs.every(s => answers[s.id] !== undefined)
   const s = answered ? qScore(answers, q) : null
   const hasStop = hasHardStop(answers, q)
@@ -404,7 +436,7 @@ function QuestionCard({ q, answers, notes, onAnswer, onNote }) {
           <p className="rd-guidance">{q.guidance}</p>
           <div className="rd-subs">
             {q.subs.map(sub => (
-              <SubQuestion key={sub.id} sub={sub} value={answers[sub.id]} onChange={onAnswer} />
+              <SubQuestion key={sub.id} sub={sub} value={answers[sub.id]} onChange={onAnswer} ctx={ctx} />
             ))}
           </div>
           <SectionInsight q={q} answers={answers} />
@@ -423,11 +455,11 @@ function QuestionCard({ q, answers, notes, onAnswer, onNote }) {
   )
 }
 
-function AIAnalysis({ answers, score }) {
+function AIAnalysis({ answers, score, ctx }) {
   const allAnswered = QUESTIONS.every(q => q.subs.every(s => answers[s.id] !== undefined))
   if (!allAnswered) return null
 
-  const { posture, actions } = generateAIAnalysis(answers, score)
+  const { posture, actions } = generateAIAnalysis(answers, score, ctx)
 
   return (
     <div className="rd-ai">
@@ -461,12 +493,51 @@ export default function Read() {
   const { session } = useAuth()
 
   const oppTitle = searchParams.get('title') || 'Untitled Opportunity'
+  const oppAgency = searchParams.get('agency') || ''
+  const oppNaics = searchParams.get('naics') || ''
+  const oppSetAside = searchParams.get('setaside') || ''
+  const oppDue = searchParams.get('due') || ''
+  // Shared join key with the proposals table. When present (from WARDOG's
+  // "Save interest" or Pipeline's "Score with R-E-A-D"), saving here
+  // UPDATEs that existing row instead of inserting a second one — this is
+  // what keeps one opportunity as one Pipeline card across tools.
+  const incomingProposalId = searchParams.get('proposalId') || null
+  const daysUntilDue = oppDue
+    ? Math.ceil((new Date(oppDue).getTime() - Date.now()) / 86400000)
+    : null
+  const ctx = {
+    title: oppTitle !== 'Untitled Opportunity' ? oppTitle : '',
+    agency: oppAgency,
+    naics: oppNaics,
+    setaside: oppSetAside,
+    daysUntilDue,
+  }
 
   const [answers, setAnswers] = useState({})
   const [notes, setNotes] = useState({})
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [savedProposalId, setSavedProposalId] = useState(incomingProposalId)
+  // "Does this system grow with you" — track how many R-E-A-D worksheets
+  // this user has actually completed. After a few, we assume they know
+  // the drill: collapse sections by default and skip the help banner
+  // automatically, rather than making them dismiss it every time.
+  const completedCount = Number(localStorage.getItem('fass_read_completed_count') || 0)
+  const isAdvanced = completedCount >= 3
+
+  const [showHelp, setShowHelp] = useState(
+    () => !isAdvanced && localStorage.getItem('fass_read_help_dismissed') !== '1'
+  )
+  const [bulkSignal, setBulkSignal] = useState(null)
+
+  function dismissHelp() {
+    setShowHelp(false)
+    localStorage.setItem('fass_read_help_dismissed', '1')
+  }
+
+  function expandAll() { setBulkSignal(prev => ({ open: true, token: (prev?.token || 0) + 1 })) }
+  function collapseAll() { setBulkSignal(prev => ({ open: false, token: (prev?.token || 0) + 1 })) }
 
   const score = totalScore(answers)
   const answeredCount = QUESTIONS.filter(q => q.subs.every(s => answers[s.id] !== undefined)).length
@@ -489,14 +560,33 @@ export default function Read() {
     setSaving(true)
     setSaveError('')
     const worksheet = { answers, notes, score, recommendation: rec.label, completedAt: new Date().toISOString() }
-    const { error } = await supabase.from('proposals').insert({
-      user_id: session.user.id,
+    const payload = {
       title: oppTitle,
       status: rec.label === 'PURSUE' ? 'pursuing' : rec.label === 'CONDITIONAL' ? 'review' : 'passed',
+      stage: 'scored',
+      agency: oppAgency || null,
+      naics_code: oppNaics || null,
+      due_date: oppDue || null,
+      read_score: score,
       read_worksheet: worksheet,
-    })
+    }
+
+    let error, data
+    if (savedProposalId) {
+      // Came from an existing flagged/scored row (WARDOG save-interest or
+      // Pipeline's "Score with R-E-A-D") — update it in place instead of
+      // inserting a duplicate Pipeline card for the same opportunity.
+      ;({ error, data } = await supabase.from('proposals').update(payload).eq('id', savedProposalId).select().single())
+    } else {
+      ;({ error, data } = await supabase.from('proposals').insert({ user_id: session.user.id, ...payload }).select().single())
+    }
+
     if (error) setSaveError(error.message)
-    else setSaved(true)
+    else {
+      setSaved(true)
+      if (data?.id) setSavedProposalId(data.id)
+      localStorage.setItem('fass_read_completed_count', String(completedCount + 1))
+    }
     setSaving(false)
   }
 
@@ -513,15 +603,56 @@ export default function Read() {
           <div className="rd-header-meta">
             <span className="rd-tool-label">R-E-A-D Worksheet</span>
             <span className="rd-header-title">{oppTitle}</span>
+            {(oppAgency || oppNaics || daysUntilDue != null) && (
+              <span className="rd-header-sub">
+                {[oppAgency, oppNaics && `NAICS ${oppNaics}`, daysUntilDue != null && `Due in ${daysUntilDue}d`].filter(Boolean).join(' · ')}
+              </span>
+            )}
           </div>
           <span className="rd-progress">{answeredCount} / {QUESTIONS.length} complete</span>
+          {!showHelp && (
+            <button className="rd-help-reopen" onClick={() => setShowHelp(true)} aria-label="How this works">
+              <HelpCircle size={16} />
+            </button>
+          )}
         </div>
       </header>
+
+      {showHelp && (
+        <div className="rd-help-banner">
+          <div className="rd-help-banner-inner">
+            <div className="rd-help-text">
+              <h3>How R-E-A-D works — 60 seconds</h3>
+              <p>
+                {ctx.title
+                  ? <>You're scoring <strong>{ctx.title}</strong>{ctx.agency ? ` (${ctx.agency})` : ''}. </>
+                  : null}
+                Six sections, three quick questions each — 18 total, but you only answer Yes / Partial / No, no writing required.
+                A <strong>No</strong> on certain questions is a hard stop (don't bid); <strong>Partial</strong> usually means proceed with caution.
+                {daysUntilDue != null && daysUntilDue <= 7 && (
+                  <> This one's due in <strong>{daysUntilDue} day{daysUntilDue === 1 ? '' : 's'}</strong> — work fast.</>
+                )}
+                {' '}Your score and recommendation update live as you go, and nothing saves to your pipeline until you've answered every question —
+                so it's safe to leave this open and come back to it, your answers stay on screen as you work through it.
+                Not sure about a question? Hover the tooltip under each answer — it's written for this specific solicitation where we have the data.
+              </p>
+            </div>
+            <button className="rd-help-dismiss" onClick={dismissHelp} aria-label="Dismiss">
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Progress tracker */}
       <div className="rd-tracker-bar">
         <div className="rd-tracker-inner">
           <ProgressTracker questions={QUESTIONS} answers={answers} />
+          <div className="rd-bulk-actions">
+            <button onClick={expandAll}>Expand all</button>
+            <span className="rd-bulk-sep">·</span>
+            <button onClick={collapseAll}>Collapse all</button>
+          </div>
         </div>
       </div>
 
@@ -590,12 +721,15 @@ export default function Read() {
                 notes={notes}
                 onAnswer={handleAnswer}
                 onNote={handleNote}
+                ctx={ctx}
+                defaultOpen={!isAdvanced}
+                bulkSignal={bulkSignal}
               />
             ))}
           </div>
 
           {/* AI Analysis */}
-          <AIAnalysis answers={answers} score={score} />
+          <AIAnalysis answers={answers} score={score} ctx={ctx} />
 
           {/* Save */}
           <div className="rd-footer">
@@ -613,6 +747,20 @@ export default function Read() {
                 {saving ? 'Saving…' : saved ? 'Saved to pipeline ✓' : 'Save decision to pipeline'}
               </button>
               {!allAnswered && <p className="rd-save-note">Complete all {QUESTIONS.length} sections to save.</p>}
+              {saved && (
+                <div className="rd-next-steps">
+                  <span className="rd-next-label">What's next:</span>
+                  <Link
+                    to={`/fill?new=1&proposalId=${savedProposalId || ''}&title=${encodeURIComponent(oppTitle)}&agency=${encodeURIComponent(oppAgency)}`}
+                    className="rd-next-link"
+                  >
+                    Continue to FASS FILL →
+                  </Link>
+                  <button className="rd-next-link" onClick={() => navigate('/pipeline')}>
+                    View in Pipeline →
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 

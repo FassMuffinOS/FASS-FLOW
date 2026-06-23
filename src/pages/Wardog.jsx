@@ -1,7 +1,23 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, RefreshCw, ExternalLink, Calendar, Building2, Tag, ClipboardList } from 'lucide-react'
+import { Search, RefreshCw, ExternalLink, Calendar, Building2, Tag, ClipboardList, Bookmark, BookmarkCheck } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabase'
 import './Wardog.css'
+
+// Maps the certification labels captured in onboarding / FASS FILL's
+// capability statement (profiles.certifications) to the set-aside codes
+// SAM.gov/WARDOG use. MBE/DBE has no federal set-aside code equivalent,
+// so it's intentionally left out — it doesn't drive a WARDOG filter.
+const CERT_TO_SET_ASIDE = {
+  'Small Business': 'SBA',
+  'WOSB': 'WOSB',
+  'EDWOSB': 'EDWOSB',
+  'SDVOSB': 'SDVOSB',
+  'VOSB': 'VO',
+  '8(a)': '8A',
+  'HUBZone': 'HZC',
+}
 
 // The SAM.gov key lives only in the backend's environment now — calling
 // api.sam.gov straight from the browser with a VITE_-prefixed key would
@@ -142,6 +158,24 @@ const OTHER_SOURCES = [
     desc: "Defense Logistics Agency's bid board for spare parts, supplies, and DoD material RFQs. High volume, fast turnaround, good for manufacturers and suppliers.",
   },
   {
+    name: 'BidNet Direct',
+    tag: 'State / Local',
+    url: 'https://www.bidnetdirect.com',
+    desc: 'Aggregates state, county, and city bid opportunities across the country — strong coverage where SAM.gov has none (most local government work). No public API; free to search, some regional networks charge suppliers to respond.',
+  },
+  {
+    name: 'InstantMarkets',
+    tag: 'Federal / State / Local',
+    url: 'https://www.instantmarkets.com',
+    desc: 'Free aggregator search engine for bids, RFPs, and contract awards across federal, state, local, and even some private-sector buyers — useful as a second-opinion search when WARDOG or BidNet come up short.',
+  },
+  {
+    name: 'USASpending.gov',
+    tag: 'Federal — Award History',
+    url: 'https://www.usaspending.gov',
+    desc: 'Free, official record of every federal contract, grant, and award ever made. Not a bid board — use it before you bid to see who\'s winning a given NAICS code or agency, at what price, and how often a contract re-competes, so you can size up the competition and price smarter.',
+  },
+  {
     name: 'eMMA (Maryland)',
     tag: 'State — MD',
     url: 'https://emma.maryland.gov',
@@ -180,6 +214,7 @@ function DueChip({ date }) {
 }
 
 export default function Wardog() {
+  const { session } = useAuth()
   const [opps, setOpps] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -196,10 +231,58 @@ export default function Wardog() {
   const [dueWithin, setDueWithin] = useState('')
   const [showSetAsideMenu, setShowSetAsideMenu] = useState(false)
   const [showSources, setShowSources] = useState(false)
+  // Keyed by SAM.gov noticeId -> the proposals.id row it created. This is
+  // the join key that lets R-E-A-D, Pipeline, and FASS FILL all converge
+  // on the same record instead of each tool spawning its own copy of the
+  // same opportunity.
+  const [savedProposals, setSavedProposals] = useState({})
+  const [savingId, setSavingId] = useState(null)
 
   function toggleSetAside(code) {
     setSetAsides(prev => prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code])
   }
+
+  // "Save interest" — flag an opportunity in Pipeline without running
+  // the full R-E-A-D worksheet. Useful when a first pass doesn't have
+  // time to score it yet but you don't want to lose track of it.
+  async function saveInterest(opp) {
+    if (!session?.user?.id || savedProposals[opp.noticeId] || savingId) return
+    setSavingId(opp.noticeId)
+    const { data, error } = await supabase.from('proposals').insert({
+      user_id: session.user.id,
+      title: opp.title,
+      stage: 'flagged',
+      status: 'draft',
+      agency: opp.fullParentPathName || opp.department || null,
+      naics_code: opp.naicsCode || naics || null,
+      due_date: opp.responseDeadLine || null,
+    }).select().single()
+    if (!error && data) setSavedProposals(prev => ({ ...prev, [opp.noticeId]: data.id }))
+    setSavingId(null)
+  }
+
+  // Pre-fill the set-aside filter from the user's saved certifications
+  // (captured in onboarding or FASS FILL) so they don't have to re-pick
+  // it every visit. Only runs once, and only if no filter is set yet —
+  // never overrides a filter the user is actively adjusting.
+  useEffect(() => {
+    if (!session?.user?.id) return
+    let cancelled = false
+    async function prefillFromProfile() {
+      const { data } = await supabase
+        .from('profiles')
+        .select('certifications')
+        .eq('id', session.user.id)
+        .single()
+      if (cancelled || !data?.certifications?.length) return
+      const mapped = data.certifications
+        .map(c => CERT_TO_SET_ASIDE[c])
+        .filter(Boolean)
+      if (mapped.length) setSetAsides(prev => prev.length ? prev : mapped)
+    }
+    prefillFromProfile()
+    return () => { cancelled = true }
+  }, [session?.user?.id])
 
   function passesPostFilters(o) {
     if (setAsides.length && !setAsides.includes(o.typeOfSetAside)) return false
@@ -435,14 +518,24 @@ export default function Wardog() {
               )}
 
               <div className="wd-card-actions">
+                <button
+                  className={`wd-save-btn ${savedProposals[opp.noticeId] ? 'wd-save-btn-saved' : ''}`}
+                  onClick={() => saveInterest(opp)}
+                  disabled={!!savedProposals[opp.noticeId] || savingId === opp.noticeId}
+                  title="Save to Pipeline without scoring it yet"
+                >
+                  {savedProposals[opp.noticeId]
+                    ? <><BookmarkCheck size={13} /> Saved</>
+                    : <><Bookmark size={13} /> {savingId === opp.noticeId ? 'Saving…' : 'Save interest'}</>}
+                </button>
                 <a
-                  href={`/read?opp=${opp.noticeId}&title=${encodeURIComponent(opp.title)}`}
+                  href={`/read?opp=${opp.noticeId}&title=${encodeURIComponent(opp.title)}&agency=${encodeURIComponent(opp.fullParentPathName || opp.department || '')}&naics=${encodeURIComponent(opp.naicsCode || '')}&setaside=${encodeURIComponent(SET_ASIDE_LABELS[opp.typeOfSetAside] || opp.typeOfSetAside || '')}&due=${encodeURIComponent(opp.responseDeadLine || '')}${savedProposals[opp.noticeId] ? `&proposalId=${savedProposals[opp.noticeId]}` : ''}`}
                   className="btn-primary wd-bid-btn"
                 >
                   Run R-E-A-D →
                 </a>
                 <Link
-                  to={`/fill?new=1&title=${encodeURIComponent(opp.title)}&agency=${encodeURIComponent(opp.fullParentPathName || opp.department || '')}&solnum=${encodeURIComponent(opp.noticeId)}`}
+                  to={`/fill?new=1&title=${encodeURIComponent(opp.title)}&agency=${encodeURIComponent(opp.fullParentPathName || opp.department || '')}&solnum=${encodeURIComponent(opp.noticeId)}${savedProposals[opp.noticeId] ? `&proposalId=${savedProposals[opp.noticeId]}` : ''}`}
                   className="btn-outline wd-bid-btn"
                 >
                   <ClipboardList size={13} /> Send to FASS FILL

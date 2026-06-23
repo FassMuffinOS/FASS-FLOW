@@ -252,6 +252,13 @@ export default function Fill() {
 
   useEffect(() => { loadDocs(); loadProfile() }, [])
 
+  // Shared join key with the proposals table — carried in from WARDOG's
+  // "Save interest"/"Send to FASS FILL", R-E-A-D's "Continue to FASS
+  // FILL", or Pipeline's "Open in FASS FILL". When set, saving here
+  // attaches this doc to that existing proposal row instead of leaving
+  // FASS FILL as a disconnected, second copy of the same opportunity.
+  const [linkedProposalId, setLinkedProposalId] = useState(searchParams.get('proposalId') || null)
+
   // Continuity from WARDOG: a SAM.gov card or an Other Sources link can
   // hand off straight into a new solicitation here, with whatever it
   // already knows (title/agency/notice id) prefilled, or just a tag
@@ -267,6 +274,24 @@ export default function Fill() {
     setIncomingSource(searchParams.get('source') || '')
     setActiveDoc(null)
     setMode('input')
+  }, []) // eslint-disable-line
+
+  // Arriving with only a proposalId (e.g. Pipeline's "Open in FASS FILL"
+  // on a card that already has a draft) — open the existing doc for that
+  // proposal instead of starting a blank one.
+  useEffect(() => {
+    const pid = searchParams.get('proposalId')
+    if (!pid || searchParams.get('new')) return
+    ;(async () => {
+      const { data } = await supabase
+        .from('fass_fill_documents')
+        .select('*')
+        .eq('proposal_id', pid)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (data) openDoc(data)
+    })()
   }, []) // eslint-disable-line
 
   async function loadDocs() {
@@ -391,10 +416,31 @@ export default function Fill() {
 
   async function saveDoc() {
     setSaving(true)
+
+    // If this doc isn't linked to a Pipeline proposal yet, create one now
+    // (or reuse the row already flagged/scored elsewhere) so the work
+    // happening in FASS FILL actually shows up as a Pipeline card instead
+    // of living only in this page.
+    let proposalId = linkedProposalId
+    if (!proposalId) {
+      const { data: proposal } = await supabase.from('proposals').insert({
+        user_id: session.user.id,
+        title: activeDoc.title,
+        agency: activeDoc.agency || null,
+        stage: 'pursuing',
+        status: 'pursuing',
+      }).select().single()
+      if (proposal) {
+        proposalId = proposal.id
+        setLinkedProposalId(proposal.id)
+      }
+    }
+
     if (activeDoc.id) {
       await supabase.from('fass_fill_documents').update({
         title: activeDoc.title, agency: activeDoc.agency, solicitation_number: activeDoc.solicitation_number,
         raw_input: activeDoc.raw_input, parsed: activeDoc.parsed, outline: activeDoc.outline,
+        proposal_id: proposalId || null,
         updated_at: new Date().toISOString(),
       }).eq('id', activeDoc.id)
     } else {
@@ -402,6 +448,7 @@ export default function Fill() {
         user_id: session.user.id, title: activeDoc.title, agency: activeDoc.agency,
         solicitation_number: activeDoc.solicitation_number, raw_input: activeDoc.raw_input,
         parsed: activeDoc.parsed, outline: activeDoc.outline,
+        proposal_id: proposalId || null,
       }).select().single()
       if (data) setActiveDoc(data)
     }

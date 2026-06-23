@@ -245,6 +245,34 @@
   text-decoration: none;
 }
 
+.wd-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--gray-200);
+  background: var(--white);
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.wd-save-btn:hover:not(:disabled) { border-color: var(--teal); color: var(--dark-teal); }
+
+.wd-save-btn:focus { outline: none; }
+.wd-save-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--teal); }
+
+.wd-save-btn:disabled { cursor: default; opacity: 0.7; }
+
+.wd-save-btn-saved {
+  background: var(--light-teal);
+  border-color: var(--teal);
+  color: var(--dark-teal);
+}
+
 /* Set-aside multi-select */
 .wd-filter-setaside { position: relative; }
 

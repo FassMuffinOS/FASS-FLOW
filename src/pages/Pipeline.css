@@ -480,6 +480,36 @@
   border: 1px solid var(--border-subtle);
 }
 
+.kn-score-now {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--teal);
+  text-decoration: none;
+}
+
+.kn-score-now:hover { color: var(--dark-teal); text-decoration: underline; }
+
+.kn-fill-badge {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: var(--light-teal);
+  color: var(--dark-teal);
+}
+
+.kn-card-links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
 /* ══════════════════════════════════════════════════
    LIST VIEW
 ══════════════════════════════════════════════════ */

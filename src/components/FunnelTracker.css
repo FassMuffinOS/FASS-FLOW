@@ -1,0 +1,92 @@
+.ft {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  padding: 20px 22px;
+  margin-bottom: 24px;
+}
+
+.ft-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 16px;
+}
+
+.ft-header > span:first-child {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.ft-header-sub {
+  font-size: 0.78rem;
+  color: var(--gray-600);
+}
+
+.ft-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 18px;
+}
+
+.ft-stage {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ft-stage-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ft-stage-icon { color: var(--dark-teal); }
+
+.ft-stage-count {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.ft-bar-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--gray-200);
+  overflow: hidden;
+}
+
+.ft-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--teal);
+  transition: width 0.4s ease;
+}
+
+.ft-stage-label {
+  font-size: 0.74rem;
+  color: var(--gray-600);
+  line-height: 1.3;
+}
+
+.ft-arrow {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .ft-stage:not(:last-child)::after {
+    content: '→';
+    position: absolute;
+    top: 2px;
+    right: -14px;
+    color: var(--gray-400);
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .ft-row { grid-template-columns: 1fr 1fr; }
+}

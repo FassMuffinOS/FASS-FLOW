@@ -360,6 +360,8 @@
 }
 .fl-cert-chip.active { background: var(--teal); border-color: var(--teal); color: #fff; }
 .fl-cert-chip:hover:not(.active) { border-color: var(--teal); color: var(--teal); }
+.fl-cert-chip:focus { outline: none; }
+.fl-cert-chip:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--teal); }
 
 .fl-pp-section { display: flex; flex-direction: column; gap: 10px; }
 .fl-pp-head { display: flex; align-items: center; justify-content: space-between; }

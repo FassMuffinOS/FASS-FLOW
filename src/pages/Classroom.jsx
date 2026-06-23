@@ -166,7 +166,7 @@ export default function Classroom() {
                 what you just learned, every day, on autopilot.
               </p>
               {isActive ? (
-                <button className="cr-grad-cta" onClick={() => navigate('/dashboard#wardog')}>
+                <button className="cr-grad-cta" onClick={() => navigate('/wardog')}>
                   Go to WARDOG <ArrowLeft size={15} style={{ transform: 'rotate(180deg)' }} />
                 </button>
               ) : (
@@ -186,7 +186,7 @@ export default function Classroom() {
                 <strong>Night {EARLY_UNLOCK_NIGHT} complete — WARDOG is unlocked early.</strong>
                 <span>You don't have to wait until graduation. See live opportunities matching your NAICS code right now.</span>
               </div>
-              <button className="cr-early-cta" onClick={() => navigate('/dashboard#wardog')}>
+              <button className="cr-early-cta" onClick={() => navigate('/wardog')}>
                 Open WARDOG
               </button>
             </div>

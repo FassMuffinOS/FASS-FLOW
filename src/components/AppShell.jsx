@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import {
   Compass, ClipboardCheck, Kanban, ClipboardList, BookOpen,
-  ShieldCheck, LogOut, Lock, GraduationCap,
+  ShieldCheck, LogOut, Lock, GraduationCap, IdCard, DollarSign,
 } from 'lucide-react'
 import './AppShell.css'
 
@@ -13,9 +13,11 @@ const API_BASE = import.meta.env.VITE_API_URL || ''
 const NAV_ITEMS = [
   { name: 'Dashboard', icon: Compass, to: '/dashboard', match: ['/dashboard'] },
   { name: 'WARDOG', icon: Compass, to: '/wardog', match: ['/wardog'] },
+  { name: 'Passport', icon: IdCard, to: '/passport', match: ['/passport'] },
   { name: 'R-E-A-D', icon: ClipboardCheck, to: '/read', match: ['/read'] },
   { name: 'Pipeline', icon: Kanban, to: '/pipeline', match: ['/pipeline'] },
   { name: 'FASS FILL', icon: ClipboardList, to: '/fill', match: ['/fill'] },
+  { name: 'Show Me The Money', icon: DollarSign, to: '/money', match: ['/money'] },
   { name: 'Classroom', icon: BookOpen, to: '/classroom', match: ['/classroom'] },
   { name: 'Glossary', icon: GraduationCap, to: '/glossary', match: ['/glossary'] },
   { name: 'Witness', icon: ShieldCheck, to: null, match: [], soon: true },
