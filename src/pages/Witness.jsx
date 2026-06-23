@@ -199,8 +199,30 @@ export default function Witness() {
         </div>
         <div className="wit-empty">
           <h3>No awarded contracts yet</h3>
-          <p>Mark a proposal "Awarded" in Pipeline and it'll show up here automatically.</p>
-          <a href="/pipeline" className="wit-btn wit-btn-primary" style={{ marginTop: 14, display: 'inline-flex' }}>Go to Pipeline →</a>
+          <p>Mark a proposal "Awarded" in Pipeline and it'll show up here automatically — here's what you'll get the moment it does:</p>
+          <div className="wit-resource-grid" style={{ marginTop: 18, textAlign: 'left' }}>
+            <div className="wit-resource">
+              <h3><Trophy size={15} /> Award review</h3>
+              <p>Agency, value, NAICS, and period-of-performance pulled straight from the proposal — one place to see what you actually signed up for.</p>
+            </div>
+            <div className="wit-resource">
+              <h3><Calendar size={15} /> Milestones</h3>
+              <p>One click generates a kickoff-to-closeout milestone plan from the award's due date, or build your own and track status as you go.</p>
+            </div>
+            <div className="wit-resource">
+              <h3><FileText size={15} /> Document organization</h3>
+              <p>Keep the contract, compliance paperwork, insurance certs, and invoices sorted by category in one place.</p>
+            </div>
+            <div className="wit-resource">
+              <h3><Users size={15} /> Vendors &amp; support</h3>
+              <p>Search your Network directory and build the team for this specific award without leaving the page.</p>
+            </div>
+            <div className="wit-resource">
+              <h3><ShieldAlert size={15} /> Insurance &amp; bonding</h3>
+              <p>Bonding-threshold flags, the SBA Surety Bond Guarantee Program, and net-15 invoicing guidance tailored to the award's value.</p>
+            </div>
+          </div>
+          <a href="/pipeline" className="wit-btn wit-btn-primary" style={{ marginTop: 18, display: 'inline-flex' }}>Go to Pipeline →</a>
         </div>
       </div>
     )
