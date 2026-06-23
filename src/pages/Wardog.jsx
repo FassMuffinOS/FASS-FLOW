@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Search, RefreshCw, ExternalLink, Calendar, Building2, Tag, ClipboardList, Bookmark, BookmarkCheck } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -215,6 +215,7 @@ function DueChip({ date }) {
 
 export default function Wardog() {
   const { session } = useAuth()
+  const navigate = useNavigate()
   const [opps, setOpps] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -256,9 +257,34 @@ export default function Wardog() {
       agency: opp.fullParentPathName || opp.department || null,
       naics_code: opp.naicsCode || naics || null,
       due_date: opp.responseDeadLine || null,
+      // Carrying the actual solicitation description onto the proposal row
+      // is what lets R-E-A-D (and anything else reading this row) ground
+      // its analysis in the real requirements instead of just title/NAICS.
+      description: opp.description || null,
     }).select().single()
     if (!error && data) setSavedProposals(prev => ({ ...prev, [opp.noticeId]: data.id }))
     setSavingId(null)
+    return data?.id || null
+  }
+
+  // "Run R-E-A-D" used to be a plain link, which meant a user could land on
+  // the worksheet for an opportunity that was never saved to a proposal row
+  // — no proposalId, no description, nothing for R-E-A-D's AI synthesis to
+  // read. This guarantees the row (and its description) exists first.
+  async function goToRead(opp) {
+    let proposalId = savedProposals[opp.noticeId]
+    if (!proposalId) {
+      proposalId = await saveInterest(opp)
+    }
+    const params = new URLSearchParams({
+      title: opp.title,
+      agency: opp.fullParentPathName || opp.department || '',
+      naics: opp.naicsCode || '',
+      setaside: SET_ASIDE_LABELS[opp.typeOfSetAside] || opp.typeOfSetAside || '',
+      due: opp.responseDeadLine || '',
+    })
+    if (proposalId) params.set('proposalId', proposalId)
+    navigate(`/read?${params.toString()}`)
   }
 
   // Pre-fill the set-aside filter from the user's saved certifications
@@ -528,12 +554,13 @@ export default function Wardog() {
                     ? <><BookmarkCheck size={13} /> Saved</>
                     : <><Bookmark size={13} /> {savingId === opp.noticeId ? 'Saving…' : 'Save interest'}</>}
                 </button>
-                <a
-                  href={`/read?opp=${opp.noticeId}&title=${encodeURIComponent(opp.title)}&agency=${encodeURIComponent(opp.fullParentPathName || opp.department || '')}&naics=${encodeURIComponent(opp.naicsCode || '')}&setaside=${encodeURIComponent(SET_ASIDE_LABELS[opp.typeOfSetAside] || opp.typeOfSetAside || '')}&due=${encodeURIComponent(opp.responseDeadLine || '')}${savedProposals[opp.noticeId] ? `&proposalId=${savedProposals[opp.noticeId]}` : ''}`}
+                <button
+                  type="button"
                   className="btn-primary wd-bid-btn"
+                  onClick={() => goToRead(opp)}
                 >
                   Run R-E-A-D →
-                </a>
+                </button>
                 <Link
                   to={`/fill?new=1&title=${encodeURIComponent(opp.title)}&agency=${encodeURIComponent(opp.fullParentPathName || opp.department || '')}&solnum=${encodeURIComponent(opp.noticeId)}${savedProposals[opp.noticeId] ? `&proposalId=${savedProposals[opp.noticeId]}` : ''}`}
                   className="btn-outline wd-bid-btn"

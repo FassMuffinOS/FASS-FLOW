@@ -516,6 +516,49 @@
   margin-bottom: 20px;
 }
 
+/* ── Per-section AI synthesis — grounded in the real solicitation text ── */
+.rd-synthesis {
+  background: linear-gradient(135deg, #0F1E35 0%, #0a3d2b 100%);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-top: 16px;
+}
+
+.rd-synthesis-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+.rd-synthesis-text {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.rd-synthesis-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+.rd-synthesis-error {
+  font-size: 0.8rem;
+  color: var(--gray-400);
+  text-align: center;
+  padding: 8px 0;
+}
+
 /* Sub-questions */
 .rd-subs { display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; }
 

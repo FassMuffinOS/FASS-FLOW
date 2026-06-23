@@ -8,6 +8,8 @@ import {
 } from 'lucide-react'
 import './Read.css'
 
+const API_BASE = import.meta.env.VITE_API_URL || ''
+
 // ─────────────────────────────────────────────────────────────
 // TOOLTIP CONTENT — specific guidance per sub-question per answer
 // ─────────────────────────────────────────────────────────────
@@ -402,7 +404,7 @@ function SubQuestion({ sub, value, onChange, ctx }) {
   )
 }
 
-function QuestionCard({ q, answers, notes, onAnswer, onNote, ctx, defaultOpen, bulkSignal }) {
+function QuestionCard({ q, answers, notes, onAnswer, onNote, ctx, defaultOpen, bulkSignal, synthesis, synthesisLoading }) {
   const [open, setOpen] = useState(defaultOpen)
 
   useEffect(() => {
@@ -438,6 +440,25 @@ function QuestionCard({ q, answers, notes, onAnswer, onNote, ctx, defaultOpen, b
 
       {open && (
         <div className="rd-q-body">
+          {/* Grounded in the actual solicitation text (carried on the linked
+              proposal row), not just generic per-category guidance — this is
+              what tells a user landing here cold what THIS solicitation says
+              about this section, before they have to answer Yes/Partial/No. */}
+          {synthesisLoading && (
+            <div className="rd-synthesis rd-synthesis-loading">
+              <Brain size={14} />
+              <span>Reading the solicitation for this section…</span>
+            </div>
+          )}
+          {!synthesisLoading && synthesis && (
+            <div className="rd-synthesis">
+              <div className="rd-synthesis-label">
+                <Brain size={14} />
+                <span>What this solicitation says</span>
+              </div>
+              <p className="rd-synthesis-text">{synthesis}</p>
+            </div>
+          )}
           <p className="rd-guidance">{q.guidance}</p>
           <div className="rd-subs">
             {q.subs.map(sub => (
@@ -535,6 +556,60 @@ export default function Read() {
     () => !isAdvanced && localStorage.getItem('fass_read_help_dismissed') !== '1'
   )
   const [bulkSignal, setBulkSignal] = useState(null)
+
+  // The worksheet used to show identical generic guidance no matter which
+  // solicitation it was scoring — someone landing here straight from WARDOG
+  // had to leave the page to know what THIS opportunity actually requires.
+  // Pull the real solicitation text off the linked proposal row (now carried
+  // there by WARDOG/Pipeline/FASS FILL) and ask the backend for a per-section
+  // synthesis grounded in it.
+  const [solicitationText, setSolicitationText] = useState('')
+  const [synthesisMap, setSynthesisMap] = useState({})
+  const [synthesisLoading, setSynthesisLoading] = useState(false)
+  const [synthesisError, setSynthesisError] = useState('')
+
+  useEffect(() => {
+    if (!savedProposalId) return
+    let cancelled = false
+    ;(async () => {
+      const { data } = await supabase
+        .from('proposals')
+        .select('description')
+        .eq('id', savedProposalId)
+        .single()
+      if (!cancelled && data?.description) setSolicitationText(data.description)
+    })()
+    return () => { cancelled = true }
+  }, [savedProposalId])
+
+  useEffect(() => {
+    if (!solicitationText.trim()) return
+    let cancelled = false
+    setSynthesisLoading(true)
+    setSynthesisError('')
+    ;(async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/ai/read-synthesis`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            solicitation_text: solicitationText,
+            title: oppTitle,
+            agency: oppAgency,
+          }),
+        })
+        if (!res.ok) throw new Error(`Synthesis request failed (${res.status})`)
+        const json = await res.json()
+        if (!cancelled) setSynthesisMap(json.synthesis || {})
+      } catch (err) {
+        if (!cancelled) setSynthesisError(err.message || 'Could not generate synthesis')
+      } finally {
+        if (!cancelled) setSynthesisLoading(false)
+      }
+    })()
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [solicitationText])
 
   function dismissHelp() {
     setShowHelp(false)
@@ -735,10 +810,15 @@ export default function Read() {
                   // fold while the Save button stays disabled with no clue why.
                   defaultOpen={!isAdvanced || !qAnswered}
                   bulkSignal={bulkSignal}
+                  synthesis={synthesisMap[q.id]}
+                  synthesisLoading={synthesisLoading && solicitationText.trim() && !synthesisMap[q.id]}
                 />
               )
             })}
           </div>
+          {synthesisError && !synthesisLoading && (
+            <p className="rd-synthesis-error">Couldn't generate AI synthesis: {synthesisError}</p>
+          )}
 
           {/* AI Analysis */}
           <AIAnalysis answers={answers} score={score} ctx={ctx} />

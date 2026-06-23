@@ -429,6 +429,10 @@ export default function Fill() {
         agency: activeDoc.agency || null,
         stage: 'pursuing',
         status: 'pursuing',
+        // Carry the actual pasted solicitation text onto the proposal row —
+        // this is what R-E-A-D's AI synthesis reads if someone scores this
+        // same opportunity there instead of starting from WARDOG.
+        description: activeDoc.raw_input || null,
       }).select().single()
       if (proposal) {
         proposalId = proposal.id
