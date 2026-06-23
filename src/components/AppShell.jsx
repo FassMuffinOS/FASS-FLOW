@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import {
   Compass, ClipboardCheck, Kanban, ClipboardList, BookOpen,
   ShieldCheck, LogOut, Lock, GraduationCap, IdCard, DollarSign, Network, Mail,
+  Award, LifeBuoy, Handshake,
 } from 'lucide-react'
 import './AppShell.css'
 
@@ -22,6 +23,9 @@ const NAV_ITEMS = [
   { name: 'Show Me The Money', icon: DollarSign, to: '/money', match: ['/money'] },
   { name: 'Classroom', icon: BookOpen, to: '/classroom', match: ['/classroom'] },
   { name: 'Glossary', icon: GraduationCap, to: '/glossary', match: ['/glossary'] },
+  { name: 'Masterclass', icon: Award, to: '/masterclass', match: ['/masterclass'] },
+  { name: 'BD Partner', icon: Handshake, to: '/bd-partner', match: ['/bd-partner'] },
+  { name: 'Support', icon: LifeBuoy, to: '/support', match: ['/support'] },
   { name: 'Witness', icon: ShieldCheck, to: null, match: [], soon: true },
 ]
 

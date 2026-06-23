@@ -43,14 +43,29 @@ function ProtectedRoute({ children }) {
   return <AppShell>{children}</AppShell>
 }
 
+// Masterclass / Support / BD Partner are sales pages a logged-out visitor
+// can land on directly, but they're also real product surfaces a signed-in
+// customer clicks into from the Dashboard. Previously those routes always
+// rendered the public marketing Nav+Footer, which meant a signed-in user
+// lost the app sidebar (WARDOG, Pipeline, Inbox, etc.) the moment they
+// opened one of these — no way back in except browser-back. Now: signed-in
+// users get the same AppShell sidebar every other authenticated page uses;
+// logged-out visitors still get the public marketing chrome.
+function AuthAwarePage({ children }) {
+  const { session, loading } = useAuth()
+  if (loading) return null
+  if (session) return <AppShell>{children}</AppShell>
+  return <><Nav /><main>{children}</main><Footer /></>
+}
+
 function AppRoutes() {
   return (
     <Routes>
       {/* Public routes with Nav + Footer */}
       <Route path="/" element={<><Nav /><main><Landing /></main><Footer /></>} />
-      <Route path="/masterclass" element={<><Nav /><main><Masterclass /></main><Footer /></>} />
-      <Route path="/support" element={<><Nav /><main><Support /></main><Footer /></>} />
-      <Route path="/bd-partner" element={<><Nav /><main><BDPartner /></main><Footer /></>} />
+      <Route path="/masterclass" element={<AuthAwarePage><Masterclass /></AuthAwarePage>} />
+      <Route path="/support" element={<AuthAwarePage><Support /></AuthAwarePage>} />
+      <Route path="/bd-partner" element={<AuthAwarePage><BDPartner /></AuthAwarePage>} />
       <Route path="/thank-you" element={<><Nav /><main><ThankYou /></main><Footer /></>} />
       <Route path="/join-network" element={<><Nav /><main><JoinNetwork /></main><Footer /></>} />
       <Route path="/pricing" element={<><Nav /><main><Pricing /></main><Footer /></>} />
