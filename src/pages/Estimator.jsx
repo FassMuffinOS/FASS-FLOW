@@ -1,7 +1,10 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   Calculator, Plus, Trash2, MapPin, Info, Copy, Check,
+  LayoutTemplate, Save, FolderOpen, Trash,
 } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabase'
 import './Estimator.css'
 
 // ── National-average unit costs (illustrative ballpark figures, not a
@@ -44,6 +47,27 @@ const ZIP_REGIONS = {
   9: { label: 'West Coast (CA/OR/WA/AK/HI)',          mult: 1.30 },
 }
 
+// ── Generic property templates (illustrative scope + typical sq ft only —
+// not an appraisal or insurance-grade model) ────────────────────────
+// Picking a template prefills a typical trade scope at an assumed sq ft so
+// a GC/sub/independent estimator can start from "3 bed / 2 bath" instead of
+// adding every trade line by hand, then adjust qty per line as needed.
+const SCOPE_TRADES = {
+  remodel: ['demo', 'framing', 'electrical', 'plumbing', 'hvac', 'drywall', 'paint', 'flooring'],
+  newbuild: ['shell', 'concrete', 'roofing', 'electrical', 'plumbing', 'hvac', 'drywall', 'paint', 'flooring', 'sitework'],
+  ti: ['demo', 'electrical', 'plumbing', 'hvac', 'drywall', 'paint', 'flooring'],
+}
+
+const PROPERTY_TEMPLATES = [
+  { id: 'studio_1ba', label: 'Studio / 1 Bath (~600 sq ft)', sqft: 600, scope: 'remodel' },
+  { id: '2bed_1ba', label: '2 Bed / 1 Bath (~950 sq ft)', sqft: 950, scope: 'remodel' },
+  { id: '3bed_2ba', label: '3 Bed / 2 Bath (~1,500 sq ft)', sqft: 1500, scope: 'remodel' },
+  { id: '4bed_2_5ba', label: '4 Bed / 2.5 Bath (~2,200 sq ft)', sqft: 2200, scope: 'remodel' },
+  { id: '5bed_3ba', label: '5+ Bed / 3+ Bath new build (~3,000 sq ft)', sqft: 3000, scope: 'newbuild' },
+  { id: 'commercial_ti', label: 'Small commercial tenant improvement (~2,000 sq ft)', sqft: 2000, scope: 'ti' },
+]
+const TEMPLATE_MAP = Object.fromEntries(PROPERTY_TEMPLATES.map(t => [t.id, t]))
+
 function regionForZip(zip) {
   const d = zip?.trim()?.[0]
   if (d == null || !/[0-9]/.test(d)) return null
@@ -55,6 +79,7 @@ function fmt(n) {
 }
 
 export default function Estimator() {
+  const { session } = useAuth()
   const [zip, setZip] = useState('')
   const [lines, setLines] = useState([])
   const [tradeId, setTradeId] = useState(TRADES[0].id)
@@ -62,8 +87,27 @@ export default function Estimator() {
   const [overheadPct, setOverheadPct] = useState(15)
   const [copied, setCopied] = useState(false)
 
+  const [templateId, setTemplateId] = useState('')
+  const [savedEstimates, setSavedEstimates] = useState([])
+  const [savedLoading, setSavedLoading] = useState(true)
+  const [saveName, setSaveName] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [saveMsg, setSaveMsg] = useState('')
+
   const region = useMemo(() => regionForZip(zip), [zip])
   const mult = region?.mult ?? 1
+
+  useEffect(() => {
+    if (!session?.user?.id) { setSavedLoading(false); return }
+    let cancelled = false
+    supabase
+      .from('estimator_saved_estimates')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => { if (!cancelled) { setSavedEstimates(data || []); setSavedLoading(false) } })
+    return () => { cancelled = true }
+  }, [session?.user?.id])
 
   function addLine(e) {
     e.preventDefault()
@@ -75,6 +119,49 @@ export default function Estimator() {
 
   function removeLine(id) {
     setLines(prev => prev.filter(l => l.id !== id))
+  }
+
+  // Prefills a typical trade scope at an assumed sq ft for the chosen
+  // property size — a starting point to edit, not a final takeoff.
+  function applyTemplate(id) {
+    setTemplateId(id)
+    const t = TEMPLATE_MAP[id]
+    if (!t) return
+    const scopeTrades = SCOPE_TRADES[t.scope] || []
+    setLines(scopeTrades.map(tid => ({ id: `${tid}-${Date.now()}-${Math.random()}`, tradeId: tid, qty: t.sqft })))
+  }
+
+  async function saveEstimate() {
+    if (!session?.user?.id || !saveName.trim() || !computed.length) return
+    setSaving(true)
+    setSaveMsg('')
+    const payload = {
+      user_id: session.user.id,
+      name: saveName.trim(),
+      zip,
+      property_template: templateId || null,
+      lines: lines.map(l => ({ tradeId: l.tradeId, qty: l.qty })),
+      overhead_pct: overheadPct,
+    }
+    const { data, error } = await supabase.from('estimator_saved_estimates').insert(payload).select().single()
+    setSaving(false)
+    if (error) { setSaveMsg(error.message); return }
+    setSavedEstimates(prev => [data, ...prev])
+    setSaveName('')
+    setSaveMsg('Saved')
+    setTimeout(() => setSaveMsg(''), 2000)
+  }
+
+  function loadEstimate(est) {
+    setZip(est.zip || '')
+    setTemplateId(est.property_template || '')
+    setOverheadPct(est.overhead_pct ?? 15)
+    setLines((est.lines || []).map(l => ({ id: `${l.tradeId}-${Date.now()}-${Math.random()}`, tradeId: l.tradeId, qty: l.qty })))
+  }
+
+  async function deleteEstimate(id) {
+    setSavedEstimates(prev => prev.filter(e => e.id !== id))
+    await supabase.from('estimator_saved_estimates').delete().eq('id', id)
   }
 
   const computed = useMemo(() => lines.map(l => {
@@ -131,6 +218,15 @@ export default function Estimator() {
             onChange={e => setZip(e.target.value.replace(/[^0-9]/g, ''))}
           />
           {region && <span className="est-region-tag">{region.label} · {region.mult}x</span>}
+        </div>
+
+        <div className="est-template-row">
+          <LayoutTemplate size={15} />
+          <select value={templateId} onChange={e => applyTemplate(e.target.value)}>
+            <option value="">Start from a template…</option>
+            {PROPERTY_TEMPLATES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+          </select>
+          <span className="est-template-hint">Prefills a typical scope at the listed sq ft — edit any line after.</span>
         </div>
 
         <form className="est-form-row" onSubmit={addLine}>
@@ -193,6 +289,51 @@ export default function Estimator() {
           <button className="est-btn" onClick={copySummary}>
             {copied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy summary</>}
           </button>
+
+          {session?.user?.id && (
+            <div className="est-save-row">
+              <input
+                type="text"
+                placeholder="Name this estimate (e.g. 123 Main St — kitchen remodel)"
+                value={saveName}
+                onChange={e => setSaveName(e.target.value)}
+              />
+              <button className="est-btn est-btn-primary" onClick={saveEstimate} disabled={saving || !saveName.trim()}>
+                <Save size={14} /> {saving ? 'Saving…' : 'Save estimate'}
+              </button>
+              {saveMsg && <span className="est-save-msg">{saveMsg}</span>}
+            </div>
+          )}
+        </div>
+      )}
+
+      {session?.user?.id && (
+        <div className="est-card">
+          <div className="est-row">
+            <h2><FolderOpen size={16} /> Saved estimates</h2>
+          </div>
+          {savedLoading && <p className="est-empty-note">Loading…</p>}
+          {!savedLoading && savedEstimates.length === 0 && (
+            <p className="est-empty-note">Nothing saved yet — build an estimate above and save it to reload later.</p>
+          )}
+          {!savedLoading && savedEstimates.length > 0 && (
+            <div className="est-saved-list">
+              {savedEstimates.map(est => (
+                <div className="est-saved-item" key={est.id}>
+                  <div className="est-saved-main">
+                    <div className="est-saved-name">{est.name}</div>
+                    <div className="est-saved-meta">
+                      {est.zip ? `ZIP ${est.zip}` : 'No ZIP'}
+                      {est.property_template && TEMPLATE_MAP[est.property_template] ? ` · ${TEMPLATE_MAP[est.property_template].label}` : ''}
+                      {' · '}{(est.lines || []).length} line{(est.lines || []).length === 1 ? '' : 's'}
+                    </div>
+                  </div>
+                  <button className="est-btn" onClick={() => loadEstimate(est)}>Load</button>
+                  <button className="est-icon-btn" onClick={() => deleteEstimate(est.id)}><Trash size={15} /></button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
