@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import {
   Compass, ClipboardCheck, Kanban, ClipboardList, BookOpen,
   ShieldCheck, LogOut, Lock, GraduationCap, IdCard, DollarSign, Network, Mail,
-  Award, LifeBuoy, Handshake, Calculator,
+  Award, LifeBuoy, Handshake, Calculator, HardHat,
 } from 'lucide-react'
 import './AppShell.css'
 
@@ -28,6 +28,7 @@ const NAV_ITEMS = [
   { name: 'Support', icon: LifeBuoy, to: '/support', match: ['/support'] },
   { name: 'Witness', icon: ShieldCheck, to: '/witness', match: ['/witness'] },
   { name: 'Estimator', icon: Calculator, to: '/estimator', match: ['/estimator'] },
+  { name: 'Foreman', icon: HardHat, to: '/foreman', match: ['/foreman'] },
 ]
 
 const PLAN_LABELS = {

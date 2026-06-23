@@ -25,6 +25,7 @@ import Network from './pages/Network'
 import Inbox from './pages/Inbox'
 import Witness from './pages/Witness'
 import Estimator from './pages/Estimator'
+import Foreman from './pages/Foreman'
 import AppShell from './components/AppShell'
 import './index.css'
 import './App.css'
@@ -119,6 +120,9 @@ function AppRoutes() {
       } />
       <Route path="/estimator" element={
         <ProtectedRoute><Estimator /></ProtectedRoute>
+      } />
+      <Route path="/foreman" element={
+        <ProtectedRoute><Foreman /></ProtectedRoute>
       } />
     </Routes>
   )
