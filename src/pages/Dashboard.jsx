@@ -18,6 +18,7 @@ const TOOLS = [
   { name: 'FASS FILL', sub: 'Execution capacity', status: 'live', desc: 'Paste a solicitation, get an instant compliance matrix, outline, and capability statement.', href: '/fill' },
   { name: 'CLASSROOM', sub: '10-Night Masterclass', status: 'live', desc: 'Work through the full Government Contracting Masterclass, night by night, with progress tracking.', href: '/classroom' },
   { name: 'WITNESS', sub: 'Execute the award', status: 'live', desc: 'Milestones, documents, vendors, and insurance/bonding resources for every awarded contract from Pipeline.', href: '/witness' },
+  { name: 'ESTIMATOR', sub: 'Zip-coded cost ranges', status: 'live', desc: 'Build a line-item cost estimate by trade in 15-20 minutes, with a regional adjustment based on the project ZIP code.', href: '/estimator' },
 ]
 
 export default function Dashboard() {

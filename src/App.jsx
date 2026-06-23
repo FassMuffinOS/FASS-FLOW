@@ -24,6 +24,7 @@ import JoinNetwork from './pages/JoinNetwork'
 import Network from './pages/Network'
 import Inbox from './pages/Inbox'
 import Witness from './pages/Witness'
+import Estimator from './pages/Estimator'
 import AppShell from './components/AppShell'
 import './index.css'
 import './App.css'
@@ -115,6 +116,9 @@ function AppRoutes() {
       } />
       <Route path="/witness" element={
         <ProtectedRoute><Witness /></ProtectedRoute>
+      } />
+      <Route path="/estimator" element={
+        <ProtectedRoute><Estimator /></ProtectedRoute>
       } />
     </Routes>
   )
