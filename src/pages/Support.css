@@ -177,7 +177,146 @@
   font-weight: 700;
 }
 
+/* ── Ebook + AI-only offer cards ── */
+.sup-offer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.sup-offer-card-stack {
+  max-width: none;
+  flex-direction: column;
+}
+
+.sup-offer-card-stack .sup-offer-icon {
+  margin-bottom: 4px;
+}
+
+.sup-offer-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 10px;
+}
+
+.btn-outline.sup-offer-cta {
+  display: inline-flex;
+}
+
+/* ── Shared AI Solicitation Synthesis tool ── */
+.sup-ai-tool-wrap {
+  max-width: 720px;
+}
+
+.sup-ai-tool {
+  background: linear-gradient(135deg, #0F1E35 0%, #0a3d2b 100%);
+  border-radius: 16px;
+  padding: 26px 28px;
+}
+
+.sup-ai-tool-header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.sup-ai-tool-sub {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.55;
+  margin-bottom: 16px;
+}
+
+.sup-ai-tool-title {
+  width: 100%;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #fff;
+  font-size: 0.88rem;
+  margin-bottom: 10px;
+}
+
+.sup-ai-tool-title::placeholder {
+  color: rgba(255,255,255,0.4);
+}
+
+.sup-ai-tool-textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 12px 14px;
+  color: #fff;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  resize: vertical;
+  margin-bottom: 14px;
+}
+
+.sup-ai-tool-textarea::placeholder {
+  color: rgba(255,255,255,0.4);
+}
+
+.sup-ai-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sup-spin {
+  animation: sup-spin-anim 0.8s linear infinite;
+}
+
+@keyframes sup-spin-anim {
+  to { transform: rotate(360deg); }
+}
+
+.sup-ai-tool-error {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: #ffb4b4;
+}
+
+.sup-ai-tool-results {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sup-ai-tool-result {
+  background: rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.sup-ai-tool-result-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--teal);
+  margin-bottom: 6px;
+}
+
+.sup-ai-tool-result p {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.6;
+  margin: 0;
+}
+
 @media (max-width: 600px) {
   .sup-tip-grid { grid-template-columns: 1fr; }
   .sup-offer-card { flex-direction: column; }
+  .sup-offer-grid { grid-template-columns: 1fr; }
 }

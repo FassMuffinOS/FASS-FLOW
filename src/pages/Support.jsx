@@ -1,5 +1,8 @@
-import { Heart, DollarSign, FileSearch, ArrowRight } from 'lucide-react'
+import { useState } from 'react'
+import { Heart, DollarSign, FileSearch, ArrowRight, BookOpen, Sparkles, Loader2 } from 'lucide-react'
 import './Support.css'
+
+const API_BASE = import.meta.env.VITE_API_URL || ''
 
 const TIP_OPTIONS = [
   {
@@ -13,6 +16,105 @@ const TIP_OPTIONS = [
     href: 'https://venmo.com/munchiesgourmets',
   },
 ]
+
+const SYNTHESIS_CATEGORY_LABELS = {
+  eligibility: 'Registration & Eligibility',
+  requirements: 'Experience & Mandatory Requirements',
+  availability: 'Availability & Capacity',
+  deadlines: 'Deadlines & Timing',
+  economics: 'Economics & Margin',
+  documentation: 'Documentation & Substantiation',
+}
+
+// There's no checkout on this page, by design — every offer here is fulfilled
+// the same trust-based way the Cash App/Venmo tips are: pay, then email, and a
+// human (or this on-page tool) follows through. The "free use" tracked below
+// is the same honor-system pattern, not a real paywall — it just gives buyers
+// of the ebook bundle a clear, single included run before any per-use pricing
+// applies, without us standing up real billing for a $5 AI call.
+function AISynthesisTool() {
+  const [text, setText] = useState('')
+  const [title, setTitle] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [result, setResult] = useState(null)
+  const [freeUseSpent, setFreeUseSpent] = useState(
+    () => localStorage.getItem('fass_support_ai_free_used') === '1'
+  )
+
+  async function runSynthesis() {
+    if (!text.trim()) return
+    setLoading(true)
+    setError('')
+    setResult(null)
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/ai/read-synthesis`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ solicitation_text: text, title }),
+      })
+      if (!res.ok) throw new Error(`Request failed (${res.status})`)
+      const json = await res.json()
+      setResult(json.synthesis || {})
+      if (!freeUseSpent) {
+        localStorage.setItem('fass_support_ai_free_used', '1')
+        setFreeUseSpent(true)
+      }
+    } catch (err) {
+      setError(err.message || 'Could not run the synthesis — try again in a moment.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="sup-ai-tool">
+      <div className="sup-ai-tool-header">
+        <Sparkles size={18} />
+        <span>AI Solicitation Synthesis</span>
+      </div>
+      <p className="sup-ai-tool-sub">
+        {freeUseSpent
+          ? "You've used your included free run on this browser — additional runs are $5 each. Cash App/Venmo above, then run another."
+          : 'Paste the solicitation text below. First run is free.'}
+      </p>
+      <input
+        type="text"
+        placeholder="Solicitation title (optional)"
+        value={title}
+        onChange={e => setTitle(e.target.value)}
+        className="sup-ai-tool-title"
+      />
+      <textarea
+        placeholder="Paste the solicitation's Section L/M, PWS/SOW, or any excerpt you want broken down…"
+        value={text}
+        onChange={e => setText(e.target.value)}
+        rows={6}
+        className="sup-ai-tool-textarea"
+      />
+      <button
+        type="button"
+        className="btn-primary sup-ai-tool-btn"
+        onClick={runSynthesis}
+        disabled={loading || !text.trim()}
+      >
+        {loading ? <Loader2 size={15} className="sup-spin" /> : <Sparkles size={15} />}
+        {loading ? 'Reading the solicitation…' : 'Run synthesis'}
+      </button>
+      {error && <p className="sup-ai-tool-error">{error}</p>}
+      {result && Object.keys(result).length > 0 && (
+        <div className="sup-ai-tool-results">
+          {Object.entries(result).map(([cat, text]) => (
+            <div key={cat} className="sup-ai-tool-result">
+              <span className="sup-ai-tool-result-label">{SYNTHESIS_CATEGORY_LABELS[cat] || cat}</span>
+              <p>{text}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function Support() {
   return (
@@ -68,6 +170,56 @@ export default function Support() {
                 Request a review — admin@fass.systems
               </a>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="sup-section">
+        <div className="container">
+          <h2 className="sup-section-title">Self-paced ebook</h2>
+          <p className="sup-section-sub">
+            Same content as the Masterclass, in book form, on your own schedule.
+          </p>
+          <div className="sup-offer-grid">
+            <div className="sup-offer-card sup-offer-card-stack">
+              <BookOpen size={22} className="sup-offer-icon" />
+              <div className="sup-offer-body">
+                <span className="sup-offer-badge">Buy one, give one free</span>
+                <h3 className="sup-offer-title">Ebook — $20, instant</h3>
+                <p>
+                  <strong>$20</strong> gets you the full self-paced ebook, plus a second copy you can
+                  give to anyone — a partner business, a friend bidding their first contract — at no
+                  extra cost. It also includes <strong>one free run</strong> of the AI Solicitation
+                  Synthesis tool below, the same grounded breakdown R-E-A-D uses on a real solicitation.
+                </p>
+                <a
+                  href="mailto:admin@fass.systems?subject=Ebook Purchase (%2420)&body=Paid via Cash App/Venmo — here's my email and the email for the free second copy:"
+                  className="btn-primary sup-offer-cta"
+                >
+                  Pay $20 above, then email us
+                </a>
+              </div>
+            </div>
+
+            <div className="sup-offer-card sup-offer-card-stack">
+              <Sparkles size={22} className="sup-offer-icon" />
+              <div className="sup-offer-body">
+                <span className="sup-offer-badge">AI only · no ebook · no human</span>
+                <h3 className="sup-offer-title">Just want the AI's take? — $5 per solicitation</h3>
+                <p>
+                  Skip the ebook and the $10 human review — run the same AI synthesis on a single
+                  solicitation yourself, instantly, below. Your first run on this browser is free either
+                  way; after that it's a flat <strong>$5</strong> per solicitation via Cash App/Venmo above.
+                </p>
+                <a href="#sup-ai-tool" className="btn-outline sup-offer-cta">
+                  Scroll to the tool ↓
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div id="sup-ai-tool" className="sup-ai-tool-wrap">
+            <AISynthesisTool />
           </div>
         </div>
       </section>
