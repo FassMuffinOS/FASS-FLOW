@@ -1,0 +1,317 @@
+.net {
+  color: var(--navy);
+  padding: 28px 32px 60px;
+}
+
+.net-loading {
+  padding: 60px 32px;
+  color: var(--gray-600);
+  font-size: 0.92rem;
+}
+
+.net-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.net-header h1 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 6px;
+}
+
+.net-header p {
+  font-size: 0.9rem;
+  color: var(--gray-600);
+  max-width: 520px;
+  line-height: 1.55;
+}
+
+.net-invite-link {
+  white-space: nowrap;
+}
+
+.net-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.net-stat {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.net-stat-num {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--dark-teal);
+}
+
+.net-stat-label {
+  font-size: 0.78rem;
+  color: var(--gray-600);
+  font-weight: 600;
+}
+
+.net-error {
+  font-size: 0.85rem;
+  color: #c0392b;
+  margin-bottom: 16px;
+}
+
+.net-layout {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.net-directory,
+.net-team {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  padding: 22px;
+}
+
+.net-directory-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.net-search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--gray-600);
+}
+
+.net-search input {
+  border: none;
+  outline: none;
+  font-size: 0.88rem;
+  width: 100%;
+  font-family: inherit;
+  color: var(--navy);
+}
+
+.net-trade-select {
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: var(--navy);
+}
+
+.net-empty {
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  padding: 16px 0;
+}
+
+.net-vendor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 620px;
+  overflow-y: auto;
+}
+
+.net-vendor-card {
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.net-vendor-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.net-vendor-name {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--navy);
+}
+
+.net-vendor-trade {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--dark-teal);
+  background: var(--light-teal);
+  border-radius: 20px;
+  padding: 3px 9px;
+}
+
+.net-vendor-loc {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: var(--gray-600);
+}
+
+.net-vendor-certs {
+  font-size: 0.8rem;
+  color: var(--gray-600);
+  line-height: 1.4;
+}
+
+.net-vendor-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 0.8rem;
+}
+
+.net-vendor-contact a,
+.net-vendor-contact span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--gray-600);
+  text-decoration: none;
+}
+
+.net-add-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  margin-top: 4px;
+}
+
+.net-team-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.net-proposal-select {
+  flex: 1;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: var(--navy);
+}
+
+.net-team-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.net-team-card {
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.net-team-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.net-team-card-top .net-vendor-name {
+  display: block;
+}
+
+.net-team-card-top .net-vendor-trade {
+  margin-top: 4px;
+  display: inline-block;
+}
+
+.net-remove-btn {
+  background: none;
+  border: none;
+  color: var(--gray-600);
+  cursor: pointer;
+  padding: 2px;
+}
+
+.net-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.net-status-chip {
+  border: 1px solid var(--gray-200);
+  background: var(--white);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gray-600);
+  cursor: pointer;
+}
+
+.net-status-active {
+  background: var(--dark-teal);
+  border-color: var(--dark-teal);
+  color: #fff;
+}
+
+.net-team-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.net-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  padding: 6px 12px;
+}
+
+@media (max-width: 900px) {
+  .net-layout { grid-template-columns: 1fr; }
+  .net-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .net { padding: 20px 16px 48px; }
+  .net-directory-controls { flex-direction: column; }
+}

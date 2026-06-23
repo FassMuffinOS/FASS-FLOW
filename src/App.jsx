@@ -19,6 +19,8 @@ import Glossary from './pages/Glossary'
 import Passport from './pages/Passport'
 import ShowMeTheMoney from './pages/ShowMeTheMoney'
 import Admin from './pages/Admin'
+import JoinNetwork from './pages/JoinNetwork'
+import Network from './pages/Network'
 import AppShell from './components/AppShell'
 import './index.css'
 import './App.css'
@@ -48,6 +50,7 @@ function AppRoutes() {
       <Route path="/support" element={<><Nav /><main><Support /></main><Footer /></>} />
       <Route path="/bd-partner" element={<><Nav /><main><BDPartner /></main><Footer /></>} />
       <Route path="/thank-you" element={<><Nav /><main><ThankYou /></main><Footer /></>} />
+      <Route path="/join-network" element={<><Nav /><main><JoinNetwork /></main><Footer /></>} />
 
       {/* Auth routes — no Nav/Footer */}
       <Route path="/signin" element={<SignIn />} />
@@ -84,6 +87,9 @@ function AppRoutes() {
       } />
       <Route path="/money" element={
         <ProtectedRoute><ShowMeTheMoney /></ProtectedRoute>
+      } />
+      <Route path="/network" element={
+        <ProtectedRoute><Network /></ProtectedRoute>
       } />
     </Routes>
   )

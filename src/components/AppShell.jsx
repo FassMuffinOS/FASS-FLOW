@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import {
   Compass, ClipboardCheck, Kanban, ClipboardList, BookOpen,
-  ShieldCheck, LogOut, Lock, GraduationCap, IdCard, DollarSign,
+  ShieldCheck, LogOut, Lock, GraduationCap, IdCard, DollarSign, Network,
 } from 'lucide-react'
 import './AppShell.css'
 
@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { name: 'R-E-A-D', icon: ClipboardCheck, to: '/read', match: ['/read'] },
   { name: 'Pipeline', icon: Kanban, to: '/pipeline', match: ['/pipeline'] },
   { name: 'FASS FILL', icon: ClipboardList, to: '/fill', match: ['/fill'] },
+  { name: 'Network', icon: Network, to: '/network', match: ['/network'] },
   { name: 'Show Me The Money', icon: DollarSign, to: '/money', match: ['/money'] },
   { name: 'Classroom', icon: BookOpen, to: '/classroom', match: ['/classroom'] },
   { name: 'Glossary', icon: GraduationCap, to: '/glossary', match: ['/glossary'] },
