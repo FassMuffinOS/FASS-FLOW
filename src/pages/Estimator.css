@@ -405,6 +405,67 @@
   margin-right: 2px;
 }
 
+/* ── AI scope understanding ─────────────────────────── */
+.est-scope {
+  border: 1px solid var(--teal, #1d9e75);
+}
+.est-scope-run { margin-left: auto; }
+.est-scope-error {
+  font-size: 13px;
+  color: #b91c1c;
+  margin: 8px 0 0;
+}
+.est-scope-result { margin-top: 12px; }
+.est-scope-type {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.est-scope-badge {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: var(--teal, #1d9e75);
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.est-scope-reason {
+  font-size: 13px;
+  color: var(--text-secondary, #4b5563);
+}
+.est-scope-summary {
+  font-size: 13.5px;
+  line-height: 1.55;
+  margin: 0 0 14px;
+}
+.est-scope-block { margin-bottom: 14px; }
+.est-scope-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted, #9ca3af);
+  margin: 0 0 6px;
+}
+.est-scope-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary, #4b5563);
+}
+.est-scope-excluded {
+  background: var(--light-teal, #e1f5ee);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+.est-scope-excluded .est-scope-list { color: var(--dark-teal, #0f6e56); }
+
 /* ── Completeness assistant ─────────────────────────── */
 .est-complete {
   border: 1px solid var(--teal, #1d9e75);

@@ -31,6 +31,21 @@ export function analyzeSolicitation(rawText, regexParsed) {
   return post('/analyze-solicitation', { raw_text: rawText, regex_parsed: regexParsed })
 }
 
+// Scope-grounded materials takeoff for the Estimator. Reads the real
+// solicitation text, classifies the job type, and only returns materials
+// consistent with that type — so an inspection contract stops getting
+// fire-rated construction materials. Returns { job_type, job_type_reason,
+// scope_summary, scope_items[], materials[], excluded[] }.
+export function scopeTakeoff({ scopeText, title, agency, naicsCode, userId }) {
+  return post('/scope-takeoff', {
+    scope_text: scopeText || '',
+    title: title || '',
+    agency: agency || '',
+    naics_code: naicsCode || '',
+    user_id: userId || null,
+  })
+}
+
 // RAG-grounded section draft: backend ranks the user's past-performance
 // entries by relevance and only feeds the LLM the ones that matched.
 export function draftSection({ sectionName, sectionDescription, solicitationSummary, profile, pastPerformance }) {

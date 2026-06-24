@@ -6,6 +6,7 @@ import {
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { getSuggestions } from '../lib/estimatorCompleteness'
+import { scopeTakeoff, aiEnabled } from '../lib/aiClient'
 import './Estimator.css'
 
 // ── National-average unit costs (illustrative ballpark figures, not a
@@ -125,7 +126,7 @@ export default function Estimator() {
       .then(({ data }) => { if (!cancelled) { setSavedEstimates(data || []); setSavedLoading(false) } })
     supabase
       .from('proposals')
-      .select('id, title, stage')
+      .select('id, title, stage, description, naics_code, agency')
       .eq('user_id', session.user.id)
       .order('created_at', { ascending: false })
       .then(({ data }) => { if (!cancelled) setProposals(data || []) })
@@ -280,6 +281,39 @@ export default function Estimator() {
   }
   function addAllSuggestions() {
     suggestions.forEach(g => g.items.forEach(addSuggestion))
+  }
+
+  // ── AI scope understanding (reads the real solicitation) ──────────
+  const linkedProposal = proposals.find(p => p.id === linkProposalId) || null
+  const [scopeLoading, setScopeLoading] = useState(false)
+  const [scopeResult, setScopeResult] = useState(null)
+  const [scopeError, setScopeError] = useState('')
+
+  async function runScopeTakeoff() {
+    if (!linkedProposal) return
+    setScopeLoading(true); setScopeError(''); setScopeResult(null)
+    try {
+      const res = await scopeTakeoff({
+        scopeText: linkedProposal.description || linkedProposal.title || '',
+        title: linkedProposal.title || '',
+        agency: linkedProposal.agency || '',
+        naicsCode: linkedProposal.naics_code || '',
+        userId: session?.user?.id,
+      })
+      setScopeResult(res)
+    } catch (e) {
+      setScopeError(e.message || 'Could not read the scope — try again.')
+    } finally {
+      setScopeLoading(false)
+    }
+  }
+
+  // Map an AI-suggested material onto a catalog price if we can, else add
+  // it at $0 for the user to fill in.
+  function addAiMaterial(m) {
+    const q = (m.name || '').toLowerCase()
+    const match = catalog.find(c => q.includes(c.name.toLowerCase()) || c.name.toLowerCase().includes(q.slice(0, 14)))
+    addMaterialLine({ name: m.name, unit: match?.unit || 'ea', price: match?.base_price ?? 0 })
   }
 
   const subtotalLow = computed.reduce((s, l) => s + l.low, 0)
@@ -454,7 +488,77 @@ export default function Estimator() {
         )}
       </div>
 
-      {suggestionCount > 0 && (
+      {aiEnabled() && linkedProposal && (
+        <div className="est-card est-scope">
+          <div className="est-complete-head">
+            <Sparkles size={18} className="est-complete-icon" />
+            <h2>Understand this job</h2>
+            <button className="est-btn est-scope-run" onClick={runScopeTakeoff} disabled={scopeLoading}>
+              {scopeLoading ? 'Reading the solicitation…' : scopeResult ? 'Re-read' : 'Read the solicitation'}
+            </button>
+          </div>
+          <p className="est-complete-sub">
+            Reads the real solicitation text on <strong>{linkedProposal.title}</strong>, classifies what kind of job it is, and only suggests materials that fit — so an inspection job doesn't get construction materials.
+          </p>
+
+          {scopeError && <p className="est-scope-error">{scopeError}</p>}
+
+          {scopeResult && (
+            <div className="est-scope-result">
+              <div className="est-scope-type">
+                <span className="est-scope-badge">{scopeResult.job_type}</span>
+                {scopeResult.job_type_reason && <span className="est-scope-reason">{scopeResult.job_type_reason}</span>}
+              </div>
+              {scopeResult.scope_summary && <p className="est-scope-summary">{scopeResult.scope_summary}</p>}
+
+              {scopeResult.scope_items?.length > 0 && (
+                <div className="est-scope-block">
+                  <p className="est-scope-label">Scope of work</p>
+                  <ul className="est-scope-list">
+                    {scopeResult.scope_items.map((s, i) => <li key={i}>{s}</li>)}
+                  </ul>
+                </div>
+              )}
+
+              {scopeResult.materials?.length > 0 && (
+                <div className="est-scope-block">
+                  <p className="est-scope-label">Materials this scope actually needs</p>
+                  {scopeResult.materials.map((m, i) => (
+                    <div className="est-complete-item" key={i}>
+                      <div className="est-complete-item-main">
+                        <div className="est-complete-item-name">
+                          {m.name}{m.category && <span className="est-line-tag">{m.category}</span>}
+                        </div>
+                        <div className="est-complete-item-why">
+                          {m.why && <><span className="est-complete-k">Why:</span> {m.why} </>}
+                          {m.for_item && <><span className="est-complete-k">For:</span> {m.for_item} </>}
+                          {m.qty_basis && <>· <span className="est-complete-k">Qty:</span> {m.qty_basis}</>}
+                        </div>
+                      </div>
+                      <div className="est-complete-item-side">
+                        <button className="est-btn" onClick={() => addAiMaterial(m)}><Plus size={13} /> Add</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {scopeResult.excluded?.length > 0 && (
+                <div className="est-scope-excluded">
+                  <p className="est-scope-label">Deliberately ruled out (so we don't over-order)</p>
+                  <ul className="est-scope-list">
+                    {scopeResult.excluded.map((s, i) => <li key={i}>{s}</li>)}
+                  </ul>
+                </div>
+              )}
+
+              <p className="est-complete-foot">AI read of the solicitation text — confirm against the real documents before bidding.{scopeResult.model ? ` (${scopeResult.model})` : ''}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {suggestionCount > 0 && !scopeResult && (
         <div className="est-card est-complete">
           <div className="est-complete-head">
             <Sparkles size={18} className="est-complete-icon" />
