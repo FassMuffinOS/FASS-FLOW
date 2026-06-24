@@ -1,10 +1,11 @@
 import { useState, useMemo, useEffect } from 'react'
 import {
   Calculator, Plus, Trash2, MapPin, Info, Copy, Check,
-  LayoutTemplate, Save, FolderOpen, Trash, Search, Package,
+  LayoutTemplate, Save, FolderOpen, Trash, Search, Package, Sparkles,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { getSuggestions } from '../lib/estimatorCompleteness'
 import './Estimator.css'
 
 // ── National-average unit costs (illustrative ballpark figures, not a
@@ -261,6 +262,26 @@ export default function Estimator() {
       .slice(0, 8)
   }, [matQuery, catalog, userMaterials])
 
+  // Completeness assistant — scope comes from the linked bid + the template.
+  const projectContext = useMemo(() => {
+    const p = proposals.find(x => x.id === linkProposalId)
+    const t = PROPERTY_TEMPLATES.find(x => x.id === templateId)
+    return [p?.title, t?.label].filter(Boolean).join(' ')
+  }, [proposals, linkProposalId, templateId])
+
+  const suggestions = useMemo(
+    () => getSuggestions({ projectContext, lines, catalog }),
+    [projectContext, lines, catalog]
+  )
+  const suggestionCount = suggestions.reduce((n, g) => n + g.items.length, 0)
+
+  function addSuggestion(s) {
+    addMaterialLine({ name: s.name, unit: s.unit, price: s.price })
+  }
+  function addAllSuggestions() {
+    suggestions.forEach(g => g.items.forEach(addSuggestion))
+  }
+
   const subtotalLow = computed.reduce((s, l) => s + l.low, 0)
   const subtotalHigh = computed.reduce((s, l) => s + l.high, 0)
   const overheadLow = subtotalLow * (overheadPct / 100)
@@ -432,6 +453,47 @@ export default function Estimator() {
           </div>
         )}
       </div>
+
+      {suggestionCount > 0 && (
+        <div className="est-card est-complete">
+          <div className="est-complete-head">
+            <Sparkles size={18} className="est-complete-icon" />
+            <h2>Completeness check</h2>
+            <span className="est-complete-count">{suggestionCount} likely missing</span>
+          </div>
+          <p className="est-complete-sub">
+            Based on {projectContext ? <strong>{projectContext}</strong> : 'this job'} and your line items, here's what jobs like this usually need that you haven't added — with why, and what for.
+          </p>
+
+          {suggestions.map((g, gi) => (
+            <div className="est-complete-group" key={gi}>
+              <div className="est-complete-group-head">
+                <span className="est-complete-group-name">{g.group}</span>
+                {g.note && <span className="est-complete-group-note">{g.note}</span>}
+              </div>
+              {g.items.map((s, si) => (
+                <div className="est-complete-item" key={si}>
+                  <div className="est-complete-item-main">
+                    <div className="est-complete-item-name">{s.name}</div>
+                    <div className="est-complete-item-why">
+                      <span className="est-complete-k">Why:</span> {s.why}. <span className="est-complete-k">For:</span> {s.forItem}.
+                    </div>
+                  </div>
+                  <div className="est-complete-item-side">
+                    <span className="est-complete-price">{fmt(s.price)}/{s.unit}</span>
+                    <button className="est-btn" onClick={() => addSuggestion(s)}><Plus size={13} /> Add</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+
+          <button className="est-btn est-btn-primary est-complete-all" onClick={addAllSuggestions}>
+            <Check size={14} /> Add all {suggestionCount}
+          </button>
+          <p className="est-complete-foot">Suggestions from the project scope + your line items — sanity-check quantities against the real plans.</p>
+        </div>
+      )}
 
       {!!computed.length && (
         <div className="est-card">
