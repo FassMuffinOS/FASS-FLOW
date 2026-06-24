@@ -271,8 +271,34 @@ export default function Wardog() {
   async function saveInterest(opp) {
     if (isLite || !session?.user?.id || savedProposals[opp.noticeId] || savingId) return
     setSavingId(opp.noticeId)
+    const uid = session.user.id
+
+    // Record the sourced opportunity first (top of funnel). This is what
+    // makes the funnel's "sourced" count real and gives every proposal a
+    // lineage back to where it came from. Upsert by solicitation number so
+    // re-saving the same notice doesn't spawn duplicates.
+    let opportunityId = null
+    if (opp.noticeId) {
+      const { data: oppRow } = await supabase
+        .from('opportunities')
+        .upsert({
+          user_id: uid,
+          title: opp.title,
+          agency: opp.fullParentPathName || opp.department || null,
+          solicitation_number: opp.noticeId,
+          naics_code: opp.naicsCode || naics || null,
+          set_aside: SET_ASIDE_LABELS[opp.typeOfSetAside] || opp.typeOfSetAside || null,
+          due_date: opp.responseDeadLine || null,
+          status: 'sourced',
+        }, { onConflict: 'user_id,solicitation_number' })
+        .select()
+        .single()
+      opportunityId = oppRow?.id || null
+    }
+
     const { data, error } = await supabase.from('proposals').insert({
-      user_id: session.user.id,
+      user_id: uid,
+      opportunity_id: opportunityId,
       title: opp.title,
       stage: 'flagged',
       status: 'draft',

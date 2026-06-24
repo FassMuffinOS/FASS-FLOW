@@ -150,6 +150,15 @@ function KanbanCard({ record, hasDraft, onDragStart, onClick }) {
             Run the numbers →
           </a>
         )}
+        {['pursuing', 'submitted', 'awarded'].includes(record.stage) && (
+          <a
+            className="kn-score-now"
+            onClick={e => e.stopPropagation()}
+            href={`/estimator?proposalId=${record.id}`}
+          >
+            Build an estimate →
+          </a>
+        )}
       </div>
     </div>
   )

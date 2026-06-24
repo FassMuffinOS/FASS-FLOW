@@ -94,6 +94,14 @@ export default function Estimator() {
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState('')
 
+  // Link this estimate to a bid in the pipeline, so won work lives on the
+  // same record as the opportunity. Prefilled when launched from a Pipeline
+  // card (?proposalId=…), or pick one manually.
+  const [proposals, setProposals] = useState([])
+  const [linkProposalId, setLinkProposalId] = useState(
+    () => new URLSearchParams(window.location.search).get('proposalId') || ''
+  )
+
   const region = useMemo(() => regionForZip(zip), [zip])
   const mult = region?.mult ?? 1
 
@@ -106,6 +114,12 @@ export default function Estimator() {
       .eq('user_id', session.user.id)
       .order('created_at', { ascending: false })
       .then(({ data }) => { if (!cancelled) { setSavedEstimates(data || []); setSavedLoading(false) } })
+    supabase
+      .from('proposals')
+      .select('id, title, stage')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => { if (!cancelled) setProposals(data || []) })
     return () => { cancelled = true }
   }, [session?.user?.id])
 
@@ -142,6 +156,7 @@ export default function Estimator() {
       property_template: templateId || null,
       lines: lines.map(l => ({ tradeId: l.tradeId, qty: l.qty })),
       overhead_pct: overheadPct,
+      proposal_id: linkProposalId || null,
     }
     const { data, error } = await supabase.from('estimator_saved_estimates').insert(payload).select().single()
     setSaving(false)
@@ -298,6 +313,19 @@ export default function Estimator() {
                 value={saveName}
                 onChange={e => setSaveName(e.target.value)}
               />
+              {proposals.length > 0 && (
+                <select
+                  className="est-link-select"
+                  value={linkProposalId}
+                  onChange={e => setLinkProposalId(e.target.value)}
+                  title="Link this estimate to a bid in your pipeline"
+                >
+                  <option value="">Link to a bid (optional)…</option>
+                  {proposals.map(p => (
+                    <option key={p.id} value={p.id}>{p.title}</option>
+                  ))}
+                </select>
+              )}
               <button className="est-btn est-btn-primary" onClick={saveEstimate} disabled={saving || !saveName.trim()}>
                 <Save size={14} /> {saving ? 'Saving…' : 'Save estimate'}
               </button>

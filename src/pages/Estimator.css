@@ -249,6 +249,16 @@
   font-size: 14px;
 }
 
+.est-link-select {
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  background: var(--bg-surface, #fff);
+  color: inherit;
+  max-width: 240px;
+}
+
 .est-save-msg {
   font-size: 12.5px;
   color: var(--accent, #2563eb);

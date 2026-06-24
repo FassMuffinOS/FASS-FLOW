@@ -36,8 +36,14 @@ export default function Restoration() {
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
 
+  // Link a restoration job to the bid that won it, so the whole lifecycle
+  // lives on one record. Prefilled from ?proposalId= when launched from a
+  // Pipeline card.
+  const urlProposalId = new URLSearchParams(window.location.search).get('proposalId') || ''
+  const [proposals, setProposals] = useState([])
   const [newProject, setNewProject] = useState({
     name: '', client_name: '', property_address: '', loss_type: LOSS_TYPES[0], loss_date: '',
+    proposal_id: urlProposalId,
   })
 
   const [form, setForm] = useState({ room: COMMON_ROOMS[0], item_description: '', quantity: '1', unit_cost: '', notes: '' })
@@ -46,6 +52,15 @@ export default function Restoration() {
 
   useEffect(() => { if (userId) loadProjects() }, [userId])
   useEffect(() => { if (selectedProjectId) loadItems(selectedProjectId) }, [selectedProjectId])
+  useEffect(() => {
+    if (!userId) return
+    supabase
+      .from('proposals')
+      .select('id, title, stage')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => setProposals(data || []))
+  }, [userId])
 
   async function loadProjects() {
     setLoading(true)
@@ -80,11 +95,12 @@ export default function Restoration() {
       property_address: newProject.property_address.trim() || null,
       loss_type: newProject.loss_type,
       loss_date: newProject.loss_date || null,
+      proposal_id: newProject.proposal_id || null,
     }).select().single()
     if (insertError) { setError(insertError.message); return }
     setProjects(prev => [data, ...prev])
     setSelectedProjectId(data.id)
-    setNewProject({ name: '', client_name: '', property_address: '', loss_type: LOSS_TYPES[0], loss_date: '' })
+    setNewProject({ name: '', client_name: '', property_address: '', loss_type: LOSS_TYPES[0], loss_date: '', proposal_id: '' })
     setShowNewProject(false)
   }
 
@@ -229,6 +245,16 @@ export default function Restoration() {
             <input
               type="date" value={newProject.loss_date} onChange={e => setNewProject(p => ({ ...p, loss_date: e.target.value }))}
             />
+            {proposals.length > 0 && (
+              <select
+                value={newProject.proposal_id}
+                onChange={e => setNewProject(p => ({ ...p, proposal_id: e.target.value }))}
+                title="Link this job to a bid in your pipeline"
+              >
+                <option value="">Link to a bid (optional)…</option>
+                {proposals.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+              </select>
+            )}
             <button type="submit" className="rst-btn rst-btn-primary">Create</button>
           </form>
         )}
