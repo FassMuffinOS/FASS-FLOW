@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '../context/AuthContext'
+import JobCaptures from '../components/JobCaptures'
 import { supabase } from '../lib/supabase'
 import {
   HardHat, MessageSquareWarning, FileStack, Table2, Receipt, ClipboardList,
@@ -122,6 +123,8 @@ export default function Foreman() {
           </select>
         )}
       </div>
+
+      {selectedId && <div className="frm-captures"><JobCaptures proposalId={selectedId} title="Site photos from the field" /></div>}
 
       <div className="frm-tabs">
         {TABS.map(t => {

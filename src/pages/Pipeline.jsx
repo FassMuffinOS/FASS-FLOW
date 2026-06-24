@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { supabase } from '../lib/supabase'
+import JobCaptures from '../components/JobCaptures'
 import {
   LayoutGrid, List, Sun, Moon, ArrowLeft,
   ChevronUp, ChevronDown, ExternalLink,
@@ -90,6 +91,7 @@ function describeEvent(ev) {
     case 'stage_change': return `Moved stage from ${STAGE_MAP[ev.old_value]?.label || ev.old_value || '—'} to ${STAGE_MAP[ev.new_value]?.label || ev.new_value || '—'}`
     case 'value_change': return `Changed bid value from ${formatMoney(ev.old_value) || '—'} to ${formatMoney(ev.new_value) || '—'}`
     case 'date_change':  return `Changed due date from ${ev.old_value ? formatDate(ev.old_value) : '—'} to ${ev.new_value ? formatDate(ev.new_value) : '—'}`
+    case 'capture':      return `Added a site photo${ev.note ? ` — ${ev.note}` : ''}`
     case 'note':         return ev.note
     default:             return `${ev.field || 'field'} changed`
   }
@@ -318,6 +320,11 @@ function ActivityFeed({ events, loading, onAddNote }) {
               <span className="modal-tl-dot" />
               <div className="modal-tl-body">
                 <p className="modal-tl-text">{describeEvent(ev)}</p>
+                {ev.event_type === 'capture' && ev.new_value && (
+                  <a href={ev.new_value} target="_blank" rel="noreferrer">
+                    <img className="modal-tl-photo" src={ev.new_value} alt="Site capture" />
+                  </a>
+                )}
                 <p className="modal-tl-meta">
                   {ev.actor_email || 'someone'} · {relativeTime(ev.created_at)}
                 </p>
@@ -418,6 +425,8 @@ function RecordModal({ record, onClose, onStageChange, events, loadingEvents, on
             ))}
           </div>
         )}
+
+        <JobCaptures proposalId={record.id} />
 
         <ActivityFeed events={events} loading={loadingEvents} onAddNote={onAddNote} />
       </div>

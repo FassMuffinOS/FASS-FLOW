@@ -1092,6 +1092,15 @@
 .tl-value_change .modal-tl-dot { background: var(--amber); }
 .tl-date_change  .modal-tl-dot { background: #6366F1; }
 .tl-note         .modal-tl-dot { background: var(--dark-teal); }
+.tl-capture      .modal-tl-dot { background: #6366F1; }
+.modal-tl-photo {
+  display: block;
+  width: 100px; height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin: 6px 0 2px;
+  border: 1px solid var(--border-subtle);
+}
 .modal-tl-body { flex: 1; }
 .modal-tl-text {
   margin: 0;

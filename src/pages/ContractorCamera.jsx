@@ -159,6 +159,19 @@ export default function ContractorCamera() {
     setSaving(false)
     if (insErr) { setCamError('Save failed: ' + insErr.message); return }
 
+    // Reflect the capture in the bid's activity timeline so it shows up in
+    // Pipeline and anywhere else reading the job's history.
+    if (proposalId) {
+      supabase.from('proposal_events').insert({
+        proposal_id: proposalId,
+        user_id: uid,
+        actor_email: session.user.email || null,
+        event_type: 'capture',
+        new_value: pub.publicUrl,
+        note: (area ? `[${area}] ` : '') + (note || 'Site photo'),
+      })
+    }
+
     retake()
     setSessionCount(n => n + 1)
     setSavedFlash(true)

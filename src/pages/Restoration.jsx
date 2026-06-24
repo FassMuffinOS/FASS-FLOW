@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
+import JobCaptures from '../components/JobCaptures'
 import { supabase } from '../lib/supabase'
 import {
   Camera, Plus, Trash2, Image as ImageIcon, Copy, Check, FolderPlus, ChevronDown,
@@ -266,6 +267,7 @@ export default function Restoration() {
             {selectedProject.loss_date && <span>Loss date: {selectedProject.loss_date}</span>}
           </div>
         )}
+        {selectedProject?.proposal_id && <JobCaptures proposalId={selectedProject.proposal_id} title="Site photos from the field" />}
       </div>
 
       {selectedProjectId && (

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '../context/AuthContext'
+import JobCaptures from '../components/JobCaptures'
 import { supabase } from '../lib/supabase'
 import {
   ShieldCheck, Trophy, Calendar, FileText, Users, Plus, Trash2,
@@ -263,6 +264,7 @@ export default function Witness() {
               <div className="wit-review-item"><label>Period ends</label><span>{formatDate(selectedAward.due_date)}</span></div>
             </div>
             {selectedAward.description && <p className="wit-review-desc">{selectedAward.description}</p>}
+            <JobCaptures proposalId={selectedAward.id} title="Site photos from the field" />
           </div>
 
           <div className="wit-card">
