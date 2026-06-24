@@ -1,0 +1,21 @@
+{
+  "name": "FASS Flow",
+  "short_name": "FASS Flow",
+  "description": "Government contracting workflow — find, qualify, win, and execute. Includes Contractor Camera for on-site capture.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0B0F14",
+  "theme_color": "#1D9E75",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Contractor Camera",
+      "short_name": "Camera",
+      "description": "Walk the site and capture photos with notes",
+      "url": "/camera"
+    }
+  ]
+}

@@ -21,6 +21,7 @@ const TOOLS = [
   { name: 'ESTIMATOR', sub: 'Zip-coded cost ranges', status: 'live', desc: 'Build a line-item cost estimate by trade in 15-20 minutes, with a regional adjustment based on the project ZIP code.', href: '/estimator' },
   { name: 'FOREMAN', sub: 'Construction management', status: 'live', desc: 'Schedule of values, AIA payment applications, RFIs, submittals, T&M tickets, and daily logs for every awarded contract.', href: '/foreman' },
   { name: 'RESTORATION', sub: 'Loss & claims documentation', status: 'live', desc: 'Room-by-room itemized loss list for fire/water/storm jobs — item, quantity, cost to replace, and a photo for verification, with status tracking as repairs happen.', href: '/restoration' },
+  { name: 'CONTRACTOR CAMERA', sub: 'Walk the site, capture it', status: 'live', desc: 'Open it on your phone, walk the job, and snap photos with a spoken or typed note on each one — every capture maps back to the bid and feeds Witness, Foreman, and Restoration. Installs to your home screen.', href: '/camera' },
 ]
 
 export default function Dashboard() {

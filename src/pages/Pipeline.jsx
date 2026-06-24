@@ -159,6 +159,15 @@ function KanbanCard({ record, hasDraft, onDragStart, onClick }) {
             Build an estimate →
           </a>
         )}
+        {['pursuing', 'submitted', 'awarded'].includes(record.stage) && (
+          <a
+            className="kn-score-now"
+            onClick={e => e.stopPropagation()}
+            href={`/camera?proposalId=${record.id}`}
+          >
+            Walk the site →
+          </a>
+        )}
       </div>
     </div>
   )

@@ -28,6 +28,7 @@ import Witness from './pages/Witness'
 import Estimator from './pages/Estimator'
 import Foreman from './pages/Foreman'
 import Restoration from './pages/Restoration'
+import ContractorCamera from './pages/ContractorCamera'
 import AppShell from './components/AppShell'
 import './index.css'
 import './App.css'
@@ -131,6 +132,9 @@ function AppRoutes() {
       } />
       <Route path="/restoration" element={
         <ProtectedRoute><Restoration /></ProtectedRoute>
+      } />
+      <Route path="/camera" element={
+        <ProtectedRoute><ContractorCamera /></ProtectedRoute>
       } />
     </Routes>
   )
