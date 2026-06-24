@@ -40,6 +40,27 @@
   flex: 1;
 }
 
+.shell-navgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+}
+.shell-navgroup-label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  padding: 8px 12px 3px;
+}
+
+/* mobile-only chrome — hidden on desktop */
+.shell-mobilebar { display: none; }
+.shell-closemenu { display: none; }
+.shell-scrim { display: none; }
+.shell-side-top { display: flex; align-items: center; justify-content: space-between; }
+
 .shell-nav-item {
   display: flex;
   align-items: center;
@@ -134,18 +155,49 @@ a.shell-nav-item:hover {
 
 @media (max-width: 900px) {
   .shell { flex-direction: column; }
-  .shell-sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-    flex-direction: row;
+
+  /* Top bar with hamburger */
+  .shell-mobilebar {
+    display: flex;
     align-items: center;
-    overflow-x: auto;
-    padding: 12px 16px;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 14px;
   }
-  .shell-logo { margin-bottom: 0; margin-right: 16px; }
-  .shell-nav { flex-direction: row; flex: 0; }
-  .shell-nav-item { white-space: nowrap; padding: 8px 10px; }
-  .shell-user { border-top: none; margin-top: 0; margin-left: auto; flex-direction: row; align-items: center; }
-  .shell-email { display: none; }
+  .shell-burger {
+    display: inline-flex;
+    background: none; border: none; cursor: pointer;
+    color: var(--text-primary); padding: 4px;
+  }
+  .shell-logo-mobile { margin-bottom: 0; }
+
+  /* Sidebar becomes a slide-in drawer */
+  .shell-sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    height: 100vh;
+    width: 270px;
+    max-width: 84vw;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    z-index: 80;
+    box-shadow: 0 0 44px rgba(0,0,0,0.22);
+  }
+  .shell-sidebar.shell-open { transform: translateX(0); }
+
+  .shell-closemenu {
+    display: inline-flex;
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); padding: 4px;
+  }
+  .shell-scrim {
+    display: block;
+    position: fixed; inset: 0; z-index: 70;
+    background: rgba(0,0,0,0.42);
+  }
+  .shell-email { display: block; }
 }
