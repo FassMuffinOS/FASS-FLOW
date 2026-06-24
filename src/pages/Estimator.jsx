@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import {
   Calculator, Plus, Trash2, MapPin, Info, Copy, Check,
-  LayoutTemplate, Save, FolderOpen, Trash,
+  LayoutTemplate, Save, FolderOpen, Trash, Search, Package,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -102,6 +102,14 @@ export default function Estimator() {
     () => new URLSearchParams(window.location.search).get('proposalId') || ''
   )
 
+  // Materials mode: a shared catalog + the user's own items, searched and
+  // added as real line items alongside the trade-based ballpark.
+  const [catalog, setCatalog] = useState([])
+  const [userMaterials, setUserMaterials] = useState([])
+  const [matQuery, setMatQuery] = useState('')
+  const [showCustom, setShowCustom] = useState(false)
+  const [custom, setCustom] = useState({ name: '', category: '', unit: 'ea', price: '' })
+
   const region = useMemo(() => regionForZip(zip), [zip])
   const mult = region?.mult ?? 1
 
@@ -120,6 +128,17 @@ export default function Estimator() {
       .eq('user_id', session.user.id)
       .order('created_at', { ascending: false })
       .then(({ data }) => { if (!cancelled) setProposals(data || []) })
+    supabase
+      .from('material_catalog')
+      .select('*')
+      .order('category', { ascending: true })
+      .then(({ data }) => { if (!cancelled) setCatalog(data || []) })
+    supabase
+      .from('user_materials')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => { if (!cancelled) setUserMaterials(data || []) })
     return () => { cancelled = true }
   }, [session?.user?.id])
 
@@ -133,6 +152,42 @@ export default function Estimator() {
 
   function removeLine(id) {
     setLines(prev => prev.filter(l => l.id !== id))
+  }
+
+  // Adjust qty on a material line in place (trade qty is set at add-time).
+  function setLineQty(id, q) {
+    setLines(prev => prev.map(l => l.id === id ? { ...l, qty: Math.max(0, Number(q) || 0) } : l))
+  }
+
+  function addMaterialLine(m) {
+    setLines(prev => [...prev, {
+      id: `m-${Date.now()}-${Math.random()}`,
+      type: 'material',
+      name: m.name,
+      unit: m.unit || 'ea',
+      price: Number(m.base_price ?? m.price) || 0,
+      qty: 1,
+    }])
+    setMatQuery('')
+  }
+
+  // Save a user's own item to their private catalog AND drop it on the
+  // estimate — never a dead end if it's not in our list.
+  async function addCustomMaterial(e) {
+    e.preventDefault()
+    if (!custom.name.trim() || custom.price === '') return
+    const row = {
+      user_id: session.user.id,
+      name: custom.name.trim(),
+      category: custom.category.trim() || 'Custom',
+      unit: custom.unit.trim() || 'ea',
+      price: Number(custom.price) || 0,
+    }
+    const { data } = await supabase.from('user_materials').insert(row).select().single()
+    if (data) setUserMaterials(prev => [data, ...prev])
+    addMaterialLine(row)
+    setCustom({ name: '', category: '', unit: 'ea', price: '' })
+    setShowCustom(false)
   }
 
   // Prefills a typical trade scope at an assumed sq ft for the chosen
@@ -154,7 +209,9 @@ export default function Estimator() {
       name: saveName.trim(),
       zip,
       property_template: templateId || null,
-      lines: lines.map(l => ({ tradeId: l.tradeId, qty: l.qty })),
+      lines: lines.map(l => l.type === 'material'
+        ? { type: 'material', name: l.name, unit: l.unit, price: l.price, qty: l.qty }
+        : { tradeId: l.tradeId, qty: l.qty }),
       overhead_pct: overheadPct,
       proposal_id: linkProposalId || null,
     }
@@ -171,7 +228,9 @@ export default function Estimator() {
     setZip(est.zip || '')
     setTemplateId(est.property_template || '')
     setOverheadPct(est.overhead_pct ?? 15)
-    setLines((est.lines || []).map(l => ({ id: `${l.tradeId}-${Date.now()}-${Math.random()}`, tradeId: l.tradeId, qty: l.qty })))
+    setLines((est.lines || []).map(l => l.type === 'material'
+      ? { id: `m-${Date.now()}-${Math.random()}`, type: 'material', name: l.name, unit: l.unit, price: l.price, qty: l.qty }
+      : { id: `${l.tradeId}-${Date.now()}-${Math.random()}`, tradeId: l.tradeId, qty: l.qty }))
   }
 
   async function deleteEstimate(id) {
@@ -180,11 +239,27 @@ export default function Estimator() {
   }
 
   const computed = useMemo(() => lines.map(l => {
+    if (l.type === 'material') {
+      const amt = (Number(l.price) || 0) * (Number(l.qty) || 0)
+      // Materials are priced as entered (region adj. applies to the trade
+      // ballpark, not to a real unit price you set), and are 100% material.
+      return { ...l, isMaterial: true, label: l.name, unit: l.unit || 'ea', low: amt, high: amt, laborPct: 0 }
+    }
     const t = TRADE_MAP[l.tradeId]
     const low = t.low * l.qty * mult
     const high = t.high * l.qty * mult
-    return { ...l, trade: t, low, high }
+    return { ...l, isMaterial: false, trade: t, label: t.label, unit: t.unit, low, high, laborPct: t.laborPct }
   }), [lines, mult])
+
+  // Search across the user's own items first, then the shared catalog.
+  const matMatches = useMemo(() => {
+    const q = matQuery.trim().toLowerCase()
+    if (!q) return []
+    const own = userMaterials.map(m => ({ ...m, __custom: true }))
+    return [...own, ...catalog]
+      .filter(m => m.name.toLowerCase().includes(q) || (m.category || '').toLowerCase().includes(q))
+      .slice(0, 8)
+  }, [matQuery, catalog, userMaterials])
 
   const subtotalLow = computed.reduce((s, l) => s + l.low, 0)
   const subtotalHigh = computed.reduce((s, l) => s + l.high, 0)
@@ -193,13 +268,15 @@ export default function Estimator() {
   const totalLow = subtotalLow + overheadLow
   const totalHigh = subtotalHigh + overheadHigh
 
-  const laborLow = computed.reduce((s, l) => s + l.low * l.trade.laborPct, 0)
-  const laborHigh = computed.reduce((s, l) => s + l.high * l.trade.laborPct, 0)
+  const laborLow = computed.reduce((s, l) => s + l.low * l.laborPct, 0)
+  const laborHigh = computed.reduce((s, l) => s + l.high * l.laborPct, 0)
   const materialLow = subtotalLow - laborLow
   const materialHigh = subtotalHigh - laborHigh
 
   function copySummary() {
-    const lines_ = computed.map(l => `${l.trade.label} (${l.qty} ${l.trade.unit}): ${fmt(l.low)}–${fmt(l.high)}`)
+    const lines_ = computed.map(l => l.isMaterial
+      ? `${l.label} (${l.qty} ${l.unit} @ ${fmt(l.price)}): ${fmt(l.low)}`
+      : `${l.label} (${l.qty} ${l.unit}): ${fmt(l.low)}–${fmt(l.high)}`)
     const text = [
       `FASS Flow Estimate — ZIP ${zip || '—'}${region ? ` (${region.label}, ${mult}x regional adj.)` : ''}`,
       ...lines_,
@@ -259,17 +336,96 @@ export default function Estimator() {
           <button className="est-btn est-btn-primary" type="submit"><Plus size={14} /> Add</button>
         </form>
 
-        {!computed.length && <p className="est-empty-note">Add a trade above for each scope on the job — framing, electrical, roofing, whatever's in play — and the estimate builds line by line.</p>}
+        {/* Materials mode — search the catalog + your own items, or add a new one */}
+        <div className="est-materials">
+          <div className="est-mat-search">
+            <Search size={15} className="est-mat-search-icon" />
+            <input
+              placeholder="Search materials — 2x4, drywall, concrete, caulk…"
+              value={matQuery}
+              onChange={e => setMatQuery(e.target.value)}
+            />
+            <button type="button" className="est-btn" onClick={() => setShowCustom(s => !s)}>
+              <Plus size={14} /> Add your own
+            </button>
+          </div>
+
+          {matQuery && (
+            <div className="est-mat-results">
+              {matMatches.length === 0 && (
+                <p className="est-mat-none">No match — use “Add your own” to add it.</p>
+              )}
+              {matMatches.map(m => (
+                <button
+                  key={(m.__custom ? 'u-' : 'c-') + m.id}
+                  type="button"
+                  className="est-mat-result"
+                  onClick={() => addMaterialLine(m)}
+                >
+                  <span className="est-mat-name">
+                    <Package size={13} /> {m.name}
+                    {m.__custom && <span className="est-line-tag">your item</span>}
+                  </span>
+                  <span className="est-mat-cat">{m.category} · {fmt(m.base_price ?? m.price)}/{m.unit}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {showCustom && (
+            <form className="est-mat-custom" onSubmit={addCustomMaterial}>
+              <input
+                placeholder="Item name *"
+                value={custom.name}
+                onChange={e => setCustom(c => ({ ...c, name: e.target.value }))}
+              />
+              <input
+                placeholder="Category"
+                value={custom.category}
+                onChange={e => setCustom(c => ({ ...c, category: e.target.value }))}
+              />
+              <input
+                placeholder="Unit"
+                value={custom.unit}
+                onChange={e => setCustom(c => ({ ...c, unit: e.target.value }))}
+              />
+              <input
+                type="number" min="0" step="any" placeholder="Price *"
+                value={custom.price}
+                onChange={e => setCustom(c => ({ ...c, price: e.target.value }))}
+              />
+              <button className="est-btn est-btn-primary" type="submit" disabled={!custom.name.trim() || custom.price === ''}>
+                Save &amp; add
+              </button>
+            </form>
+          )}
+        </div>
+
+        {!computed.length && <p className="est-empty-note">Add a trade for the ballpark, or search materials for a real line-item takeoff — framing, drywall, caulk, whatever's in play. The estimate builds line by line.</p>}
 
         {!!computed.length && (
           <div className="est-line-list">
             {computed.map(l => (
               <div className="est-line" key={l.id}>
                 <div className="est-line-main">
-                  <div className="est-line-title">{l.trade.label}</div>
-                  <div className="est-line-meta">{l.qty} {l.trade.unit} · ${l.trade.low}–${l.trade.high}/unit{mult !== 1 ? ` × ${mult} regional` : ''}</div>
+                  <div className="est-line-title">
+                    {l.label}
+                    {l.isMaterial && <span className="est-line-tag">material</span>}
+                  </div>
+                  <div className="est-line-meta">
+                    {l.isMaterial
+                      ? <>
+                          <input
+                            className="est-line-qty"
+                            type="number" min="0" step="any"
+                            value={l.qty}
+                            onChange={e => setLineQty(l.id, e.target.value)}
+                          /> {l.unit} · {fmt(l.price)}/unit
+                        </>
+                      : <>{l.qty} {l.unit} · ${l.trade.low}–${l.trade.high}/unit{mult !== 1 ? ` × ${mult} regional` : ''}</>}
+                  </div>
                 </div>
-                <div className="est-line-amount">{fmt(l.low)}–{fmt(l.high)}</div>
+                <div className="est-line-amount">{l.isMaterial ? fmt(l.low) : `${fmt(l.low)}–${fmt(l.high)}`}</div>
                 <button className="est-icon-btn" onClick={() => removeLine(l.id)}><Trash2 size={15} /></button>
               </div>
             ))}

@@ -309,6 +309,102 @@
   margin: 0;
 }
 
+/* ── Materials mode ─────────────────────────────────── */
+.est-materials {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 0.5px solid var(--border-color, #e5e7eb);
+}
+.est-mat-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.est-mat-search-icon {
+  color: var(--text-muted, #9ca3af);
+  flex-shrink: 0;
+}
+.est-mat-search input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+.est-mat-results {
+  margin-top: 8px;
+  border: 0.5px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.est-mat-result {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: none;
+  border: none;
+  border-bottom: 0.5px solid var(--border-color, #f1f1f1);
+  padding: 9px 12px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 13.5px;
+}
+.est-mat-result:last-child { border-bottom: none; }
+.est-mat-result:hover { background: var(--bg-hover, #f7faf9); }
+.est-mat-name {
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.est-mat-cat {
+  color: var(--text-muted, #9ca3af);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+.est-mat-none {
+  font-size: 13px;
+  color: var(--text-muted, #9ca3af);
+  margin: 8px 2px 0;
+}
+.est-mat-custom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.est-mat-custom input {
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 14px;
+  flex: 1;
+  min-width: 120px;
+}
+.est-line-tag {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--teal, #1d9e75);
+  background: var(--light-teal, #e1f5ee);
+  padding: 1px 6px;
+  border-radius: 5px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.est-line-qty {
+  width: 56px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 12.5px;
+  margin-right: 2px;
+}
+
 @media (max-width: 600px) {
   .est-summary-grid {
     grid-template-columns: 1fr;
