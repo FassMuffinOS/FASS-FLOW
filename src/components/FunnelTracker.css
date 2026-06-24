@@ -6,6 +6,59 @@
   margin-bottom: 24px;
 }
 
+/* ⭐ North Star banner — dollars won */
+.ft-northstar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: linear-gradient(135deg, var(--teal), var(--dark-teal));
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 18px;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.15s;
+}
+.ft-northstar:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(15,110,86,0.25); }
+
+.ft-ns-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ft-ns-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: rgba(255,255,255,0.85);
+}
+.ft-ns-value {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.ft-ns-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  padding-left: 16px;
+  border-left: 1px solid rgba(255,255,255,0.25);
+}
+.ft-ns-side-value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.ft-ns-side-label {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.8);
+}
+
 .ft-header {
   display: flex;
   flex-direction: column;

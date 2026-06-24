@@ -30,17 +30,22 @@ export default function FunnelTracker() {
       const uid = session.user.id
       const [oppRes, propRes, docRes] = await Promise.all([
         supabase.from('opportunities').select('id', { count: 'exact', head: true }).eq('user_id', uid),
-        supabase.from('proposals').select('stage').eq('user_id', uid),
+        supabase.from('proposals').select('stage, estimated_value').eq('user_id', uid),
         supabase.from('fass_fill_documents').select('id', { count: 'exact', head: true }).eq('user_id', uid),
       ])
       if (cancelled) return
-      const stages = (propRes.data || []).map(p => p.stage)
+      const props = propRes.data || []
+      const stages = props.map(p => p.stage)
+      const sumVal = list => list.reduce((acc, p) => acc + (Number(p.estimated_value) || 0), 0)
       setCounts({
         sourced: oppRes.count || 0,
         responding: stages.filter(s => s === 'flagged' || s === 'scored' || s === 'pursuing').length,
         output: docRes.count || 0,
         submitted: stages.filter(s => s === 'submitted' || s === 'awarded').length,
         awarded: stages.filter(s => s === 'awarded').length,
+        // ⭐ North Star: dollars won. Plus what's still in motion.
+        wonValue: sumVal(props.filter(p => p.stage === 'awarded')),
+        pipelineValue: sumVal(props.filter(p => !['awarded', 'passed'].includes(p.stage))),
       })
     }
     load()
@@ -50,9 +55,22 @@ export default function FunnelTracker() {
   if (!counts) return null
 
   const max = Math.max(1, ...STAGES.map(s => counts[s.id]))
+  const money = v => Number(v || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
 
   return (
     <div className="ft">
+      {/* ⭐ North Star — dollars won by you, the one number that matters */}
+      <div className="ft-northstar" onClick={() => navigate('/awarded')}>
+        <div className="ft-ns-main">
+          <span className="ft-ns-label">Contract dollars won</span>
+          <span className="ft-ns-value">{money(counts.wonValue)}</span>
+        </div>
+        <div className="ft-ns-side">
+          <span className="ft-ns-side-value">{money(counts.pipelineValue)}</span>
+          <span className="ft-ns-side-label">in open pipeline</span>
+        </div>
+      </div>
+
       <div className="ft-header">
         <span>Solicitation → output tracker</span>
         <span className="ft-header-sub">Where your pipeline actually stands, end to end</span>
