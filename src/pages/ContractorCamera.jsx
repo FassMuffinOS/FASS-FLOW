@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import {
   ArrowLeft, Camera, Mic, RefreshCw, Check, RotateCcw,
-  MapPin, Link2, ImageOff,
+  MapPin, Link2, ImageOff, Images, ChevronRight,
 } from 'lucide-react'
 import './ContractorCamera.css'
 
@@ -32,7 +32,12 @@ export default function ContractorCamera() {
   const [saving, setSaving] = useState(false)
   const [savedFlash, setSavedFlash] = useState(false)
   const [recent, setRecent] = useState([])
+  const [sessionCount, setSessionCount] = useState(0)
   const [camError, setCamError] = useState('')
+
+  function goToCaptures() {
+    navigate(`/captures${proposalId ? `?proposalId=${proposalId}` : ''}`)
+  }
 
   useEffect(() => {
     startCamera()
@@ -155,8 +160,9 @@ export default function ContractorCamera() {
     if (insErr) { setCamError('Save failed: ' + insErr.message); return }
 
     retake()
+    setSessionCount(n => n + 1)
     setSavedFlash(true)
-    setTimeout(() => setSavedFlash(false), 1500)
+    setTimeout(() => setSavedFlash(false), 1600)
     if (proposalId) loadRecent(proposalId)
   }
 
@@ -169,7 +175,10 @@ export default function ContractorCamera() {
           <ArrowLeft size={16} /> Dashboard
         </button>
         <span className="cc-title"><Camera size={15} /> Contractor Camera</span>
-        <span className="cc-spacer" />
+        <button className="cc-gallery-btn" onClick={goToCaptures}>
+          <Images size={16} />
+          {sessionCount > 0 && <span className="cc-gallery-badge">{sessionCount}</span>}
+        </button>
       </header>
 
       {/* Job + area bar */}
@@ -204,7 +213,11 @@ export default function ContractorCamera() {
           autoPlay playsInline muted
         />
         {shot && <img className="cc-preview" src={shot.url} alt="Captured" />}
-        {savedFlash && <div className="cc-saved-flash"><Check size={20} /> Saved to job</div>}
+        {savedFlash && (
+          <button className="cc-saved-flash" onClick={goToCaptures}>
+            <Check size={18} /> Saved{sessionCount ? ` · ${sessionCount} this session` : ''} — view
+          </button>
+        )}
       </div>
 
       {/* Note (when a shot is taken) */}
@@ -243,19 +256,19 @@ export default function ContractorCamera() {
         )}
       </div>
 
-      {/* Recent strip */}
+      {/* Recent strip — tap through to the full gallery */}
       {proposalId && (
         <div className="cc-recent">
-          <p className="cc-recent-label">
-            {linkedTitle ? `Recent on “${linkedTitle}”` : 'Recent captures'}
-            {recent.length > 0 && <span> · {recent.length}</span>}
-          </p>
+          <button className="cc-recent-label" onClick={goToCaptures}>
+            <span>{linkedTitle ? `Saved on “${linkedTitle}”` : 'Saved captures'}{recent.length > 0 ? ` · ${recent.length}` : ''}</span>
+            <span className="cc-recent-viewall">View all <ChevronRight size={13} /></span>
+          </button>
           {recent.length === 0 ? (
-            <p className="cc-recent-empty">No captures yet for this job.</p>
+            <p className="cc-recent-empty">No captures yet — snap one and it lands here and in Captures.</p>
           ) : (
             <div className="cc-recent-row">
               {recent.map(r => (
-                <div className="cc-thumb" key={r.id} title={r.note || ''}>
+                <div className="cc-thumb" key={r.id} title={r.note || ''} onClick={goToCaptures}>
                   <img src={r.media_url} alt={r.area || 'capture'} />
                   {r.area && <span className="cc-thumb-area">{r.area}</span>}
                 </div>
@@ -264,6 +277,12 @@ export default function ContractorCamera() {
           )}
         </div>
       )}
+
+      {/* Always-visible way to reach everything captured */}
+      <button className="cc-allcaptures" onClick={goToCaptures}>
+        <Images size={15} /> View all my captures
+        <ChevronRight size={15} className="cc-allcaptures-chev" />
+      </button>
     </div>
   )
 }

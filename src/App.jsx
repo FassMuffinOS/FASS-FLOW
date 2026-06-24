@@ -29,6 +29,7 @@ import Estimator from './pages/Estimator'
 import Foreman from './pages/Foreman'
 import Restoration from './pages/Restoration'
 import ContractorCamera from './pages/ContractorCamera'
+import CapturesGallery from './pages/CapturesGallery'
 import AppShell from './components/AppShell'
 import './index.css'
 import './App.css'
@@ -135,6 +136,9 @@ function AppRoutes() {
       } />
       <Route path="/camera" element={
         <ProtectedRoute><ContractorCamera /></ProtectedRoute>
+      } />
+      <Route path="/captures" element={
+        <ProtectedRoute><CapturesGallery /></ProtectedRoute>
       } />
     </Routes>
   )
