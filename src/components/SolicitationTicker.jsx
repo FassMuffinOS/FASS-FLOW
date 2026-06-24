@@ -79,7 +79,7 @@ export default function SolicitationTicker() {
       <div className="tk-viewport">
         <div
           className="tk-track"
-          style={{ animationDuration: `${Math.max(36, items.length * 5)}s` }}
+          style={{ animationDuration: `${Math.max(90, items.length * 12)}s` }}
         >
           {row.map((it, i) => (
             <span className="tk-item" key={i}>
