@@ -25,10 +25,20 @@ export default function SolicitationTicker() {
     let cancelled = false
 
     async function load() {
+      // Personalize to the user's NAICS where we have it.
+      let naics = ''
+      try {
+        if (session?.user?.id) {
+          const { data: prof } = await supabase
+            .from('profiles').select('naics_codes').eq('id', session.user.id).single()
+          if (Array.isArray(prof?.naics_codes) && prof.naics_codes.length) naics = prof.naics_codes[0]
+        }
+      } catch { /* broad sweep if no profile */ }
+
       // 1) Try the live SAM.gov feed.
       if (API_BASE) {
         try {
-          const params = new URLSearchParams({ limit: '20', naics: '', state: '' })
+          const params = new URLSearchParams({ limit: '20', naics, state: '' })
           const res = await fetch(`${API_BASE}/api/v1/wardog/search?${params}`)
           if (res.ok) {
             const data = await res.json()

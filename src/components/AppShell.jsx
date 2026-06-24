@@ -6,6 +6,7 @@ import {
   ShieldCheck, LogOut, Lock, GraduationCap, IdCard, DollarSign, Network, Mail,
   Award, LifeBuoy, Handshake, Calculator, HardHat, Camera,
 } from 'lucide-react'
+import AlertsBell from './AlertsBell'
 import './AppShell.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -117,6 +118,8 @@ export default function AppShell({ children }) {
       </aside>
 
       <div className="shell-content">{children}</div>
+
+      <AlertsBell />
     </div>
   )
 }
