@@ -5,7 +5,7 @@ import {
   Compass, ClipboardCheck, Kanban, ClipboardList, BookOpen,
   ShieldCheck, LogOut, GraduationCap, IdCard, DollarSign, Network, Mail,
   Award, LifeBuoy, Handshake, Calculator, HardHat, Camera,
-  Radar, Images, Trophy, Flame, Menu, X,
+  Radar, Images, Trophy, Flame, Menu, X, Send,
 } from 'lucide-react'
 import AlertsBell from './AlertsBell'
 import './AppShell.css'
@@ -25,6 +25,7 @@ const NAV_GROUPS = [
     { name: 'R-E-A-D', icon: ClipboardCheck, to: '/read', match: ['/read'] },
     { name: 'Estimator', icon: Calculator, to: '/estimator', match: ['/estimator'] },
     { name: 'FASS FILL', icon: ClipboardList, to: '/fill', match: ['/fill'] },
+    { name: 'Client Proposals', icon: Send, to: '/proposals', match: ['/proposals'] },
     { name: 'Pipeline', icon: Kanban, to: '/pipeline', match: ['/pipeline'] },
     { name: 'Awarded', icon: Trophy, to: '/awarded', match: ['/awarded'] },
   ] },

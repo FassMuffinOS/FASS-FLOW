@@ -31,6 +31,8 @@ import Foreman from './pages/Foreman'
 import Restoration from './pages/Restoration'
 import ContractorCamera from './pages/ContractorCamera'
 import CapturesGallery from './pages/CapturesGallery'
+import ClientProposals from './pages/ClientProposals'
+import PublicEstimate from './pages/PublicEstimate'
 import AppShell from './components/AppShell'
 import './index.css'
 import './App.css'
@@ -76,6 +78,9 @@ function AppRoutes() {
       <Route path="/support" element={<AuthAwarePage><Support /></AuthAwarePage>} />
       <Route path="/bd-partner" element={<AuthAwarePage><BDPartner /></AuthAwarePage>} />
       <Route path="/thank-you" element={<><Nav /><main><ThankYou /></main><Footer /></>} />
+
+      {/* Public interactive estimate — customer opens via share link, no account */}
+      <Route path="/e/:token" element={<PublicEstimate />} />
       <Route path="/join-network" element={<><Nav /><main><JoinNetwork /></main><Footer /></>} />
       <Route path="/pricing" element={<><Nav /><main><Pricing /></main><Footer /></>} />
 
@@ -129,6 +134,9 @@ function AppRoutes() {
       } />
       <Route path="/estimator" element={
         <ProtectedRoute><Estimator /></ProtectedRoute>
+      } />
+      <Route path="/proposals" element={
+        <ProtectedRoute><ClientProposals /></ProtectedRoute>
       } />
       <Route path="/foreman" element={
         <ProtectedRoute><Foreman /></ProtectedRoute>

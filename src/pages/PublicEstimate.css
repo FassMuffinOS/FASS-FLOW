@@ -1,0 +1,93 @@
+.pe {
+  min-height: 100vh;
+  background: #f4f6f8;
+  padding: 28px 16px 60px;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #111827;
+}
+.pe-wrap { max-width: 640px; margin: 0 auto; }
+
+.pe-state {
+  min-height: 60vh; display: flex; align-items: center; justify-content: center; gap: 10px;
+  color: #6b7280; font-family: 'Inter', sans-serif; padding: 24px; text-align: center;
+}
+.pe-spin { animation: pe-spin 1s linear infinite; }
+@keyframes pe-spin { to { transform: rotate(360deg); } }
+
+.pe-head { margin-bottom: 18px; }
+.pe-from { font-size: 0.8rem; color: #6b7280; margin: 0 0 4px; }
+.pe-title { font-size: 1.6rem; font-weight: 800; margin: 0; letter-spacing: -0.02em; }
+.pe-intro { font-size: 0.92rem; color: #4b5563; margin: 8px 0 0; line-height: 1.55; }
+
+.pe-approved-banner {
+  display: flex; align-items: center; gap: 8px;
+  background: #e1f5ee; color: #0f6e56; font-weight: 600; font-size: 0.88rem;
+  padding: 12px 14px; border-radius: 12px; margin-bottom: 16px;
+}
+
+.pe-section {
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 16px;
+  padding: 18px; margin-bottom: 12px;
+}
+.pe-section-label { font-size: 1.02rem; font-weight: 700; margin: 0; }
+.pe-section-sub { font-size: 0.82rem; color: #6b7280; margin: 3px 0 0; }
+
+.pe-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 14px; }
+.pe-option {
+  position: relative; text-align: left;
+  border: 1.5px solid #e5e7eb; border-radius: 12px; background: #fff;
+  padding: 13px; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.pe-option:hover:not(:disabled) { border-color: #c7cdd4; }
+.pe-option.sel { border-color: #1D9E75; background: #e9f8f1; border-width: 2px; }
+.pe-option:disabled { cursor: default; }
+.pe-option-badge {
+  font-size: 0.62rem; font-weight: 800; letter-spacing: 0.06em; color: #9ca3af; text-transform: uppercase;
+}
+.pe-option-name { font-size: 0.92rem; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+.pe-option.sel .pe-option-name { color: #0f6e56; }
+.pe-option-note { font-size: 0.78rem; color: #9ca3af; }
+.pe-option-delta { font-size: 0.84rem; font-weight: 600; color: #4b5563; margin-top: 2px; }
+.pe-option.sel .pe-option-delta { color: #0f6e56; }
+
+.pe-addons { margin-top: 12px; }
+.pe-addon {
+  width: 100%; display: flex; align-items: center; gap: 11px;
+  background: none; border: none; border-bottom: 1px solid #f0f1f3;
+  padding: 12px 2px; cursor: pointer; text-align: left;
+}
+.pe-addon:last-child { border-bottom: none; }
+.pe-addon:disabled { cursor: default; }
+.pe-addon-check {
+  flex-shrink: 0; width: 22px; height: 22px; border-radius: 6px;
+  border: 1.5px solid #cdd3da; display: inline-flex; align-items: center; justify-content: center;
+  color: #fff;
+}
+.pe-addon.on .pe-addon-check { background: #1D9E75; border-color: #1D9E75; }
+.pe-addon-name { flex: 1; font-size: 0.92rem; font-weight: 500; }
+.pe-addon.on .pe-addon-name { color: #111827; }
+.pe-addon:not(.on) .pe-addon-name { color: #6b7280; }
+.pe-addon-delta { font-size: 0.84rem; color: #6b7280; }
+
+.pe-total {
+  position: sticky; bottom: 12px;
+  background: #0b1f17; border-radius: 16px;
+  padding: 16px 18px; margin-top: 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+.pe-total-label { font-size: 0.66rem; color: #79e0bf; letter-spacing: 0.05em; margin: 0; text-transform: uppercase; }
+.pe-total-value { font-size: 1.55rem; font-weight: 800; color: #fff; margin: 2px 0 0; font-variant-numeric: tabular-nums; }
+.pe-approve {
+  background: #1D9E75; color: #fff; border: none; border-radius: 11px;
+  padding: 13px 20px; font-size: 0.95rem; font-weight: 700; cursor: pointer; white-space: nowrap;
+}
+.pe-approve:hover:not(:disabled) { background: #15835f; }
+.pe-approve:disabled { opacity: 0.6; }
+.pe-approved-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: #79e0bf; font-weight: 700; font-size: 0.95rem;
+}
+
+.pe-foot { text-align: center; font-size: 0.72rem; color: #9ca3af; margin: 22px 0 0; }
