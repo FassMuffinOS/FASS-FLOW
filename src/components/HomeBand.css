@@ -1,0 +1,64 @@
+.hb {
+  background: var(--bg-base, #f7faf9);
+  padding: 40px 0 56px;
+  border-bottom: 1px solid var(--gray-100, #f1f1f1);
+}
+
+.hb-trust-label {
+  text-align: center;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gray-400, #9ca3af);
+  margin: 0 0 16px;
+}
+
+.hb-logos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px 30px;
+  margin-bottom: 44px;
+}
+.hb-logos span {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--navy, #1B2A4A);
+  opacity: 0.42;
+  letter-spacing: -0.01em;
+}
+
+.hb-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.hb-card {
+  background: #fff;
+  border: 1px solid var(--gray-200, #e5e7eb);
+  border-radius: 16px;
+  padding: 26px 24px;
+}
+.hb-card-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 46px; height: 46px; border-radius: 12px;
+  background: var(--light-teal, #E1F5EE); color: var(--dark-teal, #0F6E56);
+  margin-bottom: 14px;
+}
+.hb-card-kicker {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--navy, #1B2A4A);
+}
+.hb-card-body {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--gray-600, #4b5563);
+}
+
+@media (max-width: 760px) {
+  .hb-cards { grid-template-columns: 1fr; }
+}

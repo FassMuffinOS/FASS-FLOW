@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
+import HomeBand from './components/HomeBand'
 import HowItWorks from './components/HowItWorks'
 import Pricing from './components/Pricing'
 import Footer from './components/Footer'
@@ -38,6 +39,7 @@ function Landing() {
   return (
     <>
       <Hero />
+      <HomeBand />
       <HowItWorks />
     </>
   )
