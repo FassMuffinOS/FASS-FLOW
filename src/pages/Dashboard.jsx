@@ -6,6 +6,7 @@ import { BookOpen, Compass, GraduationCap, X } from 'lucide-react'
 import OnboardingChecklist from '../components/OnboardingChecklist'
 import MilestoneBadges from '../components/MilestoneBadges'
 import FunnelTracker from '../components/FunnelTracker'
+import SolicitationTicker from '../components/SolicitationTicker'
 import './Dashboard.css'
 
 const TOOLS = [
@@ -57,6 +58,8 @@ export default function Dashboard() {
     <div className="dash">
       <main className="dash-main">
         <div className="dash-container">
+
+          <SolicitationTicker />
 
           <FunnelTracker />
 

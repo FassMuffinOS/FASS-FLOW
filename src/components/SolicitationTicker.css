@@ -1,0 +1,77 @@
+.tk {
+  display: flex;
+  align-items: stretch;
+  height: 40px;
+  background: #0b1828;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.tk-tag {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--teal, #1D9E75); color: #fff;
+  font-size: 0.66rem; font-weight: 800; letter-spacing: 0.06em;
+  padding: 0 14px;
+}
+.tk-live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #fff;
+  animation: tk-blink 1.4s ease-in-out infinite;
+}
+@keyframes tk-blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+.tk-viewport {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+/* fade edges */
+.tk-viewport::before, .tk-viewport::after {
+  content: ''; position: absolute; top: 0; bottom: 0; width: 28px; z-index: 2;
+  pointer-events: none;
+}
+.tk-viewport::before { left: 0; background: linear-gradient(to right, #0b1828, transparent); }
+.tk-viewport::after { right: 0; background: linear-gradient(to left, #0b1828, transparent); }
+
+.tk-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  animation-name: tk-scroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+.tk:hover .tk-track { animation-play-state: paused; }
+@keyframes tk-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.tk-item {
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 0 20px;
+  font-size: 0.8rem;
+  color: #c7d2dd;
+}
+.tk-bull {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--teal, #1D9E75); flex-shrink: 0;
+}
+.tk-title { color: #fff; font-weight: 600; }
+.tk-sub { color: #8b9bab; }
+.tk-naics { color: #6f8194; font-variant-numeric: tabular-nums; }
+.tk-due {
+  font-weight: 700; color: #79e0bf; font-variant-numeric: tabular-nums;
+}
+.tk-due-urgent { color: #ffb4a8; }
+
+@media (max-width: 600px) {
+  .tk-tag { font-size: 0.6rem; padding: 0 10px; }
+}
