@@ -10,12 +10,12 @@ export default function Hero() {
 
         <h1 className="hero-headline">
           Find the work. Win the bid.<br />
-          <span className="headline-accent">Get it built.</span>
+          <span className="headline-accent">Get it done.</span>
         </h1>
 
         <p className="hero-subhead">
-          Live opportunities, disciplined bidding, and the execution tools small and service
-          businesses need to compete for government contracts — and win.
+          Live opportunities, a government-ready business profile, disciplined bidding, pricing,
+          proposal support, and execution tools for service businesses.
         </p>
 
         <div className="hero-actions">

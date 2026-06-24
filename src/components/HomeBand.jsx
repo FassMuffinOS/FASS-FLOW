@@ -22,7 +22,7 @@ export default function HomeBand() {
   return (
     <section className="hb">
       <div className="container">
-        <p className="hb-trust-label">Built for the businesses winning government work</p>
+        <p className="hb-trust-label">Powered by live SAM.gov opportunities + the procurement sources contractors use every day</p>
         <div className="hb-logos">
           {SOURCES.map(s => <span key={s}>{s}</span>)}
         </div>
