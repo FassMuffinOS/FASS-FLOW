@@ -7,6 +7,7 @@ import OnboardingChecklist from '../components/OnboardingChecklist'
 import MilestoneBadges from '../components/MilestoneBadges'
 import FunnelTracker from '../components/FunnelTracker'
 import SolicitationTicker from '../components/SolicitationTicker'
+import GetStarted from '../components/GetStarted'
 import './Dashboard.css'
 
 const TOOLS = [
@@ -60,6 +61,8 @@ export default function Dashboard() {
         <div className="dash-container">
 
           <SolicitationTicker />
+
+          <GetStarted />
 
           <FunnelTracker />
 
