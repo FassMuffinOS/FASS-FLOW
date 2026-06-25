@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Save, Check, IdCard, ShieldCheck, UserCheck, Megaphone, ExternalLink, Award, ArrowRight, Settings, Search, MapPin, Sparkles, Wallet, Download, Lock } from 'lucide-react'
+import { Save, Check, IdCard, ShieldCheck, UserCheck, Megaphone, ExternalLink, Award, ArrowRight, Settings, Search, MapPin, Sparkles, Wallet, Download, Lock, Palette, Image, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import './Passport.css'
@@ -84,6 +84,19 @@ export default function Passport() {
   const [walletPurchased, setWalletPurchased] = useState(false)
   const [walletCheckingOut, setWalletCheckingOut] = useState(false)
   const [walletError, setWalletError] = useState('')
+
+  // Card customization — all free to design/preview; only the real signed
+  // .pkpass download stays behind the Stripe paywall above. Lives entirely
+  // in local state until unlockWallet() ships it to checkout, which is the
+  // first time any of this needs to be persisted server-side.
+  const [cardBgColor, setCardBgColor] = useState('#240e41')
+  const [cardLogoUrl, setCardLogoUrl] = useState(null)
+  const [cardLogoUploading, setCardLogoUploading] = useState(false)
+  const [cardLogoError, setCardLogoError] = useState('')
+  const [showAddress, setShowAddress] = useState(true)
+  const [showNaics, setShowNaics] = useState(true)
+  const [showPhone, setShowPhone] = useState(true)
+  const [showWebsite, setShowWebsite] = useState(true)
 
   useEffect(() => {
     if (!session?.user?.id) return
@@ -240,10 +253,36 @@ export default function Passport() {
     setBizApplied(true)
   }
 
+  // Logo upload — goes straight into the public wallet-logos Storage
+  // bucket under this user's id, no resizing (no image library in the
+  // backend), raw bytes used as-is for all three pkpass logo variants.
+  async function uploadCardLogo(e) {
+    const file = e.target.files?.[0]
+    if (!file || !session?.user?.id) return
+    setCardLogoUploading(true)
+    setCardLogoError('')
+    try {
+      const ext = (file.name.split('.').pop() || 'png').toLowerCase()
+      const path = `${session.user.id}/${Date.now()}.${ext}`
+      const { error } = await supabase.storage.from('wallet-logos').upload(path, file, { upsert: true })
+      if (error) {
+        setCardLogoError('Could not upload that logo — try a smaller image.')
+        return
+      }
+      const { data } = supabase.storage.from('wallet-logos').getPublicUrl(path)
+      setCardLogoUrl(data?.publicUrl || null)
+    } catch {
+      setCardLogoError('Could not upload that logo — try a smaller image.')
+    } finally {
+      setCardLogoUploading(false)
+    }
+  }
+
   // Kicks off the one-time Stripe Checkout for a real, signed .pkpass of
   // this business — same fetch/redirect pattern as Pricing.jsx's
   // subscription checkout, just mode="payment" on the backend instead of
-  // mode="subscription". The free preview above never calls this.
+  // mode="subscription". The free preview/customization above never calls
+  // this — only the actual unlock ships the chosen design to the backend.
   async function unlockWallet() {
     if (!bizResult || !session?.user || !API_BASE) return
     setWalletCheckingOut(true)
@@ -260,6 +299,12 @@ export default function Passport() {
           naics: bizResult.naics_guess,
           website: bizResult.website,
           phone: bizResult.phone,
+          bg_color: cardBgColor,
+          logo_url: cardLogoUrl,
+          show_address: showAddress,
+          show_naics: showNaics,
+          show_phone: showPhone,
+          show_website: showWebsite,
         }),
       })
       if (res.status === 503) {
@@ -343,14 +388,55 @@ export default function Passport() {
           {bizResult && (
             <div className="pp-card">
               <div className="pp-card-head">
+                <Palette size={16} /> <span>Customize your card</span>
+              </div>
+              <p className="pp-note pp-note-block">Free to design — pick a color, add your logo, and choose what shows. Only the real, signed Apple Wallet card is paywalled below.</p>
+              <div className="pp-customize">
+                <label className="pp-customize-row">
+                  <span className="pp-label"><Palette size={13} /> Background color</span>
+                  <input type="color" value={cardBgColor} onChange={e => setCardBgColor(e.target.value)} />
+                </label>
+                <label className="pp-customize-row">
+                  <span className="pp-label"><Image size={13} /> Logo</span>
+                  <input type="file" accept="image/*" onChange={uploadCardLogo} disabled={cardLogoUploading} />
+                  {cardLogoUploading && <span className="pp-note">Uploading…</span>}
+                </label>
+                {cardLogoError && <p className="pp-note pp-biz-error">{cardLogoError}</p>}
+                <div className="pp-customize-toggles">
+                  <button type="button" className={`pp-chip ${showAddress ? 'active' : ''}`} onClick={() => setShowAddress(v => !v)}>
+                    {showAddress ? <Eye size={12} /> : <EyeOff size={12} />} Address
+                  </button>
+                  <button type="button" className={`pp-chip ${showNaics ? 'active' : ''}`} onClick={() => setShowNaics(v => !v)}>
+                    {showNaics ? <Eye size={12} /> : <EyeOff size={12} />} NAICS
+                  </button>
+                  <button type="button" className={`pp-chip ${showPhone ? 'active' : ''}`} onClick={() => setShowPhone(v => !v)}>
+                    {showPhone ? <Eye size={12} /> : <EyeOff size={12} />} Phone
+                  </button>
+                  <button type="button" className={`pp-chip ${showWebsite ? 'active' : ''}`} onClick={() => setShowWebsite(v => !v)}>
+                    {showWebsite ? <Eye size={12} /> : <EyeOff size={12} />} Website
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {bizResult && (
+            <div className="pp-card">
+              <div className="pp-card-head">
                 <Wallet size={16} /> <span>FASS Wallet</span>
               </div>
               <div className="pp-wallet-preview">
-                <div className="pp-wallet-card">
-                  <div className="pp-wallet-card-org">FASS Wallet</div>
+                <div className="pp-wallet-card" style={{ background: cardBgColor }}>
+                  {cardLogoUrl ? (
+                    <img src={cardLogoUrl} alt="" className="pp-wallet-card-logo" />
+                  ) : (
+                    <div className="pp-wallet-card-org">FASS Wallet</div>
+                  )}
                   <div className="pp-wallet-card-name">{bizResult.name}</div>
-                  {bizResult.address && <div className="pp-wallet-card-row">{bizResult.address}</div>}
-                  {bizResult.naics_guess && <div className="pp-wallet-card-row">NAICS {bizResult.naics_guess}</div>}
+                  {bizResult.address && showAddress && <div className="pp-wallet-card-row">{bizResult.address}</div>}
+                  {bizResult.naics_guess && showNaics && <div className="pp-wallet-card-row">NAICS {bizResult.naics_guess}</div>}
+                  {bizResult.phone && showPhone && <div className="pp-wallet-card-row">{bizResult.phone}</div>}
+                  {bizResult.website && showWebsite && <div className="pp-wallet-card-row">{bizResult.website}</div>}
                   <div className="pp-wallet-card-foot">Preview — not a real pass</div>
                 </div>
                 <div className="pp-wallet-copy">
