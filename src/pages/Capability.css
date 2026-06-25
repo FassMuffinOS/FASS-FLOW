@@ -1,0 +1,42 @@
+.cap {
+  min-height: 100vh;
+  background: #f4f6f8;
+  padding: 40px 16px 60px;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #111827;
+}
+
+.cap-wrap { max-width: 480px; margin: 0 auto; }
+
+.cap-state {
+  min-height: 60vh; display: flex; align-items: center; justify-content: center; gap: 10px;
+  color: #6b7280; font-family: 'Inter', sans-serif; padding: 24px; text-align: center;
+}
+.cap-spin { animation: cap-spin 1s linear infinite; }
+@keyframes cap-spin { to { transform: rotate(360deg); } }
+
+.cap-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: linear-gradient(135deg, rgb(36, 14, 65), rgb(88, 28, 135));
+  color: #fff; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 7px 13px; border-radius: 20px; margin-bottom: 16px;
+}
+
+.cap-name { font-size: 1.6rem; font-weight: 800; margin: 0 0 4px; letter-spacing: -0.02em; }
+.cap-naics { font-size: 0.88rem; color: #6b7280; margin: 0 0 18px; }
+
+.cap-card {
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 16px;
+  padding: 18px; display: flex; flex-direction: column; gap: 13px; margin-bottom: 18px;
+}
+
+.cap-row {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.9rem; color: #374151;
+}
+.cap-row svg { flex-shrink: 0; color: #581c87; }
+.cap-row a { color: #374151; text-decoration: none; }
+.cap-row a:hover { text-decoration: underline; }
+
+.cap-foot { text-align: center; font-size: 0.74rem; color: #9ca3af; margin: 0 0 4px; line-height: 1.5; }
+.cap-foot-brand { font-weight: 700; color: #6b7280; margin-top: 10px; }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Save, Check, IdCard, ShieldCheck, UserCheck, Megaphone, ExternalLink, Award, ArrowRight, Settings, Search, MapPin, Sparkles } from 'lucide-react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Save, Check, IdCard, ShieldCheck, UserCheck, Megaphone, ExternalLink, Award, ArrowRight, Settings, Search, MapPin, Sparkles, Wallet, Download, Lock } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import './Passport.css'
@@ -59,6 +59,7 @@ const FIELD_NOTES = {
 export default function Passport() {
   const { session } = useAuth()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -75,6 +76,14 @@ export default function Passport() {
   const [bizResult, setBizResult] = useState(null) // null = not searched yet
   const [bizError, setBizError] = useState('')
   const [bizApplied, setBizApplied] = useState(false)
+
+  // FASS Wallet — free preview renders the moment bizResult is found
+  // above; this state only covers the paywalled real-pass unlock.
+  // walletSlug doubles as "a checkout/purchase exists for this result".
+  const [walletSlug, setWalletSlug] = useState(null)
+  const [walletPurchased, setWalletPurchased] = useState(false)
+  const [walletCheckingOut, setWalletCheckingOut] = useState(false)
+  const [walletError, setWalletError] = useState('')
 
   useEffect(() => {
     if (!session?.user?.id) return
@@ -94,6 +103,41 @@ export default function Passport() {
     load()
     return () => { cancelled = true }
   }, [session?.user?.id])
+
+  // Coming back from Stripe after a wallet unlock — pick the slug back up
+  // from the success redirect and confirm the webhook actually landed
+  // before showing the real download (the webhook can lag the redirect
+  // by a second or two).
+  useEffect(() => {
+    const wallet = searchParams.get('wallet')
+    const slug = searchParams.get('slug')
+    if (wallet !== 'success' || !slug || !API_BASE) return
+    setWalletSlug(slug)
+    let cancelled = false
+    let attempts = 0
+    async function poll() {
+      attempts += 1
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/wallet/purchase-status/${slug}`)
+        if (res.ok) {
+          const data = await res.json()
+          if (data.purchased) {
+            if (!cancelled) setWalletPurchased(true)
+            return
+          }
+        }
+      } catch { /* keep polling */ }
+      if (!cancelled && attempts < 8) setTimeout(poll, 1500)
+    }
+    poll()
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev)
+      next.delete('wallet')
+      return next
+    }, { replace: true })
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   function set(field, value) {
     setSaved(false)
@@ -160,6 +204,9 @@ export default function Passport() {
     setBizError('')
     setBizResult(null)
     setBizApplied(false)
+    setWalletSlug(null)
+    setWalletPurchased(false)
+    setWalletError('')
     try {
       const res = await fetch(`${API_BASE}/api/v1/business/lookup?query=${encodeURIComponent(bizQuery.trim())}`)
       if (!res.ok) {
@@ -191,6 +238,42 @@ export default function Passport() {
       naics_codes: bizResult.naics_guess ? [bizResult.naics_guess] : prev.naics_codes,
     }))
     setBizApplied(true)
+  }
+
+  // Kicks off the one-time Stripe Checkout for a real, signed .pkpass of
+  // this business — same fetch/redirect pattern as Pricing.jsx's
+  // subscription checkout, just mode="payment" on the backend instead of
+  // mode="subscription". The free preview above never calls this.
+  async function unlockWallet() {
+    if (!bizResult || !session?.user || !API_BASE) return
+    setWalletCheckingOut(true)
+    setWalletError('')
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/wallet/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: session.user.id,
+          email: session.user.email,
+          business_name: bizResult.name,
+          address: bizResult.address,
+          naics: bizResult.naics_guess,
+          website: bizResult.website,
+          phone: bizResult.phone,
+        }),
+      })
+      if (res.status === 503) {
+        setWalletError('Wallet cards aren’t available for purchase yet — check back soon.')
+        return
+      }
+      const data = await res.json()
+      if (data?.url) { window.location.href = data.url; return }
+      setWalletError('Could not start checkout. Try again in a moment.')
+    } catch {
+      setWalletError('Could not start checkout. Try again in a moment.')
+    } finally {
+      setWalletCheckingOut(false)
+    }
   }
 
   if (loading || !profile || quickMode === null) return null
@@ -256,6 +339,47 @@ export default function Passport() {
               </div>
             )}
           </div>
+
+          {bizResult && (
+            <div className="pp-card">
+              <div className="pp-card-head">
+                <Wallet size={16} /> <span>FASS Wallet</span>
+              </div>
+              <div className="pp-wallet-preview">
+                <div className="pp-wallet-card">
+                  <div className="pp-wallet-card-org">FASS Wallet</div>
+                  <div className="pp-wallet-card-name">{bizResult.name}</div>
+                  {bizResult.address && <div className="pp-wallet-card-row">{bizResult.address}</div>}
+                  {bizResult.naics_guess && <div className="pp-wallet-card-row">NAICS {bizResult.naics_guess}</div>}
+                  <div className="pp-wallet-card-foot">Preview — not a real pass</div>
+                </div>
+                <div className="pp-wallet-copy">
+                  {walletPurchased ? (
+                    <>
+                      <p className="pp-note pp-note-block">Your real, signed FASS Wallet card is ready.</p>
+                      <a
+                        className="btn-primary"
+                        href={`${API_BASE}/api/v1/wallet/pass?slug=${walletSlug}`}
+                      >
+                        <Download size={14} /> Add to Apple Wallet
+                      </a>
+                    </>
+                  ) : (
+                    <>
+                      <p className="pp-note pp-note-block">This is a free preview. Unlock the real card to add it to Apple Wallet and share it — it carries a QR code linking to your public capability page.</p>
+                      <button type="button" className="btn-primary" onClick={unlockWallet} disabled={walletCheckingOut}>
+                        <Lock size={14} /> {walletCheckingOut ? 'Starting checkout…' : 'Unlock & add to Apple Wallet'}
+                      </button>
+                      {walletSlug && !walletPurchased && (
+                        <p className="pp-note">Finishing up your purchase…</p>
+                      )}
+                      {walletError && <p className="pp-note pp-biz-error">{walletError}</p>}
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="pp-card">
             <div className="pp-card-head">
