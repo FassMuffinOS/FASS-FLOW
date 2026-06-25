@@ -247,6 +247,11 @@ export default function Wardog() {
   // same opportunity.
   const [savedProposals, setSavedProposals] = useState({})
   const [savingId, setSavingId] = useState(null)
+  // Flips true exactly once, the moment the profile prefill above changes
+  // naicsText after the initial (default-NAICS) fetch already ran — that's
+  // the signal to re-run the search so it reflects the user's real NAICS
+  // instead of leaving the generic default results on screen.
+  const [naicsPrefilled, setNaicsPrefilled] = useState(false)
 
   // Lite plan ($9.99/mo) is read-only: matches show up here, but saving
   // interest, running R-E-A-D, sending to FASS FILL, and the advanced
@@ -358,14 +363,26 @@ export default function Wardog() {
     async function prefillFromProfile() {
       const { data } = await supabase
         .from('profiles')
-        .select('certifications')
+        .select('certifications, naics_codes')
         .eq('id', session.user.id)
         .single()
-      if (cancelled || !data?.certifications?.length) return
-      const mapped = data.certifications
-        .map(c => CERT_TO_SET_ASIDE[c])
-        .filter(Boolean)
-      if (mapped.length) setSetAsides(prev => prev.length ? prev : mapped)
+      if (cancelled) return
+      if (data?.certifications?.length) {
+        const mapped = data.certifications
+          .map(c => CERT_TO_SET_ASIDE[c])
+          .filter(Boolean)
+        if (mapped.length) setSetAsides(prev => prev.length ? prev : mapped)
+      }
+      // A user landing here straight from Passport's quick setup saved a
+      // real NAICS code — search on that instead of the hardcoded default
+      // (561720) so the very first WARDOG result actually matches them.
+      if (data?.naics_codes?.length) {
+        setNaicsText(prev => {
+          if (prev) return prev
+          setNaicsPrefilled(true)
+          return data.naics_codes[0]
+        })
+      }
     }
     prefillFromProfile()
     return () => { cancelled = true }
@@ -434,6 +451,14 @@ export default function Wardog() {
   useEffect(() => {
     fetchOpps()
   }, []) // eslint-disable-line
+
+  // Re-run the search once the profile prefill lands a real NAICS code,
+  // so a brand-new account doesn't sit looking at default-NAICS results.
+  useEffect(() => {
+    if (!naicsPrefilled) return
+    setNaicsPrefilled(false)
+    fetchOpps()
+  }, [naicsPrefilled, fetchOpps])
 
   return (
     <div className="wd">

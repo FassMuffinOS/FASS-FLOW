@@ -1,8 +1,32 @@
 import { useState, useEffect } from 'react'
-import { Save, Check, IdCard, ShieldCheck, UserCheck, Megaphone, ExternalLink, Award } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Save, Check, IdCard, ShieldCheck, UserCheck, Megaphone, ExternalLink, Award, ArrowRight, Settings, Search, MapPin, Sparkles } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import './Passport.css'
+
+const API_BASE = import.meta.env.VITE_API_URL || ''
+
+// Maps the backend's NAICS guess to a human label for the confirmation
+// card — keep this in sync with business_lookup.py's GOOGLE_TYPE_TO_NAICS
+// values (not the keys; we never see Google's raw type strings here).
+const NAICS_LABELS = {
+  '722310': 'Food service',
+  '238220': 'Plumbing & HVAC',
+  '238210': 'Electrical contracting',
+  '238160': 'Roofing',
+  '238320': 'Painting',
+  '236220': 'Commercial construction',
+  '484210': 'Moving services',
+  '484110': 'General trucking',
+  '561730': 'Landscaping services',
+  '561720': 'Janitorial services',
+  '561612': 'Security guard services',
+  '561320': 'Temporary staffing',
+  '711310': 'Event production services',
+  '561622': 'Locksmiths',
+  '531130': 'Self-storage facilities',
+}
 
 // The certification labels match Fill.jsx and OnboardingChecklist exactly
 // so a status picked anywhere shows up everywhere — same profiles.certifications
@@ -34,10 +58,23 @@ const FIELD_NOTES = {
 
 export default function Passport() {
   const { session } = useAuth()
+  const navigate = useNavigate()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  // null until the profile loads, then set once based on whether this
+  // looks like a brand-new account (no company name, no NAICS yet).
+  // User can flip it manually after that — this only decides the
+  // *first* view, never locks anyone into one mode.
+  const [quickMode, setQuickMode] = useState(null)
+
+  // "Find my business" — Google Places lookup state, scoped to quick mode.
+  const [bizQuery, setBizQuery] = useState('')
+  const [bizLoading, setBizLoading] = useState(false)
+  const [bizResult, setBizResult] = useState(null) // null = not searched yet
+  const [bizError, setBizError] = useState('')
+  const [bizApplied, setBizApplied] = useState(false)
 
   useEffect(() => {
     if (!session?.user?.id) return
@@ -45,7 +82,12 @@ export default function Passport() {
     async function load() {
       const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single()
       if (!cancelled) {
-        setProfile(data || {})
+        const prof = data || {}
+        setProfile(prof)
+        // A first-time signup has neither a company name nor NAICS codes
+        // saved yet — that's the only signal we need to default to the
+        // 60-second version instead of the full multi-card form.
+        setQuickMode(!prof.company_name && !(prof.naics_codes || []).length)
         setLoading(false)
       }
     }
@@ -92,9 +134,175 @@ export default function Passport() {
     if (!error) setSaved(true)
   }
 
-  if (loading || !profile) return null
+  // The quick-start path only ever writes the three fields a brand-new
+  // account actually needs before WARDOG can return anything useful —
+  // it deliberately does not touch sam_uei/cage_code/signer fields, so
+  // saving twice (quick now, full form later) never clobbers anything.
+  async function saveQuickAndFindWork() {
+    if (!session?.user?.id) return
+    setSaving(true)
+    const { error } = await supabase.from('profiles').update({
+      company_name: profile.company_name,
+      naics_codes: profile.naics_codes,
+      certifications: profile.certifications,
+    }).eq('id', session.user.id)
+    setSaving(false)
+    if (!error) navigate('/wardog')
+  }
+
+  // Looks up the typed business name against Google's Business Profile data
+  // (proxied server-side — the API key never reaches this bundle) and shows
+  // a confirmation card. If the backend hasn't been given a Google Places
+  // key yet, this just fails quietly and the manual fields below still work.
+  async function findMyBusiness() {
+    if (!bizQuery.trim() || !API_BASE) return
+    setBizLoading(true)
+    setBizError('')
+    setBizResult(null)
+    setBizApplied(false)
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/business/lookup?query=${encodeURIComponent(bizQuery.trim())}`)
+      if (!res.ok) {
+        setBizError(res.status === 503 ? 'Business lookup isn’t turned on yet — just fill in the fields below.' : 'Couldn’t look that up right now — fill in the fields below instead.')
+        return
+      }
+      const data = await res.json()
+      if (!data.found) {
+        setBizError('No match found — try the exact business name, or just fill in the fields below.')
+        return
+      }
+      setBizResult(data)
+    } catch {
+      setBizError('Couldn’t look that up right now — fill in the fields below instead.')
+    } finally {
+      setBizLoading(false)
+    }
+  }
+
+  // Prefills company name + NAICS guess from the Google match. Never
+  // touches certifications (Google has no concept of set-aside status) and
+  // never auto-saves — the user still confirms with "Save & find work".
+  function applyBizResult() {
+    if (!bizResult) return
+    setSaved(false)
+    setProfile(prev => ({
+      ...prev,
+      company_name: bizResult.name || prev.company_name,
+      naics_codes: bizResult.naics_guess ? [bizResult.naics_guess] : prev.naics_codes,
+    }))
+    setBizApplied(true)
+  }
+
+  if (loading || !profile || quickMode === null) return null
 
   const naicsStr = (profile.naics_codes || []).join(', ')
+  const hasMinimum = (profile.company_name || '').trim().length > 0 && (profile.naics_codes || []).length > 0
+
+  if (quickMode) {
+    return (
+      <div className="pp">
+        <div className="pp-container">
+          <div className="pp-head">
+            <IdCard size={22} className="pp-head-icon" />
+            <div>
+              <h1>Let's get you set up</h1>
+              <p>Three things, about a minute, then straight into WARDOG to find real work.</p>
+            </div>
+          </div>
+
+          <div className="pp-card">
+            <div className="pp-card-head">
+              <Search size={16} /> <span>Find my business</span>
+            </div>
+            <p className="pp-note pp-note-block">Search your business name and we'll pull your category from Google, guess a NAICS code, and show real opportunities — or skip straight to typing it in below.</p>
+            <div className="pp-biz-search">
+              <input
+                value={bizQuery}
+                onChange={e => setBizQuery(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); findMyBusiness() } }}
+                placeholder="e.g. Munchies Gourmets LLC, Tampa FL"
+              />
+              <button type="button" className="btn-outline" onClick={findMyBusiness} disabled={bizLoading || !bizQuery.trim()}>
+                {bizLoading ? 'Searching…' : 'Search'}
+              </button>
+            </div>
+            {bizError && <p className="pp-note pp-biz-error">{bizError}</p>}
+            {bizResult && (
+              <div className="pp-biz-result">
+                <div className="pp-biz-result-head">
+                  <MapPin size={15} />
+                  <div>
+                    <div className="pp-biz-result-name">{bizResult.name}</div>
+                    {bizResult.address && <div className="pp-note">{bizResult.address}</div>}
+                  </div>
+                </div>
+                <div className="pp-biz-tags">
+                  {bizResult.naics_guess && (
+                    <span className="pp-chip active">{NAICS_LABELS[bizResult.naics_guess] || bizResult.naics_guess} · NAICS {bizResult.naics_guess}</span>
+                  )}
+                  {bizResult.suggested_plan && (
+                    <span className="pp-chip">
+                      <Sparkles size={12} /> Suggested plan: {bizResult.suggested_plan}
+                    </span>
+                  )}
+                </div>
+                {bizResult.matching_opportunities?.length > 0 && (
+                  <p className="pp-note">{bizResult.matching_opportunities.length} open solicitation{bizResult.matching_opportunities.length === 1 ? '' : 's'} already match this NAICS code — they'll be waiting in WARDOG.</p>
+                )}
+                <p className="pp-note">The NAICS guess and plan suggestion are starting points based on your Google category, not a federal eligibility check — confirm them below and on Pricing whenever you're ready.</p>
+                <button type="button" className="btn-primary" onClick={applyBizResult} disabled={bizApplied}>
+                  {bizApplied ? <><Check size={14} /> Applied</> : 'Use this'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="pp-card">
+            <div className="pp-card-head">
+              <ShieldCheck size={16} /> <span>The basics</span>
+            </div>
+            <div className="pp-grid">
+              <label className="pp-field pp-field-wide">
+                <span className="pp-label">Company name</span>
+                <input value={profile.company_name || ''} onChange={e => set('company_name', e.target.value)} placeholder="Munchies Gourmets LLC" autoFocus />
+              </label>
+              <label className="pp-field pp-field-wide">
+                <span className="pp-label">NAICS codes</span>
+                <input
+                  value={naicsStr}
+                  onChange={e => set('naics_codes', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                  placeholder="561720, 561210, …"
+                />
+                <span className="pp-note">{FIELD_NOTES.naics} Don't know yours yet? Browse the <a href="https://www.naics.com/search/" target="_blank" rel="noreferrer">NAICS lookup</a> or skip this — WARDOG defaults to a broad services code you can change anytime.</span>
+              </label>
+            </div>
+            <p className="pp-note pp-note-block">Small business or set-aside status, if you have one — optional, you can also add this later.</p>
+            <div className="pp-chips">
+              {CERT_OPTIONS.map(c => (
+                <button
+                  key={c}
+                  type="button"
+                  className={`pp-chip ${(profile.certifications || []).includes(c) ? 'active' : ''}`}
+                  onClick={() => toggleCert(c)}
+                >
+                  {(profile.certifications || []).includes(c) && <Check size={12} />} {c}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="pp-save-row">
+            <button className="btn-primary" onClick={saveQuickAndFindWork} disabled={saving || !hasMinimum}>
+              {saving ? 'Saving…' : 'Save & find work'} <ArrowRight size={15} />
+            </button>
+            <button className="btn-outline" onClick={() => setQuickMode(false)}>
+              <Settings size={14} /> Full passport (UEI, CAGE, signer info)
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="pp">
@@ -105,6 +313,9 @@ export default function Passport() {
             <h1>Business Passport</h1>
             <p>The one page you'll use every day — your registered identity, your status, and who's authorized to sign if you win.</p>
           </div>
+          <button className="btn-outline pp-quick-toggle" onClick={() => setQuickMode(true)}>
+            60-second setup
+          </button>
         </div>
 
         <div className="pp-card">
