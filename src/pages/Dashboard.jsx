@@ -64,62 +64,72 @@ export default function Dashboard() {
 
           <GetStarted />
 
-          <FunnelTracker />
+          {/* Zero-history accounts get GetStarted as the whole dashboard —
+              everything below (funnel, checklist, badges, the 12-tool grid)
+              is expansion that only earns its place once there's a first
+              proposal or some masterclass progress to show. Per V2MOM:
+              "win the one workflow... everything else is expansion, it
+              waits." Existing users see the dashboard exactly as before. */}
+          {!isNewStudent && (
+            <>
+              <FunnelTracker />
 
-          <OnboardingChecklist />
+              <OnboardingChecklist />
 
-          <MilestoneBadges />
+              <MilestoneBadges />
 
-          {isNewStudent && !bannerDismissed && (
-            <div className="dash-welcome-banner">
-              <button className="dash-welcome-close" onClick={dismissBanner} aria-label="Dismiss">
-                <X size={14} />
-              </button>
-              <h3>Welcome to FASS Flow — let's get you oriented.</h3>
-              <p>New here? Work through Night 1 of the Masterclass to learn the fundamentals, jump into WARDOG to see live opportunities matching your NAICS codes, or check the Glossary first if the jargon's the holdup.</p>
-              <div className="dash-welcome-actions">
-                <button className="btn-primary" onClick={() => navigate('/classroom')}>
-                  <BookOpen size={15} /> Start Classroom — Night 1
-                </button>
-                <button className="btn-outline" onClick={() => navigate('/wardog')}>
-                  <Compass size={15} /> Browse WARDOG
-                </button>
-                <button className="btn-outline" onClick={() => navigate('/glossary')}>
-                  <GraduationCap size={15} /> Learn the terms
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Tool launcher — each tile routes to its own page now */}
-          <div className="dash-tool-grid">
-            {TOOLS.map(tool => (
-              <div
-                key={tool.name}
-                className={`dash-tool-card ${tool.status === 'coming' ? 'dash-tab-coming' : ''}`}
-                onClick={() => tool.href && navigate(tool.href)}
-              >
-                <div className="dash-tab-top">
-                  <span className="dash-tab-name">{tool.name}</span>
-                  <span className={`dash-tool-badge ${tool.status === 'live' ? 'badge-live' : 'badge-coming'}`}>
-                    {tool.status === 'live' ? 'Live' : 'Soon'}
-                  </span>
+              {!bannerDismissed && (
+                <div className="dash-welcome-banner">
+                  <button className="dash-welcome-close" onClick={dismissBanner} aria-label="Dismiss">
+                    <X size={14} />
+                  </button>
+                  <h3>Welcome to FASS Flow — let's get you oriented.</h3>
+                  <p>New here? Work through Night 1 of the Masterclass to learn the fundamentals, jump into WARDOG to see live opportunities matching your NAICS codes, or check the Glossary first if the jargon's the holdup.</p>
+                  <div className="dash-welcome-actions">
+                    <button className="btn-primary" onClick={() => navigate('/classroom')}>
+                      <BookOpen size={15} /> Start Classroom — Night 1
+                    </button>
+                    <button className="btn-outline" onClick={() => navigate('/wardog')}>
+                      <Compass size={15} /> Browse WARDOG
+                    </button>
+                    <button className="btn-outline" onClick={() => navigate('/glossary')}>
+                      <GraduationCap size={15} /> Learn the terms
+                    </button>
+                  </div>
                 </div>
-                <span className="dash-tab-sub">{tool.sub}</span>
-                <p className="dash-tab-desc">{tool.desc}</p>
-              </div>
-            ))}
-          </div>
+              )}
 
-          <div className="dash-support">
-            <p>Questions about your engagement or pipeline?</p>
-            <a href="mailto:admin@fass.systems" className="btn-outline">
-              Contact admin@fass.systems
-            </a>
-            <a href="/support" className="btn-outline">
-              Support FASS
-            </a>
-          </div>
+              {/* Tool launcher — each tile routes to its own page now */}
+              <div className="dash-tool-grid">
+                {TOOLS.map(tool => (
+                  <div
+                    key={tool.name}
+                    className={`dash-tool-card ${tool.status === 'coming' ? 'dash-tab-coming' : ''}`}
+                    onClick={() => tool.href && navigate(tool.href)}
+                  >
+                    <div className="dash-tab-top">
+                      <span className="dash-tab-name">{tool.name}</span>
+                      <span className={`dash-tool-badge ${tool.status === 'live' ? 'badge-live' : 'badge-coming'}`}>
+                        {tool.status === 'live' ? 'Live' : 'Soon'}
+                      </span>
+                    </div>
+                    <span className="dash-tab-sub">{tool.sub}</span>
+                    <p className="dash-tab-desc">{tool.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="dash-support">
+                <p>Questions about your engagement or pipeline?</p>
+                <a href="mailto:admin@fass.systems" className="btn-outline">
+                  Contact admin@fass.systems
+                </a>
+                <a href="/support" className="btn-outline">
+                  Support FASS
+                </a>
+              </div>
+            </>
+          )}
         </div>
       </main>
     </div>

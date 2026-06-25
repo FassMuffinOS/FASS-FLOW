@@ -206,6 +206,15 @@ function daysUntil(str) {
   return diff
 }
 
+// SAM.gov's live opportunities API sometimes returns a `description` field
+// that's actually a URL pointing at a separate noticedesc endpoint, rather
+// than the solicitation text itself — printing that raw as card body copy
+// reads like a broken page, not a feature. "View on SAM.gov" already covers
+// getting to the full text, so URL-shaped descriptions are simply skipped.
+function isUrlLike(str) {
+  return typeof str === 'string' && /^https?:\/\//i.test(str.trim())
+}
+
 function DueChip({ date }) {
   const days = daysUntil(date)
   if (days === null) return null
@@ -308,7 +317,10 @@ export default function Wardog() {
       // Carrying the actual solicitation description onto the proposal row
       // is what lets R-E-A-D (and anything else reading this row) ground
       // its analysis in the real requirements instead of just title/NAICS.
-      description: opp.description || null,
+      // Skip it when SAM.gov gave back a noticedesc URL instead of real
+      // text — that would otherwise get fed straight into the AI synthesis
+      // prompt as if it were the solicitation's actual content.
+      description: (opp.description && !isUrlLike(opp.description)) ? opp.description : null,
     }).select().single()
     if (!error && data) setSavedProposals(prev => ({ ...prev, [opp.noticeId]: data.id }))
     setSavingId(null)
@@ -598,7 +610,7 @@ export default function Wardog() {
                 <span><Calendar size={13} /> Due {formatDate(opp.responseDeadLine)}</span>
               </div>
 
-              {opp.description && (
+              {opp.description && !isUrlLike(opp.description) && (
                 <p className="wd-card-desc">
                   {opp.description.slice(0, 220)}{opp.description.length > 220 ? '…' : ''}
                 </p>

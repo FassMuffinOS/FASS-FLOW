@@ -84,6 +84,61 @@ a.shell-nav-item:hover {
   color: var(--dark-teal) !important;
 }
 
+/* Free-tier locked nav items — same shape as a normal nav link, but a
+   <button> (not a <Link>) that routes to /pricing instead of the tool. */
+.shell-nav-locked {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  opacity: 0.6;
+}
+.shell-nav-locked:hover {
+  background: var(--bg-base);
+  color: var(--text-secondary);
+  opacity: 0.85;
+}
+.shell-nav-lock {
+  margin-left: auto;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* Collapsible "More tools — unlocks on Pro" group at the bottom of the
+   free-tier nav, holding everything tiered 'locked'. */
+.shell-navgroup-more {
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  margin-top: 4px;
+}
+.shell-navgroup-more-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  padding: 8px 12px 3px;
+}
+.shell-navgroup-more-toggle span {
+  flex: 1;
+  text-align: left;
+}
+.shell-more-chevron {
+  transition: transform 0.15s;
+}
+.shell-more-chevron.shell-more-open {
+  transform: rotate(180deg);
+}
+
 .shell-nav-soon {
   opacity: 0.5;
   cursor: default;

@@ -37,8 +37,13 @@ export default function FunnelTracker() {
       const props = propRes.data || []
       const stages = props.map(p => p.stage)
       const sumVal = list => list.reduce((acc, p) => acc + (Number(p.estimated_value) || 0), 0)
+      // Every proposal in the pipeline was, by definition, sourced from
+      // somewhere — even rows created before WARDOG started writing to the
+      // `opportunities` table. Floor "sourced" at the proposal count so the
+      // funnel can never show downstream stages outrunning the top of the
+      // funnel (e.g. "Sourced: 0" next to "Responding: 2").
       setCounts({
-        sourced: oppRes.count || 0,
+        sourced: Math.max(oppRes.count || 0, props.length),
         responding: stages.filter(s => s === 'flagged' || s === 'scored' || s === 'pursuing').length,
         output: docRes.count || 0,
         submitted: stages.filter(s => s === 'submitted' || s === 'awarded').length,

@@ -22,6 +22,10 @@ export default function CapturesGallery() {
     () => new URLSearchParams(window.location.search).get('proposalId') || 'all'
   )
   const [loading, setLoading] = useState(true)
+  // In-app delete confirmation, replacing the browser's native
+  // window.confirm() — consistent with the rest of the product's styling
+  // and not jarring on mobile (where native confirm dialogs look broken).
+  const [pendingDelete, setPendingDelete] = useState(null)
 
   useEffect(() => {
     if (session?.user?.id) load()
@@ -39,8 +43,14 @@ export default function CapturesGallery() {
     setLoading(false)
   }
 
-  async function remove(c) {
-    if (!window.confirm('Delete this capture?')) return
+  function requestRemove(c) {
+    setPendingDelete(c)
+  }
+
+  async function confirmRemove() {
+    const c = pendingDelete
+    if (!c) return
+    setPendingDelete(null)
     setCaptures(prev => prev.filter(x => x.id !== c.id))
     await supabase.from('site_captures').delete().eq('id', c.id)
     if (c.storage_path) await supabase.storage.from('site-captures').remove([c.storage_path])
@@ -109,12 +119,27 @@ export default function CapturesGallery() {
                     </div>
                     {c.note ? <p className="cg-note">{c.note}</p> : <p className="cg-note cg-note-empty">No note</p>}
                   </div>
-                  <button className="cg-del" onClick={() => remove(c)} title="Delete"><Trash2 size={15} /></button>
+                  <button className="cg-del" onClick={() => requestRemove(c)} title="Delete"><Trash2 size={15} /></button>
                 </div>
               ))}
             </div>
           </section>
         ))
+      )}
+
+      {pendingDelete && (
+        <div className="cg-confirm-scrim" onClick={() => setPendingDelete(null)}>
+          <div className="cg-confirm-modal" onClick={e => e.stopPropagation()}>
+            <p className="cg-confirm-title">Delete this capture?</p>
+            <p className="cg-confirm-body">This removes the photo and note. This can't be undone.</p>
+            <div className="cg-confirm-actions">
+              <button className="cg-confirm-cancel" onClick={() => setPendingDelete(null)}>Cancel</button>
+              <button className="cg-confirm-delete" onClick={confirmRemove}>
+                <Trash2 size={14} /> Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

@@ -630,6 +630,15 @@ export default function Read() {
   const answeredCount = QUESTIONS.filter(q => q.subs.every(s => answers[s.id] !== undefined)).length
   const allAnswered = answeredCount === QUESTIONS.length
   const rec = recommendation(score)
+  // Before any question is answered, score is 0 and recommendation() would
+  // otherwise show a red "PASS — do not bid" verdict by default, which reads
+  // as a real judgment on an opportunity nobody has evaluated yet. Show a
+  // neutral "not yet scored" state instead until at least one section has
+  // an answer; handleSave's status mapping still uses the real `rec` once
+  // all sections are complete.
+  const displayRec = answeredCount === 0
+    ? { label: 'NOT YET SCORED', variant: 'neutral', text: 'Answer the six sections below to get your bid/no-bid recommendation.' }
+    : rec
   const pct = Math.min((score / 6) * 100, 100)
 
   function handleAnswer(subId, value) {
@@ -677,7 +686,7 @@ export default function Read() {
     setSaving(false)
   }
 
-  const RecIcon = rec.variant === 'go' ? CheckCircle : rec.variant === 'maybe' ? AlertCircle : XCircle
+  const RecIcon = displayRec.variant === 'go' ? CheckCircle : displayRec.variant === 'maybe' ? AlertCircle : displayRec.variant === 'neutral' ? HelpCircle : XCircle
 
   return (
     <div className="rd">
@@ -772,19 +781,19 @@ export default function Read() {
                 <div>
                   <div className="rd-total-label">Total Score</div>
                   <div className="rd-total-num">
-                    <span className={`rd-total-val score-${rec.variant}`}>{score.toFixed(1)}</span>
+                    <span className={`rd-total-val score-${displayRec.variant}`}>{score.toFixed(1)}</span>
                     <span className="rd-total-max">/ 6.0</span>
                   </div>
                 </div>
-                <div className={`rd-rec-pill rec-${rec.variant}`}>
+                <div className={`rd-rec-pill rec-${displayRec.variant}`}>
                   <RecIcon size={16} />
-                  {rec.label}
+                  {displayRec.label}
                 </div>
               </div>
 
               {/* Animated score bar */}
               <div className="rd-score-track">
-                <div className={`rd-score-fill score-fill-${rec.variant}`} style={{ width: `${pct}%` }} />
+                <div className={`rd-score-fill score-fill-${displayRec.variant}`} style={{ width: `${pct}%` }} />
                 <div className="rd-score-marker" style={{ left: '50%' }} title="Conditional (3.0)" />
                 <div className="rd-score-marker" style={{ left: '75%' }} title="Pursue (4.5)" />
               </div>
@@ -794,7 +803,7 @@ export default function Read() {
                 <span className="rd-axis-high">4.5 Pursue</span>
                 <span>6</span>
               </div>
-              <p className="rd-rec-text">{rec.text}</p>
+              <p className="rd-rec-text">{displayRec.text}</p>
             </div>
           </div>
 
@@ -832,11 +841,11 @@ export default function Read() {
 
           {/* Save */}
           <div className="rd-footer">
-            <div className={`rd-decision rec-${rec.variant}`}>
+            <div className={`rd-decision rec-${displayRec.variant}`}>
               <RecIcon size={26} />
               <div>
-                <h2 className="rd-decision-label">{rec.label}</h2>
-                <p className="rd-decision-text">{rec.text}</p>
+                <h2 className="rd-decision-label">{displayRec.label}</h2>
+                <p className="rd-decision-text">{displayRec.text}</p>
               </div>
             </div>
             {saveError && <p className="rd-save-error">{saveError}</p>}
