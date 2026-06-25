@@ -93,10 +93,12 @@ export default function Passport() {
   const [bizApplied, setBizApplied] = useState(false)
 
   // FASS Wallet — free preview renders the moment bizResult is found
-  // above; this state only covers the paywalled real-pass unlock.
-  // walletSlug doubles as "a checkout/purchase exists for this result".
+  // above. walletSlug existing + !walletPurchased means a real, signed,
+  // watermarked pass already exists (claimed via /free); walletPurchased
+  // means it's been upgraded and the watermark is gone.
   const [walletSlug, setWalletSlug] = useState(null)
   const [walletPurchased, setWalletPurchased] = useState(false)
+  const [claimingFree, setClaimingFree] = useState(false)
   const [walletCheckingOut, setWalletCheckingOut] = useState(false)
   const [walletError, setWalletError] = useState('')
 
@@ -379,11 +381,52 @@ export default function Passport() {
     }
   }
 
-  // Kicks off the one-time Stripe Checkout for a real, signed .pkpass of
-  // this business — same fetch/redirect pattern as Pricing.jsx's
-  // subscription checkout, just mode="payment" on the backend instead of
-  // mode="subscription". The free preview/customization above never calls
-  // this — only the actual unlock ships the chosen design to the backend.
+  // Real, signed .pkpass — right now, no Stripe. The test-drive path: try
+  // the actual card on your phone before paying anything. Stays watermarked
+  // (handled server-side off the purchased flag) until upgraded below.
+  async function claimFreeCard() {
+    const biz = bizResult || savedBusiness
+    if (!biz || !session?.user || !API_BASE) return
+    setClaimingFree(true)
+    setWalletError('')
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/wallet/free`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: session.user.id,
+          business_name: biz.name,
+          address: biz.address,
+          naics: biz.naics_guess,
+          website: biz.website,
+          phone: biz.phone,
+          bg_color: resolveCardHex(),
+          card_style: cardStyle,
+          logo_url: cardLogoUrl,
+          show_address: showAddress,
+          show_naics: showNaics,
+          show_phone: showPhone,
+          show_website: showWebsite,
+        }),
+      })
+      if (!res.ok) {
+        setWalletError('Could not create your free card. Try again in a moment.')
+        return
+      }
+      const data = await res.json()
+      if (data?.slug) setWalletSlug(data.slug)
+    } catch {
+      setWalletError('Could not create your free card. Try again in a moment.')
+    } finally {
+      setClaimingFree(false)
+    }
+  }
+
+  // Kicks off the one-time Stripe Checkout that removes the watermark —
+  // same fetch/redirect pattern as Pricing.jsx's subscription checkout,
+  // just mode="payment" on the backend instead of mode="subscription". If
+  // a free card was already claimed, walletSlug is sent along so this
+  // upgrades that same pass instead of minting a second one.
   async function unlockWallet() {
     const biz = bizResult || savedBusiness
     if (!biz || !session?.user || !API_BASE) return
@@ -408,6 +451,7 @@ export default function Passport() {
           show_naics: showNaics,
           show_phone: showPhone,
           show_website: showWebsite,
+          slug: walletSlug,
         }),
       })
       if (res.status === 503) {
@@ -522,12 +566,14 @@ export default function Passport() {
           {walletBusiness.naics_guess && showNaics && <div className="pp-wallet-card-row">NAICS {walletBusiness.naics_guess}</div>}
           {walletBusiness.phone && showPhone && <div className="pp-wallet-card-row">{walletBusiness.phone}</div>}
           {walletBusiness.website && showWebsite && <div className="pp-wallet-card-row">{walletBusiness.website}</div>}
-          <div className="pp-wallet-card-foot">{walletPurchased ? 'Your real FASS Wallet card' : 'Preview — not a real pass'}</div>
+          <div className="pp-wallet-card-foot">
+            {walletPurchased ? 'Your real FASS Wallet card' : walletSlug ? 'Real card — free, watermarked' : 'Preview — not a real pass'}
+          </div>
         </div>
         <div className="pp-wallet-copy">
           {walletPurchased ? (
             <>
-              <p className="pp-note pp-note-block">Your real, signed FASS Wallet card is ready. Changed something above? Save it, then re-download — the link always reflects your current design.</p>
+              <p className="pp-note pp-note-block">Your real, signed FASS Wallet card is ready — no watermark. Changed something above? Save it, then re-download — the link always reflects your current design.</p>
               <a
                 className="btn-primary"
                 href={`${API_BASE}/api/v1/wallet/pass?slug=${walletSlug}`}
@@ -535,15 +581,26 @@ export default function Passport() {
                 <Download size={14} /> Add to Apple Wallet
               </a>
             </>
+          ) : walletSlug ? (
+            <div className="pp-wallet-actions">
+              <p className="pp-note pp-note-block">Your free card is real and signed — add it to Apple Wallet and test it on your phone right now. It carries a small "Created with FASS" watermark until you upgrade.</p>
+              <a
+                className="btn-primary"
+                href={`${API_BASE}/api/v1/wallet/pass?slug=${walletSlug}`}
+              >
+                <Download size={14} /> Add free card to Apple Wallet
+              </a>
+              <button type="button" className="btn-outline" onClick={unlockWallet} disabled={walletCheckingOut}>
+                <Lock size={14} /> {walletCheckingOut ? 'Starting checkout…' : 'Upgrade — remove watermark'}
+              </button>
+              {walletError && <p className="pp-note pp-biz-error">{walletError}</p>}
+            </div>
           ) : (
             <>
-              <p className="pp-note pp-note-block">This is a free preview. Unlock the real card to add it to Apple Wallet and share it — it carries a QR code linking to your public capability page.</p>
-              <button type="button" className="btn-primary" onClick={unlockWallet} disabled={walletCheckingOut}>
-                <Lock size={14} /> {walletCheckingOut ? 'Starting checkout…' : 'Unlock & add to Apple Wallet'}
+              <p className="pp-note pp-note-block">Get a real, signed Apple Wallet card for free right now — it carries a QR code linking to your public capability page and a small FASS watermark you can remove anytime by upgrading.</p>
+              <button type="button" className="btn-primary" onClick={claimFreeCard} disabled={claimingFree}>
+                <Download size={14} /> {claimingFree ? 'Creating your free card…' : 'Get my free Wallet card'}
               </button>
-              {walletSlug && !walletPurchased && (
-                <p className="pp-note">Finishing up your purchase…</p>
-              )}
               {walletError && <p className="pp-note pp-biz-error">{walletError}</p>}
             </>
           )}

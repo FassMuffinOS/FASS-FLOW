@@ -340,6 +340,18 @@
   min-width: 0;
 }
 
+.pp-wallet-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.pp-wallet-actions .btn-primary,
+.pp-wallet-actions .btn-outline {
+  width: auto;
+}
+
 .pp-wallet-card-logo {
   height: 22px;
   max-width: 120px;
