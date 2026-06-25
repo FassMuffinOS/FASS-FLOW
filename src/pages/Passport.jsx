@@ -86,9 +86,10 @@ export default function Passport() {
   const [walletError, setWalletError] = useState('')
 
   // Card customization — all free to design/preview; only the real signed
-  // .pkpass download stays behind the Stripe paywall above. Lives entirely
-  // in local state until unlockWallet() ships it to checkout, which is the
-  // first time any of this needs to be persisted server-side.
+  // .pkpass download stays behind the Stripe paywall above. Lives in local
+  // state; unlockWallet() ships it to /checkout the first time, and once a
+  // slug exists, saveCardCustomization() can patch it any time afterward
+  // (even after purchase — design changes never get re-paywalled).
   const [cardBgColor, setCardBgColor] = useState('#240e41')
   const [cardLogoUrl, setCardLogoUrl] = useState(null)
   const [cardLogoUploading, setCardLogoUploading] = useState(false)
@@ -97,6 +98,15 @@ export default function Passport() {
   const [showNaics, setShowNaics] = useState(true)
   const [showPhone, setShowPhone] = useState(true)
   const [showWebsite, setShowWebsite] = useState(true)
+  const [cardSaving, setCardSaving] = useState(false)
+  const [cardSaved, setCardSaved] = useState(false)
+
+  // The business behind whatever card is currently on screen — a fresh
+  // Google match from "Find my business" if there is one, otherwise
+  // whatever was already loaded from a previous visit (savedBusiness).
+  // This is what lets the customization + wallet sections show up even
+  // for returning users who aren't mid-search right now.
+  const [savedBusiness, setSavedBusiness] = useState(null)
 
   useEffect(() => {
     if (!session?.user?.id) return
@@ -114,6 +124,39 @@ export default function Passport() {
       }
     }
     load()
+    return () => { cancelled = true }
+  }, [session?.user?.id])
+
+  // Pick up any card this user already started — design, slug, and
+  // purchase state — so the customization/wallet sections show their real
+  // current card on every visit instead of resetting to a blank preview.
+  useEffect(() => {
+    if (!session?.user?.id || !API_BASE) return
+    let cancelled = false
+    async function loadMine() {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/wallet/mine?user_id=${session.user.id}`)
+        if (!res.ok) return // 404 = never started a card yet, nothing to load
+        const data = await res.json()
+        if (cancelled) return
+        setSavedBusiness({
+          name: data.business_name,
+          address: data.address,
+          naics_guess: data.naics,
+          website: data.website,
+          phone: data.phone,
+        })
+        setWalletSlug(data.slug)
+        setWalletPurchased(!!data.purchased)
+        setCardBgColor(data.bg_color || '#240e41')
+        setCardLogoUrl(data.logo_url || null)
+        setShowAddress(data.show_address ?? true)
+        setShowNaics(data.show_naics ?? true)
+        setShowPhone(data.show_phone ?? true)
+        setShowWebsite(data.show_website ?? true)
+      } catch { /* no existing card — fine, leave the preview blank */ }
+    }
+    loadMine()
     return () => { cancelled = true }
   }, [session?.user?.id])
 
@@ -278,13 +321,42 @@ export default function Passport() {
     }
   }
 
+  // Persists design changes against a card that already has a slug —
+  // works whether or not it's been purchased yet, since generate_pkpass()
+  // reads bg_color/logo_url/show_* fresh off the row every time a .pkpass
+  // is downloaded. Customizing never gets re-paywalled after the unlock.
+  async function saveCardCustomization() {
+    if (!walletSlug || !API_BASE) return
+    setCardSaving(true)
+    setCardSaved(false)
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/wallet/customize`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug: walletSlug,
+          bg_color: cardBgColor,
+          logo_url: cardLogoUrl,
+          show_address: showAddress,
+          show_naics: showNaics,
+          show_phone: showPhone,
+          show_website: showWebsite,
+        }),
+      })
+      if (res.ok) setCardSaved(true)
+    } catch { /* keep the local preview either way */ } finally {
+      setCardSaving(false)
+    }
+  }
+
   // Kicks off the one-time Stripe Checkout for a real, signed .pkpass of
   // this business — same fetch/redirect pattern as Pricing.jsx's
   // subscription checkout, just mode="payment" on the backend instead of
   // mode="subscription". The free preview/customization above never calls
   // this — only the actual unlock ships the chosen design to the backend.
   async function unlockWallet() {
-    if (!bizResult || !session?.user || !API_BASE) return
+    const biz = bizResult || savedBusiness
+    if (!biz || !session?.user || !API_BASE) return
     setWalletCheckingOut(true)
     setWalletError('')
     try {
@@ -294,11 +366,11 @@ export default function Passport() {
         body: JSON.stringify({
           user_id: session.user.id,
           email: session.user.email,
-          business_name: bizResult.name,
-          address: bizResult.address,
-          naics: bizResult.naics_guess,
-          website: bizResult.website,
-          phone: bizResult.phone,
+          business_name: biz.name,
+          address: biz.address,
+          naics: biz.naics_guess,
+          website: biz.website,
+          phone: biz.phone,
           bg_color: cardBgColor,
           logo_url: cardLogoUrl,
           show_address: showAddress,
@@ -325,6 +397,101 @@ export default function Passport() {
 
   const naicsStr = (profile.naics_codes || []).join(', ')
   const hasMinimum = (profile.company_name || '').trim().length > 0 && (profile.naics_codes || []).length > 0
+
+  // Whatever business the customize/wallet sections below should reflect —
+  // a fresh "Find my business" match takes priority, otherwise fall back
+  // to whatever card this user already has on file.
+  const walletBusiness = bizResult || savedBusiness
+
+  const customizeCard = walletBusiness && (
+    <div className="pp-card">
+      <div className="pp-card-head">
+        <Palette size={16} /> <span>Customize your card</span>
+      </div>
+      <p className="pp-note pp-note-block">Free to design — pick a color, add your logo, and choose what shows. Only the real, signed Apple Wallet card is paywalled.</p>
+      <div className="pp-customize">
+        <label className="pp-customize-row">
+          <span className="pp-label"><Palette size={13} /> Background color</span>
+          <input type="color" value={cardBgColor} onChange={e => { setCardBgColor(e.target.value); setCardSaved(false) }} />
+        </label>
+        <label className="pp-customize-row">
+          <span className="pp-label"><Image size={13} /> Logo</span>
+          <input type="file" accept="image/*" onChange={uploadCardLogo} disabled={cardLogoUploading} />
+          {cardLogoUploading && <span className="pp-note">Uploading…</span>}
+        </label>
+        {cardLogoError && <p className="pp-note pp-biz-error">{cardLogoError}</p>}
+        <div className="pp-customize-toggles">
+          <button type="button" className={`pp-chip ${showAddress ? 'active' : ''}`} onClick={() => { setShowAddress(v => !v); setCardSaved(false) }}>
+            {showAddress ? <Eye size={12} /> : <EyeOff size={12} />} Address
+          </button>
+          <button type="button" className={`pp-chip ${showNaics ? 'active' : ''}`} onClick={() => { setShowNaics(v => !v); setCardSaved(false) }}>
+            {showNaics ? <Eye size={12} /> : <EyeOff size={12} />} NAICS
+          </button>
+          <button type="button" className={`pp-chip ${showPhone ? 'active' : ''}`} onClick={() => { setShowPhone(v => !v); setCardSaved(false) }}>
+            {showPhone ? <Eye size={12} /> : <EyeOff size={12} />} Phone
+          </button>
+          <button type="button" className={`pp-chip ${showWebsite ? 'active' : ''}`} onClick={() => { setShowWebsite(v => !v); setCardSaved(false) }}>
+            {showWebsite ? <Eye size={12} /> : <EyeOff size={12} />} Website
+          </button>
+        </div>
+        {walletSlug && (
+          <div className="pp-customize-save">
+            <button type="button" className="btn-outline" onClick={saveCardCustomization} disabled={cardSaving}>
+              {cardSaving ? 'Saving…' : 'Save changes to my card'}
+            </button>
+            {cardSaved && <span className="pp-saved"><Check size={14} /> Saved</span>}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+
+  const walletCard = walletBusiness && (
+    <div className="pp-card">
+      <div className="pp-card-head">
+        <Wallet size={16} /> <span>FASS Wallet</span>
+      </div>
+      <div className="pp-wallet-preview">
+        <div className="pp-wallet-card" style={{ background: cardBgColor }}>
+          {cardLogoUrl ? (
+            <img src={cardLogoUrl} alt="" className="pp-wallet-card-logo" />
+          ) : (
+            <div className="pp-wallet-card-org">FASS Wallet</div>
+          )}
+          <div className="pp-wallet-card-name">{walletBusiness.name}</div>
+          {walletBusiness.address && showAddress && <div className="pp-wallet-card-row">{walletBusiness.address}</div>}
+          {walletBusiness.naics_guess && showNaics && <div className="pp-wallet-card-row">NAICS {walletBusiness.naics_guess}</div>}
+          {walletBusiness.phone && showPhone && <div className="pp-wallet-card-row">{walletBusiness.phone}</div>}
+          {walletBusiness.website && showWebsite && <div className="pp-wallet-card-row">{walletBusiness.website}</div>}
+          <div className="pp-wallet-card-foot">{walletPurchased ? 'Your real FASS Wallet card' : 'Preview — not a real pass'}</div>
+        </div>
+        <div className="pp-wallet-copy">
+          {walletPurchased ? (
+            <>
+              <p className="pp-note pp-note-block">Your real, signed FASS Wallet card is ready. Changed something above? Save it, then re-download — the link always reflects your current design.</p>
+              <a
+                className="btn-primary"
+                href={`${API_BASE}/api/v1/wallet/pass?slug=${walletSlug}`}
+              >
+                <Download size={14} /> Add to Apple Wallet
+              </a>
+            </>
+          ) : (
+            <>
+              <p className="pp-note pp-note-block">This is a free preview. Unlock the real card to add it to Apple Wallet and share it — it carries a QR code linking to your public capability page.</p>
+              <button type="button" className="btn-primary" onClick={unlockWallet} disabled={walletCheckingOut}>
+                <Lock size={14} /> {walletCheckingOut ? 'Starting checkout…' : 'Unlock & add to Apple Wallet'}
+              </button>
+              {walletSlug && !walletPurchased && (
+                <p className="pp-note">Finishing up your purchase…</p>
+              )}
+              {walletError && <p className="pp-note pp-biz-error">{walletError}</p>}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
 
   if (quickMode) {
     return (
@@ -385,87 +552,8 @@ export default function Passport() {
             )}
           </div>
 
-          {bizResult && (
-            <div className="pp-card">
-              <div className="pp-card-head">
-                <Palette size={16} /> <span>Customize your card</span>
-              </div>
-              <p className="pp-note pp-note-block">Free to design — pick a color, add your logo, and choose what shows. Only the real, signed Apple Wallet card is paywalled below.</p>
-              <div className="pp-customize">
-                <label className="pp-customize-row">
-                  <span className="pp-label"><Palette size={13} /> Background color</span>
-                  <input type="color" value={cardBgColor} onChange={e => setCardBgColor(e.target.value)} />
-                </label>
-                <label className="pp-customize-row">
-                  <span className="pp-label"><Image size={13} /> Logo</span>
-                  <input type="file" accept="image/*" onChange={uploadCardLogo} disabled={cardLogoUploading} />
-                  {cardLogoUploading && <span className="pp-note">Uploading…</span>}
-                </label>
-                {cardLogoError && <p className="pp-note pp-biz-error">{cardLogoError}</p>}
-                <div className="pp-customize-toggles">
-                  <button type="button" className={`pp-chip ${showAddress ? 'active' : ''}`} onClick={() => setShowAddress(v => !v)}>
-                    {showAddress ? <Eye size={12} /> : <EyeOff size={12} />} Address
-                  </button>
-                  <button type="button" className={`pp-chip ${showNaics ? 'active' : ''}`} onClick={() => setShowNaics(v => !v)}>
-                    {showNaics ? <Eye size={12} /> : <EyeOff size={12} />} NAICS
-                  </button>
-                  <button type="button" className={`pp-chip ${showPhone ? 'active' : ''}`} onClick={() => setShowPhone(v => !v)}>
-                    {showPhone ? <Eye size={12} /> : <EyeOff size={12} />} Phone
-                  </button>
-                  <button type="button" className={`pp-chip ${showWebsite ? 'active' : ''}`} onClick={() => setShowWebsite(v => !v)}>
-                    {showWebsite ? <Eye size={12} /> : <EyeOff size={12} />} Website
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {bizResult && (
-            <div className="pp-card">
-              <div className="pp-card-head">
-                <Wallet size={16} /> <span>FASS Wallet</span>
-              </div>
-              <div className="pp-wallet-preview">
-                <div className="pp-wallet-card" style={{ background: cardBgColor }}>
-                  {cardLogoUrl ? (
-                    <img src={cardLogoUrl} alt="" className="pp-wallet-card-logo" />
-                  ) : (
-                    <div className="pp-wallet-card-org">FASS Wallet</div>
-                  )}
-                  <div className="pp-wallet-card-name">{bizResult.name}</div>
-                  {bizResult.address && showAddress && <div className="pp-wallet-card-row">{bizResult.address}</div>}
-                  {bizResult.naics_guess && showNaics && <div className="pp-wallet-card-row">NAICS {bizResult.naics_guess}</div>}
-                  {bizResult.phone && showPhone && <div className="pp-wallet-card-row">{bizResult.phone}</div>}
-                  {bizResult.website && showWebsite && <div className="pp-wallet-card-row">{bizResult.website}</div>}
-                  <div className="pp-wallet-card-foot">Preview — not a real pass</div>
-                </div>
-                <div className="pp-wallet-copy">
-                  {walletPurchased ? (
-                    <>
-                      <p className="pp-note pp-note-block">Your real, signed FASS Wallet card is ready.</p>
-                      <a
-                        className="btn-primary"
-                        href={`${API_BASE}/api/v1/wallet/pass?slug=${walletSlug}`}
-                      >
-                        <Download size={14} /> Add to Apple Wallet
-                      </a>
-                    </>
-                  ) : (
-                    <>
-                      <p className="pp-note pp-note-block">This is a free preview. Unlock the real card to add it to Apple Wallet and share it — it carries a QR code linking to your public capability page.</p>
-                      <button type="button" className="btn-primary" onClick={unlockWallet} disabled={walletCheckingOut}>
-                        <Lock size={14} /> {walletCheckingOut ? 'Starting checkout…' : 'Unlock & add to Apple Wallet'}
-                      </button>
-                      {walletSlug && !walletPurchased && (
-                        <p className="pp-note">Finishing up your purchase…</p>
-                      )}
-                      {walletError && <p className="pp-note pp-biz-error">{walletError}</p>}
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
+          {customizeCard}
+          {walletCard}
 
           <div className="pp-card">
             <div className="pp-card-head">
@@ -562,6 +650,9 @@ export default function Passport() {
             </label>
           </div>
         </div>
+
+        {customizeCard}
+        {walletCard}
 
         <div className="pp-card">
           <div className="pp-card-head">

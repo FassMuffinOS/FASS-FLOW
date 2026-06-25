@@ -388,6 +388,13 @@
   gap: 8px;
 }
 
+.pp-customize-save {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
 @media (max-width: 600px) {
   .pp-grid { grid-template-columns: 1fr; }
   .pp-biz-search { flex-direction: column; }
