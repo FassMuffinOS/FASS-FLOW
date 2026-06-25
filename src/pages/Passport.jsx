@@ -46,6 +46,21 @@ const SBA_CERT_LINKS = {
   VOSB: { url: 'https://veterans.certify.sba.gov/', note: 'VOSB certification (VetCert) — same portal as SDVOSB, no service-connected disability required.' },
 }
 
+// Canva-like style presets for the wallet card — each maps to a CSS class
+// (Passport.css) with a real gradient/shimmer/foil treatment, plus a flat
+// fallback hex since Apple Wallet's generic pass type only ever supports
+// one solid backgroundColor (no gradients on the real signed .pkpass).
+const CARD_STYLES = [
+  { id: 'classic', label: 'Classic', hex: '#240e41' },
+  { id: 'metallic-gold', label: 'Gold', hex: '#b8860b' },
+  { id: 'metallic-silver', label: 'Silver', hex: '#9aa0a6' },
+  { id: 'rose-gold', label: 'Rose Gold', hex: '#b76e79' },
+  { id: 'icy', label: 'Icy', hex: '#9bd3ec' },
+  { id: 'holographic', label: 'Holographic', hex: '#8ee6ff' },
+  { id: 'carbon', label: 'Carbon', hex: '#1c1c1e' },
+  { id: 'emerald', label: 'Emerald', hex: '#0f5132' },
+]
+
 const FIELD_NOTES = {
   sam_uei: "A 12-character ID SAM.gov assigns when you register. Every federal solicitation, contract, and award is tied to it — contracting officers use it to confirm you're a real, eligible business before they'll even open your proposal.",
   cage_code: 'Assigned by the Defense Logistics Agency during SAM.gov registration. DoD systems and many civilian agencies use it to identify your business location. Not every business has one immediately — it can take a few extra days after UEI registration.',
@@ -91,6 +106,9 @@ export default function Passport() {
   // slug exists, saveCardCustomization() can patch it any time afterward
   // (even after purchase — design changes never get re-paywalled).
   const [cardBgColor, setCardBgColor] = useState('#240e41')
+  // Which Canva-like preset is active — 'custom' means "use the plain
+  // color picker below (cardBgColor)" instead of one of CARD_STYLES.
+  const [cardStyle, setCardStyle] = useState('classic')
   const [cardLogoUrl, setCardLogoUrl] = useState(null)
   const [cardLogoUploading, setCardLogoUploading] = useState(false)
   const [cardLogoError, setCardLogoError] = useState('')
@@ -149,6 +167,7 @@ export default function Passport() {
         setWalletSlug(data.slug)
         setWalletPurchased(!!data.purchased)
         setCardBgColor(data.bg_color || '#240e41')
+        setCardStyle(data.card_style || 'classic')
         setCardLogoUrl(data.logo_url || null)
         setShowAddress(data.show_address ?? true)
         setShowNaics(data.show_naics ?? true)
@@ -321,6 +340,16 @@ export default function Passport() {
     }
   }
 
+  // Apple Wallet's generic pass type only supports one flat backgroundColor
+  // — no gradients, no shimmer — so the real .pkpass always falls back to
+  // a representative solid hex per preset. The rich CSS treatment is purely
+  // a web-preview/Canva-like thing; card_style is saved alongside it so the
+  // preset itself survives a reload even though the real pass can't show it.
+  function resolveCardHex() {
+    if (cardStyle === 'custom') return cardBgColor
+    return CARD_STYLES.find(s => s.id === cardStyle)?.hex || '#240e41'
+  }
+
   // Persists design changes against a card that already has a slug —
   // works whether or not it's been purchased yet, since generate_pkpass()
   // reads bg_color/logo_url/show_* fresh off the row every time a .pkpass
@@ -335,7 +364,8 @@ export default function Passport() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           slug: walletSlug,
-          bg_color: cardBgColor,
+          bg_color: resolveCardHex(),
+          card_style: cardStyle,
           logo_url: cardLogoUrl,
           show_address: showAddress,
           show_naics: showNaics,
@@ -371,7 +401,8 @@ export default function Passport() {
           naics: biz.naics_guess,
           website: biz.website,
           phone: biz.phone,
-          bg_color: cardBgColor,
+          bg_color: resolveCardHex(),
+          card_style: cardStyle,
           logo_url: cardLogoUrl,
           show_address: showAddress,
           show_naics: showNaics,
@@ -408,12 +439,37 @@ export default function Passport() {
       <div className="pp-card-head">
         <Palette size={16} /> <span>Customize your card</span>
       </div>
-      <p className="pp-note pp-note-block">Free to design — pick a color, add your logo, and choose what shows. Only the real, signed Apple Wallet card is paywalled.</p>
+      <p className="pp-note pp-note-block">Free to design — pick a finish, add your logo, and choose what shows. Only the real, signed Apple Wallet card is paywalled.</p>
       <div className="pp-customize">
-        <label className="pp-customize-row">
-          <span className="pp-label"><Palette size={13} /> Background color</span>
-          <input type="color" value={cardBgColor} onChange={e => { setCardBgColor(e.target.value); setCardSaved(false) }} />
-        </label>
+        <div className="pp-style-row">
+          <span className="pp-label"><Palette size={13} /> Card finish</span>
+          <div className="pp-style-grid">
+            {CARD_STYLES.map(s => (
+              <button
+                key={s.id}
+                type="button"
+                className={`pp-style-swatch pp-style-swatch--${s.id} ${cardStyle === s.id ? 'active' : ''}`}
+                onClick={() => { setCardStyle(s.id); setCardSaved(false) }}
+              >
+                {s.label}
+              </button>
+            ))}
+            <button
+              type="button"
+              className={`pp-style-swatch pp-style-swatch--custom ${cardStyle === 'custom' ? 'active' : ''}`}
+              onClick={() => { setCardStyle('custom'); setCardSaved(false) }}
+            >
+              Custom
+            </button>
+          </div>
+          {cardStyle === 'custom' && (
+            <label className="pp-customize-row pp-custom-color-row">
+              <span className="pp-label">Pick a color</span>
+              <input type="color" value={cardBgColor} onChange={e => { setCardBgColor(e.target.value); setCardSaved(false) }} />
+            </label>
+          )}
+          <p className="pp-note">Metallic, icy, and holographic finishes only show in this free preview and on your public capability page — Apple Wallet's real pass format only supports one flat color, so the signed card uses a close solid match automatically.</p>
+        </div>
         <label className="pp-customize-row">
           <span className="pp-label"><Image size={13} /> Logo</span>
           <input type="file" accept="image/*" onChange={uploadCardLogo} disabled={cardLogoUploading} />
@@ -452,7 +508,10 @@ export default function Passport() {
         <Wallet size={16} /> <span>FASS Wallet</span>
       </div>
       <div className="pp-wallet-preview">
-        <div className="pp-wallet-card" style={{ background: cardBgColor }}>
+        <div
+          className={`pp-wallet-card ${cardStyle !== 'custom' ? `pp-wallet-card--${cardStyle}` : ''}`}
+          style={cardStyle === 'custom' ? { background: cardBgColor } : undefined}
+        >
           {cardLogoUrl ? (
             <img src={cardLogoUrl} alt="" className="pp-wallet-card-logo" />
           ) : (

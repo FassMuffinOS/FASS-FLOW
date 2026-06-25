@@ -395,6 +395,150 @@
   margin-top: 4px;
 }
 
+/* Canva-like card finish picker --------------------------------------- */
+
+.pp-wallet-card { position: relative; overflow: hidden; }
+
+.pp-style-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pp-style-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+  gap: 8px;
+}
+
+.pp-style-swatch {
+  position: relative;
+  overflow: hidden;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  padding: 8px 6px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.pp-style-swatch:hover { transform: translateY(-2px); }
+
+.pp-style-swatch:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--teal); }
+
+.pp-style-swatch.active {
+  border-color: var(--navy);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.pp-style-swatch--custom {
+  background: repeating-linear-gradient(45deg, #e5e8eb 0 8px, #f5f6f7 8px 16px);
+  color: var(--navy);
+  text-shadow: none;
+}
+
+.pp-custom-color-row { margin-top: -2px; }
+
+/* Shared finish definitions — used by both the picker swatches and the
+   live wallet card preview, so what you pick is exactly what you see. */
+
+.pp-wallet-card--classic,
+.pp-style-swatch--classic {
+  background: linear-gradient(135deg, rgb(36, 14, 65), rgb(88, 28, 135));
+}
+
+.pp-wallet-card--metallic-gold,
+.pp-style-swatch--metallic-gold {
+  background: linear-gradient(120deg, #5c4509 0%, #d4af37 18%, #fff6d2 32%, #b8860b 48%, #fceea3 60%, #8a6c1d 76%, #d4af37 100%);
+  background-size: 220% 220%;
+}
+.pp-wallet-card--metallic-gold { animation: pp-sheen 6s ease-in-out infinite; }
+
+.pp-wallet-card--metallic-silver,
+.pp-style-swatch--metallic-silver {
+  background: linear-gradient(120deg, #4a4d50 0%, #c9cdd1 18%, #ffffff 32%, #9aa0a6 48%, #f2f4f6 60%, #6e7276 76%, #c9cdd1 100%);
+  background-size: 220% 220%;
+  color: #1a1a1a;
+  text-shadow: none;
+}
+.pp-wallet-card--metallic-silver { animation: pp-sheen 6s ease-in-out infinite; }
+
+.pp-wallet-card--rose-gold,
+.pp-style-swatch--rose-gold {
+  background: linear-gradient(120deg, #7a3b42 0%, #e8a9ad 20%, #fde2df 35%, #b76e79 50%, #f6c9c4 65%, #8d4751 80%, #e8a9ad 100%);
+  background-size: 220% 220%;
+}
+.pp-wallet-card--rose-gold { animation: pp-sheen 7s ease-in-out infinite; }
+
+.pp-wallet-card--icy,
+.pp-style-swatch--icy {
+  background: linear-gradient(135deg, #d8f0fb 0%, #9bd3ec 30%, #eaf8ff 55%, #6fb8d9 80%, #cdeefc 100%);
+  color: #0c3a52;
+  text-shadow: none;
+}
+.pp-wallet-card--icy::before {
+  content: '';
+  position: absolute;
+  inset: -10% -30%;
+  background: repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.6) 0 2px, transparent 2px 14px);
+  mix-blend-mode: screen;
+  animation: pp-frost-drift 9s linear infinite;
+  pointer-events: none;
+}
+
+.pp-wallet-card--holographic,
+.pp-style-swatch--holographic {
+  background: conic-gradient(from 0deg, #ff9ecb, #b6a7ff, #8ee6ff, #b6ffd9, #fff7a6, #ffb3b3, #ff9ecb);
+}
+.pp-wallet-card--holographic {
+  background-size: 200% 200%;
+  animation: pp-holo-spin 10s linear infinite;
+}
+.pp-wallet-card--holographic::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(100deg, rgba(255, 255, 255, 0.5) 0 3px, transparent 3px 18px);
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.pp-wallet-card--carbon,
+.pp-style-swatch--carbon {
+  background:
+    repeating-linear-gradient(45deg, #2a2a2c 0 4px, #1c1c1e 4px 8px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.04) 0 4px, transparent 4px 8px);
+}
+
+.pp-wallet-card--emerald,
+.pp-style-swatch--emerald {
+  background: linear-gradient(120deg, #06301d 0%, #1f9d63 25%, #6be0a8 40%, #0f5132 60%, #57d99c 78%, #0a3d24 100%);
+  background-size: 220% 220%;
+}
+.pp-wallet-card--emerald { animation: pp-sheen 7s ease-in-out infinite; }
+
+@keyframes pp-sheen {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes pp-holo-spin {
+  0% { background-position: 0% 0%; filter: hue-rotate(0deg); }
+  100% { background-position: 100% 100%; filter: hue-rotate(40deg); }
+}
+
+@keyframes pp-frost-drift {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(24px); }
+}
+
 @media (max-width: 600px) {
   .pp-grid { grid-template-columns: 1fr; }
   .pp-biz-search { flex-direction: column; }
