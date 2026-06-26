@@ -1,0 +1,43 @@
+.gcs {
+  min-height: 100vh;
+  background: #f4f6f8;
+  padding: 40px 16px 60px;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #111827;
+}
+
+.gcs-wrap { max-width: 480px; margin: 0 auto; text-align: center; }
+
+.gcs-state {
+  min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  color: #6b7280; font-family: 'Inter', sans-serif; padding: 24px; text-align: center;
+}
+.gcs-state-error { color: #b45309; }
+.gcs-spin { animation: gcs-spin 1s linear infinite; }
+@keyframes gcs-spin { to { transform: rotate(360deg); } }
+
+.gcs-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: linear-gradient(135deg, rgb(15, 81, 50), rgb(22, 120, 75));
+  color: #fff; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 7px 13px; border-radius: 20px; margin-bottom: 16px;
+}
+
+.gcs-success-icon { color: rgb(15, 81, 50); margin-bottom: 8px; }
+
+.gcs-title { font-size: 1.5rem; font-weight: 800; margin: 0 0 8px; letter-spacing: -0.02em; }
+.gcs-sub { font-size: 0.92rem; color: #6b7280; margin: 0 0 18px; line-height: 1.5; }
+
+.gcs-amount-field {
+  display: flex; align-items: center; gap: 7px; border: 1px solid #d1d5db;
+  border-radius: 10px; padding: 10px 14px; color: #6b7280; margin: 0 auto 16px; max-width: 220px;
+}
+.gcs-amount-field input {
+  border: none; outline: none; font-size: 1.1rem; font-weight: 700; font-family: inherit;
+  color: #111827; flex: 1; min-width: 0;
+}
+
+.gcs-btn { width: auto; display: inline-flex; }
+
+.gcs-foot { text-align: center; font-size: 0.74rem; color: #9ca3af; margin: 22px 0 4px; line-height: 1.5; }
+.gcs-foot-brand { font-weight: 700; color: #6b7280; margin-top: 6px; }

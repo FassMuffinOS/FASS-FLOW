@@ -6,7 +6,7 @@ import {
   Compass, ClipboardCheck, Kanban, ClipboardList, BookOpen,
   ShieldCheck, LogOut, GraduationCap, IdCard, DollarSign, Network, Mail,
   Award, LifeBuoy, Handshake, Calculator, HardHat, Camera,
-  Radar, Images, Trophy, Flame, Menu, X, Send, Lock, ChevronDown, Stamp, Wallet, Rocket, Crop, Megaphone,
+  Radar, Images, Trophy, Flame, Menu, X, Send, Lock, ChevronDown, Stamp, Wallet, Rocket, Crop, Megaphone, Gift,
 } from 'lucide-react'
 import AlertsBell from './AlertsBell'
 import './AppShell.css'
@@ -53,6 +53,7 @@ const NAV_GROUPS = [
     { name: 'BD Partner', icon: Handshake, to: '/bd-partner', match: ['/bd-partner'], tier: 'locked' },
     { name: 'Rewards', icon: Stamp, to: '/rewards', match: ['/rewards'], tier: 'free' },
     { name: 'Wallet Messaging', icon: Megaphone, to: '/campaigns', match: ['/campaigns'], tier: 'free' },
+    { name: 'Gift Cards', icon: Gift, to: '/giftcards', match: ['/giftcards'], tier: 'free' },
   ] },
   { label: 'Learn', items: [
     { name: 'Classroom', icon: BookOpen, to: '/classroom', match: ['/classroom'], tier: 'locked' },

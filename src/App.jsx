@@ -39,6 +39,8 @@ import Rewards from './pages/Rewards'
 import RewardsJoin from './pages/RewardsJoin'
 import WalletCampaigns from './pages/WalletCampaigns'
 import RedeemScan from './pages/RedeemScan'
+import GiftCards from './pages/GiftCards'
+import GiftCardScan from './pages/GiftCardScan'
 import Wallet from './pages/Wallet'
 import StartBusiness from './pages/StartBusiness'
 import Resize from './pages/Resize'
@@ -187,6 +189,16 @@ function AppRoutes() {
           dashboard page. */}
       <Route path="/rewards/scan/:slug" element={
         <ProtectedRoute><RedeemScan /></ProtectedRoute>
+      } />
+      <Route path="/giftcards" element={
+        <ProtectedRoute><GiftCards /></ProtectedRoute>
+      } />
+      {/* Staff redemption confirm page for gift cards — landed on after
+          scanning a customer's gift card QR with the phone's normal camera
+          app. Protected by the business's own login, same pattern as
+          /rewards/scan/:slug above. */}
+      <Route path="/giftcards/scan/:slug" element={
+        <ProtectedRoute><GiftCardScan /></ProtectedRoute>
       } />
       <Route path="/wallet" element={
         <ProtectedRoute><Wallet /></ProtectedRoute>
