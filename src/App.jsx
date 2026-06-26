@@ -11,6 +11,7 @@ import Support from './pages/Support'
 import BDPartner from './pages/BDPartner'
 import ThankYou from './pages/ThankYou'
 import SignIn from './pages/SignIn'
+import AuthCallback from './pages/AuthCallback'
 import Dashboard from './pages/Dashboard'
 import Wardog from './pages/Wardog'
 import Read from './pages/Read'
@@ -107,6 +108,7 @@ function AppRoutes() {
 
       {/* Auth routes — no Nav/Footer */}
       <Route path="/signin" element={<SignIn />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
 
       {/* Admin-only — gated by ADMIN_SECRET on the backend, not by Supabase
           session, since you may be onboarding someone before they have an
