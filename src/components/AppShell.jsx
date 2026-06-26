@@ -6,7 +6,7 @@ import {
   Compass, ClipboardCheck, Kanban, ClipboardList, BookOpen,
   ShieldCheck, LogOut, GraduationCap, IdCard, DollarSign, Network, Mail,
   Award, LifeBuoy, Handshake, Calculator, HardHat, Camera,
-  Radar, Images, Trophy, Flame, Menu, X, Send, Lock, ChevronDown, Stamp, Wallet, Rocket, Crop, Megaphone, Gift,
+  Radar, Images, Trophy, Flame, Menu, X, Send, Lock, ChevronDown, Stamp, Wallet, Rocket, Crop, Megaphone, Gift, Landmark,
 } from 'lucide-react'
 import AlertsBell from './AlertsBell'
 import './AppShell.css'
@@ -63,6 +63,7 @@ const NAV_GROUPS = [
   { label: 'Account', items: [
     { name: 'Passport', icon: IdCard, to: '/passport', match: ['/passport'], tier: 'free' },
     { name: 'Wallet', icon: Wallet, to: '/wallet', match: ['/wallet'], tier: 'free' },
+    { name: 'Payouts', icon: Landmark, to: '/payouts', match: ['/payouts'], tier: 'free' },
     { name: 'Support', icon: LifeBuoy, to: '/support', match: ['/support'], tier: 'free' },
   ] },
 ]

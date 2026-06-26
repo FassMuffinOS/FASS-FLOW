@@ -44,6 +44,7 @@ import GiftCardScan from './pages/GiftCardScan'
 import GiftCardPurchase from './pages/GiftCardPurchase'
 import Wallet from './pages/Wallet'
 import StartBusiness from './pages/StartBusiness'
+import Payouts from './pages/Payouts'
 import Resize from './pages/Resize'
 import AppShell from './components/AppShell'
 import './index.css'
@@ -211,6 +212,13 @@ function AppRoutes() {
       } />
       <Route path="/start" element={
         <ProtectedRoute><StartBusiness /></ProtectedRoute>
+      } />
+      {/* Stripe Connect onboarding — lets a business link its own Stripe
+          account so money can route directly to them. Stripe redirects
+          back here (with ?return=1 or ?refresh=1) regardless of how
+          onboarding ended, so the page re-checks real status itself. */}
+      <Route path="/payouts" element={
+        <ProtectedRoute><Payouts /></ProtectedRoute>
       } />
     </Routes>
   )
