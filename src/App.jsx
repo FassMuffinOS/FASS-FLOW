@@ -38,6 +38,7 @@ import Rewards from './pages/Rewards'
 import RewardsJoin from './pages/RewardsJoin'
 import Wallet from './pages/Wallet'
 import StartBusiness from './pages/StartBusiness'
+import Resize from './pages/Resize'
 import AppShell from './components/AppShell'
 import './index.css'
 import './App.css'
@@ -82,6 +83,11 @@ function AppRoutes() {
       <Route path="/masterclass" element={<AuthAwarePage><Masterclass /></AuthAwarePage>} />
       <Route path="/support" element={<AuthAwarePage><Support /></AuthAwarePage>} />
       <Route path="/bd-partner" element={<AuthAwarePage><BDPartner /></AuthAwarePage>} />
+
+      {/* Free resize/reformat utility — the no-login "come back just for
+          this" hook. Works fully signed-out; shows the app sidebar instead
+          of marketing chrome for anyone who happens to be signed in. */}
+      <Route path="/resize" element={<AuthAwarePage><Resize /></AuthAwarePage>} />
       <Route path="/thank-you" element={<><Nav /><main><ThankYou /></main><Footer /></>} />
 
       {/* Public interactive estimate — customer opens via share link, no account */}

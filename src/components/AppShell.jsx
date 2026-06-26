@@ -6,7 +6,7 @@ import {
   Compass, ClipboardCheck, Kanban, ClipboardList, BookOpen,
   ShieldCheck, LogOut, GraduationCap, IdCard, DollarSign, Network, Mail,
   Award, LifeBuoy, Handshake, Calculator, HardHat, Camera,
-  Radar, Images, Trophy, Flame, Menu, X, Send, Lock, ChevronDown, Stamp, Wallet, Rocket,
+  Radar, Images, Trophy, Flame, Menu, X, Send, Lock, ChevronDown, Stamp, Wallet, Rocket, Crop,
 } from 'lucide-react'
 import AlertsBell from './AlertsBell'
 import './AppShell.css'
@@ -25,6 +25,7 @@ const API_BASE = import.meta.env.VITE_API_URL || ''
 const NAV_GROUPS = [
   { label: null, items: [
     { name: 'Start a Business', icon: Rocket, to: '/start', match: ['/start'], tier: 'free' },
+    { name: 'Resize Tool', icon: Crop, to: '/resize', match: ['/resize'], tier: 'free' },
     { name: 'Dashboard', icon: Compass, to: '/dashboard', match: ['/dashboard'], tier: 'free' },
   ] },
   { label: 'Find work', items: [
