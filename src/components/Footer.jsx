@@ -1,10 +1,11 @@
+import Reveal from './Reveal'
 import './Footer.css'
 
 export default function Footer() {
   return (
     <footer className="footer">
       <div className="container footer-inner">
-        <div className="footer-brand">
+        <Reveal as="div" className="footer-brand reveal-fade">
           <a href="/" className="footer-logo">
             <span className="footer-logo-icon">⬡</span>
             <span>FASS <strong>Flow</strong></span>
@@ -18,9 +19,9 @@ export default function Footer() {
           <a href="mailto:admin@fass.systems" className="footer-email">
             admin@fass.systems
           </a>
-        </div>
+        </Reveal>
 
-        <div className="footer-links-group">
+        <Reveal as="div" className="footer-links-group reveal-fade" delay={100}>
           <div className="footer-col">
             <h4>Platform</h4>
             <ul>
@@ -50,7 +51,7 @@ export default function Footer() {
               <li><a href="#">Cookie Policy</a></li>
             </ul>
           </div>
-        </div>
+        </Reveal>
       </div>
 
       <div className="footer-bottom">

@@ -27,7 +27,13 @@
   font-weight: 600;
 }
 .footer-logo strong { color: var(--teal); }
-.footer-logo-icon { font-size: 1.5rem; color: var(--teal); }
+.footer-logo-icon {
+  font-size: 1.5rem;
+  color: var(--teal);
+  display: inline-block;
+  transition: transform 0.4s var(--ease-out, ease);
+}
+.footer-logo:hover .footer-logo-icon { transform: rotate(20deg) scale(1.1); }
 
 .footer-tagline {
   font-size: 0.9rem;

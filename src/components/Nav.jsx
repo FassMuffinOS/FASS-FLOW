@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Menu, X, ChevronDown, Radar, Mail, ClipboardCheck, Kanban,
   ClipboardList, Camera, ShieldCheck, Calculator,
@@ -36,7 +36,17 @@ const PLATFORM = [
 export default function Nav() {
   const [open, setOpen] = useState(false)
   const [platformOpen, setPlatformOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const { session, signOut } = useAuth()
+
+  // Sticky nav gains a deeper shadow/blur once the hero scrolls behind it —
+  // pure visual polish, no layout shift since both states keep the same height.
+  useEffect(() => {
+    function onScroll() { setScrolled(window.scrollY > 12) }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   async function handleSignOut() {
     await signOut()
@@ -44,7 +54,7 @@ export default function Nav() {
   }
 
   return (
-    <nav className="nav">
+    <nav className={`nav ${scrolled ? 'nav-scrolled' : ''}`}>
       <div className="container nav-inner">
         <a href="/" className="nav-logo">
           <span className="logo-icon">⬡</span>
@@ -60,27 +70,25 @@ export default function Nav() {
             <button className={`nav-platform-btn ${platformOpen ? 'open' : ''}`}>
               Platform <ChevronDown size={14} />
             </button>
-            {platformOpen && (
-              <div className="nav-mega">
-                {PLATFORM.map(group => (
-                  <div className="nav-mega-col" key={group.label}>
-                    <span className="nav-mega-label">{group.label}</span>
-                    {group.items.map(it => {
-                      const Icon = it.icon
-                      return (
-                        <a href="/signin" className="nav-mega-item" key={it.name}>
-                          <span className="nav-mega-icon"><Icon size={17} /></span>
-                          <span>
-                            <span className="nav-mega-name">{it.name}</span>
-                            <span className="nav-mega-sub">{it.sub}</span>
-                          </span>
-                        </a>
-                      )
-                    })}
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className={`nav-mega ${platformOpen ? 'nav-mega-open' : ''}`}>
+              {PLATFORM.map(group => (
+                <div className="nav-mega-col" key={group.label}>
+                  <span className="nav-mega-label">{group.label}</span>
+                  {group.items.map(it => {
+                    const Icon = it.icon
+                    return (
+                      <a href="/signin" className="nav-mega-item" key={it.name}>
+                        <span className="nav-mega-icon"><Icon size={17} /></span>
+                        <span>
+                          <span className="nav-mega-name">{it.name}</span>
+                          <span className="nav-mega-sub">{it.sub}</span>
+                        </span>
+                      </a>
+                    )
+                  })}
+                </div>
+              ))}
+            </div>
           </li>
           <li><a href="/pricing">Pricing</a></li>
           <li><a href="/masterclass">Masterclass</a></li>

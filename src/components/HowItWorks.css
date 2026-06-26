@@ -83,6 +83,12 @@
   justify-content: center;
   box-shadow: 0 4px 12px rgba(29,158,117,0.12);
   flex-shrink: 0;
+  transition: transform 0.3s var(--ease-out, ease), box-shadow 0.3s var(--ease-out, ease), border-color 0.3s ease;
+}
+.step-card:hover .step-icon-wrap {
+  transform: translateY(-3px) scale(1.06);
+  border-color: var(--teal);
+  box-shadow: 0 10px 24px rgba(29,158,117,0.25);
 }
 
 .step-content {

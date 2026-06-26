@@ -1,4 +1,5 @@
 import { ArrowRight } from 'lucide-react'
+import Reveal from './Reveal'
 import './Hero.css'
 
 export default function Hero() {
@@ -6,36 +7,40 @@ export default function Hero() {
     <section className="hero">
       <div className="container hero-inner">
 
-        <p className="hero-eyebrow">The operating system for government contracting</p>
+        <Reveal as="p" className="hero-eyebrow" delay={0}>
+          The operating system for government contracting
+        </Reveal>
 
-        <h1 className="hero-headline">
+        <Reveal as="h1" className="hero-headline" delay={90}>
           Find the work. Win the bid.<br />
           <span className="headline-accent">Get it done.</span>
-        </h1>
+        </Reveal>
 
-        <p className="hero-subhead">
+        <Reveal as="p" className="hero-subhead" delay={180}>
           Live opportunities, a government-ready business profile, disciplined bidding, pricing,
           proposal support, and execution tools for service businesses.
-        </p>
+        </Reveal>
 
-        <div className="hero-actions">
+        <Reveal className="hero-actions" delay={270}>
           <a href="/masterclass" className="btn-primary hero-cta">
+            <span className="hero-cta-shine" aria-hidden="true" />
             Join the Masterclass — $350
             <ArrowRight size={18} />
           </a>
           <a href="#how-it-works" className="hero-secondary-cta">
             See the platform
           </a>
-        </div>
+        </Reveal>
 
-        <p className="hero-trust">
+        <Reveal as="p" className="hero-trust" delay={360}>
           Live SAM.gov data · AI-native bid tools · Built for small, veteran &amp; disadvantaged businesses
-        </p>
+        </Reveal>
 
       </div>
 
       <div className="hero-bg-orb orb-1" />
       <div className="hero-bg-orb orb-2" />
+      <div className="hero-grid-overlay" aria-hidden="true" />
     </section>
   )
 }

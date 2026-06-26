@@ -28,6 +28,37 @@
   --text-muted:    #9CA3AF;
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
   --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 20px 50px rgba(16,24,40,0.12);
+  --shadow-glow: 0 0 0 1px rgba(29,158,117,0.16), 0 20px 60px rgba(29,158,117,0.18);
+
+  /* Type scale — used by new/redesigned sections; existing components keep
+     their own clamp()/rem values as-is, this is additive, not a replacement. */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-6xl: 3.75rem;
+
+  /* 8px spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ── ICE DARK MODE ── */
@@ -124,3 +155,44 @@ img { display: block; max-width: 100%; }
   font-family: 'Inter', sans-serif;
 }
 .btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+
+/* ── Scroll-reveal motion system (CSS + IntersectionObserver stand-in for
+   framer-motion — see Reveal.jsx) ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+  will-change: opacity, transform;
+}
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal { transition: none; opacity: 1; transform: none; }
+}
+
+/* Opacity-only variant for elements that already own a static transform
+   (e.g. the featured pricing card's scale(1.025)) — avoids two competing
+   `transform` declarations fighting at equal specificity. */
+.reveal-fade, .reveal-fade.reveal-visible {
+  transform: none;
+}
+.reveal-fade { opacity: 0; transition: opacity 0.7s var(--ease-out); }
+.reveal-fade.reveal-visible { opacity: 1; }
+
+/* Gentle ambient float for decorative elements (hero orbs, etc.) */
+@keyframes float-slow {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(0, -22px); }
+}
+@keyframes float-slow-alt {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(14px, 18px); }
+}
+
+/* Subtle CTA shine sweep, used on .hero-cta */
+@keyframes shine-sweep {
+  0% { transform: translateX(-120%) skewX(-12deg); }
+  100% { transform: translateX(220%) skewX(-12deg); }
+}

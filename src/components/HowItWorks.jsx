@@ -1,4 +1,5 @@
 import { GraduationCap, Search, ShoppingCart, FileText, CheckCircle } from 'lucide-react'
+import Reveal from './Reveal'
 import './HowItWorks.css'
 
 const STEPS = [
@@ -48,20 +49,20 @@ export default function HowItWorks() {
   return (
     <section className="hiw" id="how-it-works">
       <div className="container">
-        <div className="hiw-header">
+        <Reveal as="div" className="hiw-header">
           <span className="section-label">How It Works</span>
           <h2 className="hiw-title">Five modules. One complete system.</h2>
           <p className="hiw-desc">
             FASS Flow walks you through every stage of the government contracting journey —
             from training to execution — in a single platform.
           </p>
-        </div>
+        </Reveal>
 
         <div className="hiw-steps">
           {STEPS.map((step, i) => {
             const Icon = step.icon
             return (
-              <div className="step-card" key={step.name}>
+              <Reveal as="div" className="step-card" key={step.name} delay={i * 110}>
                 <div className="step-number">{step.number}</div>
                 <div className="step-icon-wrap">
                   <Icon size={24} strokeWidth={1.8} />
@@ -76,7 +77,7 @@ export default function HowItWorks() {
                 {i < STEPS.length - 1 && (
                   <div className="step-connector" aria-hidden="true" />
                 )}
-              </div>
+              </Reveal>
             )
           })}
         </div>

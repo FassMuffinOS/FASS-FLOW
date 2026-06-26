@@ -39,12 +39,22 @@
   border: 1px solid var(--gray-200, #e5e7eb);
   border-radius: 16px;
   padding: 26px 24px;
+  transition: transform 0.3s var(--ease-out, ease), box-shadow 0.3s var(--ease-out, ease), border-color 0.3s ease;
+}
+.hb-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg, 0 20px 50px rgba(16,24,40,0.12));
+  border-color: var(--teal, #1D9E75);
 }
 .hb-card-icon {
   display: inline-flex; align-items: center; justify-content: center;
   width: 46px; height: 46px; border-radius: 12px;
   background: var(--light-teal, #E1F5EE); color: var(--dark-teal, #0F6E56);
   margin-bottom: 14px;
+  transition: transform 0.3s var(--ease-out, ease);
+}
+.hb-card:hover .hb-card-icon {
+  transform: scale(1.1) rotate(-4deg);
 }
 .hb-card-kicker {
   margin: 0 0 6px;

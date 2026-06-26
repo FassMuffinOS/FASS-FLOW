@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Check, Zap } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import Reveal from './Reveal'
 import './Pricing.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -123,19 +124,21 @@ export default function Pricing() {
   return (
     <section className="pricing" id="pricing">
       <div className="container">
-        <div className="pricing-header">
+        <Reveal as="div" className="pricing-header">
           <span className="section-label">Pricing</span>
           <h2 className="pricing-title">Simple, transparent pricing</h2>
           <p className="pricing-desc">
             Start free for 14 days. No credit card required. Cancel anytime.
           </p>
-        </div>
+        </Reveal>
 
         <div className="pricing-grid pricing-grid-4">
-          {PLANS.map(plan => (
-            <div
+          {PLANS.map((plan, i) => (
+            <Reveal
+              as="div"
               key={plan.key}
-              className={`plan-card plan-${plan.color}`}
+              className={`plan-card plan-${plan.color} ${plan.color === 'featured' ? 'reveal-fade' : ''}`}
+              delay={i * 90}
             >
               {plan.badge && (
                 <div className="plan-badge">
@@ -171,7 +174,7 @@ export default function Pricing() {
               >
                 {checkingOut === plan.key ? 'Starting checkout…' : plan.cta}
               </button>
-            </div>
+            </Reveal>
           ))}
         </div>
 
