@@ -1,7 +1,14 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Megaphone, Send, Loader, Users, Ticket, DollarSign, Repeat, CalendarClock } from 'lucide-react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { Megaphone, Send, Loader, Users, Ticket, DollarSign, Repeat, CalendarClock, Search, Gift, Moon, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import './WalletCampaigns.css'
+
+const STALE_DAYS = 30
+
+function daysSince(iso) {
+  if (!iso) return null
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000)
+}
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
 
@@ -14,6 +21,7 @@ const API_BASE = import.meta.env.VITE_API_URL || ''
 export default function WalletCampaigns() {
   const { session } = useAuth()
   const [campaigns, setCampaigns] = useState([])
+  const [customers, setCustomers] = useState([])
   const [customerCount, setCustomerCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
@@ -25,6 +33,11 @@ export default function WalletCampaigns() {
   const [sending, setSending] = useState(false)
   const [sentNotice, setSentNotice] = useState(null)
 
+  // Customer list tools — search + checkbox targeting so a send can go to
+  // everyone (default) or a chosen segment instead of always broadcasting.
+  const [customerSearch, setCustomerSearch] = useState('')
+  const [selectedSlugs, setSelectedSlugs] = useState(() => new Set())
+
   const load = useCallback(async () => {
     if (!session?.user || !API_BASE) { setLoading(false); return }
     try {
@@ -33,6 +46,7 @@ export default function WalletCampaigns() {
         const data = await res.json()
         setCampaigns(data.campaigns || [])
         setCustomerCount(data.customer_count || 0)
+        setCustomers(data.customers || [])
       }
     } finally {
       setLoading(false)
@@ -40,6 +54,40 @@ export default function WalletCampaigns() {
   }, [session])
 
   useEffect(() => { load() }, [load])
+
+  const filteredCustomers = useMemo(() => {
+    const q = customerSearch.trim().toLowerCase()
+    if (!q) return customers
+    return customers.filter(c =>
+      (c.customer_name || '').toLowerCase().includes(q) ||
+      (c.customer_contact || '').toLowerCase().includes(q)
+    )
+  }, [customers, customerSearch])
+
+  function toggleSlug(slug) {
+    setSelectedSlugs(prev => {
+      const next = new Set(prev)
+      if (next.has(slug)) next.delete(slug)
+      else next.add(slug)
+      return next
+    })
+  }
+
+  function selectAllFiltered() {
+    setSelectedSlugs(new Set(filteredCustomers.map(c => c.slug)))
+  }
+
+  function selectStale() {
+    setSelectedSlugs(new Set(
+      filteredCustomers.filter(c => (daysSince(c.updated_at) ?? 0) >= STALE_DAYS).map(c => c.slug)
+    ))
+  }
+
+  function clearSelection() {
+    setSelectedSlugs(new Set())
+  }
+
+  const sendTargetCount = selectedSlugs.size > 0 ? selectedSlugs.size : customerCount
 
   async function sendCampaign(e) {
     e.preventDefault()
@@ -57,6 +105,7 @@ export default function WalletCampaigns() {
           expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
           repeat_use: repeatUse,
           estimated_value: estimatedValue ? Number(estimatedValue) : null,
+          target_slugs: selectedSlugs.size > 0 ? Array.from(selectedSlugs) : null,
         }),
       })
       if (res.ok) {
@@ -67,6 +116,7 @@ export default function WalletCampaigns() {
         setExpiresAt('')
         setRepeatUse(false)
         setEstimatedValue('')
+        clearSelection()
         load()
       }
     } finally {
@@ -119,11 +169,86 @@ export default function WalletCampaigns() {
           </div>
           <div className="wc-save-row">
             <button type="submit" className="btn-primary" disabled={sending || !message.trim() || customerCount === 0}>
-              <Send size={14} /> {sending ? 'Sending…' : `Send to ${customerCount} customer${customerCount === 1 ? '' : 's'}`}
+              <Send size={14} /> {sending
+                ? 'Sending…'
+                : selectedSlugs.size > 0
+                  ? `Send to ${sendTargetCount} selected`
+                  : `Send to ${sendTargetCount} customer${sendTargetCount === 1 ? '' : 's'}`}
             </button>
+            {selectedSlugs.size > 0 && (
+              <button type="button" className="wc-clear-selection" onClick={clearSelection}>
+                <X size={12} /> Clear selection
+              </button>
+            )}
             {sentNotice && <span className="wc-sent">{sentNotice}</span>}
           </div>
         </form>
+
+        <div className="wc-card">
+          <div className="wc-card-head-row">
+            <div className="wc-card-head"><Users size={15} /> Your customers ({customerCount})</div>
+            {customers.length > 0 && (
+              <div className="wc-customer-tools">
+                <button type="button" onClick={selectAllFiltered}>Select all</button>
+                <button type="button" onClick={selectStale} title={`No activity in ${STALE_DAYS}+ days`}>
+                  <Moon size={12} /> Select inactive 30d+
+                </button>
+                {selectedSlugs.size > 0 && <button type="button" onClick={clearSelection}>Clear</button>}
+              </div>
+            )}
+          </div>
+
+          {customers.length === 0 ? (
+            <p className="wc-note">No customers yet — share your Rewards join link to start building this list.</p>
+          ) : (
+            <>
+              <label className="wc-search">
+                <Search size={14} />
+                <input
+                  value={customerSearch}
+                  onChange={e => setCustomerSearch(e.target.value)}
+                  placeholder="Search by name or contact…"
+                />
+              </label>
+
+              <div className="wc-customer-table">
+                <div className="wc-customer-row wc-customer-head">
+                  <span></span>
+                  <span>Customer</span>
+                  <span>Stamps</span>
+                  <span>Offers redeemed</span>
+                  <span>Last active</span>
+                  <span>Status</span>
+                </div>
+                {filteredCustomers.map(c => {
+                  const stale = (daysSince(c.updated_at) ?? 0) >= STALE_DAYS
+                  return (
+                    <label className="wc-customer-row" key={c.slug}>
+                      <input
+                        type="checkbox"
+                        checked={selectedSlugs.has(c.slug)}
+                        onChange={() => toggleSlug(c.slug)}
+                      />
+                      <span className="wc-customer-name">
+                        {c.customer_name || c.slug}
+                        {c.customer_contact && <span className="wc-customer-contact">{c.customer_contact}</span>}
+                      </span>
+                      <span>{c.stamps}</span>
+                      <span>{c.offer_redemptions > 0 ? (<><Ticket size={12} /> {c.offer_redemptions}</>) : '—'}</span>
+                      <span className={stale ? 'wc-stale' : ''}>
+                        {daysSince(c.updated_at) === null ? '—' : `${daysSince(c.updated_at)}d ago`}
+                      </span>
+                      <span className="wc-customer-badges">
+                        {c.has_active_offer && <span className="wc-badge wc-badge-offer"><Gift size={11} /> Has offer</span>}
+                        {stale && <span className="wc-badge wc-badge-stale">Win-back</span>}
+                      </span>
+                    </label>
+                  )
+                })}
+              </div>
+            </>
+          )}
+        </div>
 
         <div className="wc-card">
           <div className="wc-card-head">Past campaigns</div>
