@@ -1,0 +1,78 @@
+.rw {
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #111827;
+  padding: 28px 24px 60px;
+  max-width: 760px;
+}
+
+.rw-container { display: flex; flex-direction: column; gap: 18px; }
+
+.rw-spin { animation: rw-spin 1s linear infinite; }
+@keyframes rw-spin { to { transform: rotate(360deg); } }
+
+.rw-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 4px; }
+.rw-head-icon {
+  background: linear-gradient(135deg, rgb(15, 81, 50), rgb(22, 120, 75));
+  color: #fff; border-radius: 10px; padding: 8px; flex-shrink: 0;
+}
+.rw-head h1 { font-size: 1.4rem; font-weight: 800; margin: 0 0 4px; letter-spacing: -0.02em; }
+.rw-head p { font-size: 0.88rem; color: #6b7280; margin: 0; max-width: 480px; line-height: 1.5; }
+
+.rw-card {
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 14px;
+  padding: 18px 20px; display: flex; flex-direction: column; gap: 12px;
+}
+.rw-card-head { font-size: 0.95rem; font-weight: 700; }
+
+.rw-note { font-size: 0.84rem; color: #6b7280; margin: 0; line-height: 1.5; }
+.rw-note-block {
+  background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px;
+  padding: 10px 12px; margin-top: 4px;
+}
+
+.rw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.rw-field { display: flex; flex-direction: column; gap: 5px; }
+.rw-field-wide { grid-column: 1 / -1; }
+.rw-label { font-size: 0.78rem; font-weight: 600; color: #374151; }
+.rw-field input {
+  border: 1px solid #d1d5db; border-radius: 8px; padding: 9px 11px;
+  font-size: 0.88rem; font-family: inherit; color: #111827;
+}
+.rw-field input:focus { outline: none; border-color: rgb(22, 120, 75); }
+
+.rw-save-row { display: flex; align-items: center; gap: 12px; }
+.rw-save-row .btn-primary { width: auto; }
+.rw-saved { display: inline-flex; align-items: center; gap: 5px; color: rgb(15, 81, 50); font-size: 0.84rem; font-weight: 600; }
+
+.rw-link-row { display: flex; gap: 8px; }
+.rw-link-row input {
+  flex: 1; border: 1px solid #d1d5db; border-radius: 8px; padding: 9px 11px;
+  font-size: 0.84rem; font-family: inherit; color: #374151; background: #f9fafb;
+}
+.rw-link-row .btn-outline { width: auto; white-space: nowrap; }
+
+.rw-customers { display: flex; flex-direction: column; gap: 8px; }
+.rw-customer-row {
+  display: flex; align-items: center; justify-content: space-between;
+  border: 1px solid #f0f1f3; border-radius: 10px; padding: 10px 12px;
+}
+.rw-customer-info { display: flex; flex-direction: column; gap: 3px; }
+.rw-customer-name { font-size: 0.88rem; font-weight: 600; }
+.rw-customer-stamps { display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; color: #6b7280; }
+
+.rw-customer-actions { display: flex; gap: 6px; }
+.rw-stamp-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  border: 1px solid #d1d5db; background: #fff; border-radius: 8px;
+  padding: 6px 10px; font-size: 0.8rem; font-weight: 600; color: #374151;
+  cursor: pointer;
+}
+.rw-stamp-btn:disabled { opacity: 0.4; cursor: default; }
+.rw-stamp-btn--add {
+  background: rgb(15, 81, 50); color: #fff; border-color: rgb(15, 81, 50);
+}
+
+@media (max-width: 560px) {
+  .rw-grid { grid-template-columns: 1fr; }
+  .rw-customer-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+}

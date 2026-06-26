@@ -34,6 +34,8 @@ import CapturesGallery from './pages/CapturesGallery'
 import ClientProposals from './pages/ClientProposals'
 import PublicEstimate from './pages/PublicEstimate'
 import Capability from './pages/Capability'
+import Rewards from './pages/Rewards'
+import RewardsJoin from './pages/RewardsJoin'
 import AppShell from './components/AppShell'
 import './index.css'
 import './App.css'
@@ -87,6 +89,11 @@ function AppRoutes() {
           real .pkpass (see fass-flow-backend's wallet.py barcode_url). No
           account, no Nav/Footer chrome, just the business info. */}
       <Route path="/c/:slug" element={<Capability />} />
+
+      {/* Public FASS Rewards join page — the link/QR a business hands
+          customers (Rewards.jsx's "copy link"). No account, no chrome,
+          claims a fresh stamp card and shows the Wallet download. */}
+      <Route path="/rewards/join/:businessUserId" element={<RewardsJoin />} />
       <Route path="/join-network" element={<><Nav /><main><JoinNetwork /></main><Footer /></>} />
       <Route path="/pricing" element={<><Nav /><main><Pricing /></main><Footer /></>} />
 
@@ -155,6 +162,9 @@ function AppRoutes() {
       } />
       <Route path="/captures" element={
         <ProtectedRoute><CapturesGallery /></ProtectedRoute>
+      } />
+      <Route path="/rewards" element={
+        <ProtectedRoute><Rewards /></ProtectedRoute>
       } />
     </Routes>
   )
