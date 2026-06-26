@@ -37,6 +37,7 @@ import Capability from './pages/Capability'
 import Rewards from './pages/Rewards'
 import RewardsJoin from './pages/RewardsJoin'
 import Wallet from './pages/Wallet'
+import StartBusiness from './pages/StartBusiness'
 import AppShell from './components/AppShell'
 import './index.css'
 import './App.css'
@@ -169,6 +170,9 @@ function AppRoutes() {
       } />
       <Route path="/wallet" element={
         <ProtectedRoute><Wallet /></ProtectedRoute>
+      } />
+      <Route path="/start" element={
+        <ProtectedRoute><StartBusiness /></ProtectedRoute>
       } />
     </Routes>
   )
