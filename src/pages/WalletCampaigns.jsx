@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Megaphone, Send, Loader, Users, Ticket, DollarSign, Repeat, CalendarClock, Search, Gift, Moon, X } from 'lucide-react'
+import { Megaphone, Send, Loader, Users, Ticket, DollarSign, Repeat, CalendarClock, Search, Gift, Moon, X, Stamp, Check } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import './WalletCampaigns.css'
 
@@ -88,6 +88,44 @@ export default function WalletCampaigns() {
   }
 
   const sendTargetCount = selectedSlugs.size > 0 ? selectedSlugs.size : customerCount
+
+  // Bonus stamp — the "push them back into the loop" tool. Hits the SAME
+  // /rewards/stamp endpoint the business's Rewards dashboard uses, which
+  // already calls notify_devices() under the hood, so the customer's Wallet
+  // card updates live (no re-download) the moment this fires. We just
+  // surface it here too, next to the customer it's for, instead of making
+  // the business go find them on a separate page.
+  const [stampingSlugs, setStampingSlugs] = useState(() => new Set())
+  const [justStamped, setJustStamped] = useState(() => new Set())
+
+  async function giveBonusStamp(slug) {
+    if (!session?.user || !API_BASE) return
+    setStampingSlugs(prev => new Set(prev).add(slug))
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/rewards/stamp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug, business_user_id: session.user.id, delta: 1 }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setCustomers(prev => prev.map(c => c.slug === slug
+          ? { ...c, stamps: data.stamps, updated_at: new Date().toISOString() }
+          : c))
+        setJustStamped(prev => new Set(prev).add(slug))
+        setTimeout(() => {
+          setJustStamped(prev => { const next = new Set(prev); next.delete(slug); return next })
+        }, 2000)
+      }
+    } finally {
+      setStampingSlugs(prev => { const next = new Set(prev); next.delete(slug); return next })
+    }
+  }
+
+  async function giveBonusStampToSelected() {
+    if (selectedSlugs.size === 0) return
+    await Promise.all(Array.from(selectedSlugs).map(slug => giveBonusStamp(slug)))
+  }
 
   async function sendCampaign(e) {
     e.preventDefault()
@@ -193,7 +231,14 @@ export default function WalletCampaigns() {
                 <button type="button" onClick={selectStale} title={`No activity in ${STALE_DAYS}+ days`}>
                   <Moon size={12} /> Select inactive 30d+
                 </button>
-                {selectedSlugs.size > 0 && <button type="button" onClick={clearSelection}>Clear</button>}
+                {selectedSlugs.size > 0 && (
+                  <>
+                    <button type="button" className="wc-tool-bonus" onClick={giveBonusStampToSelected}>
+                      <Stamp size={12} /> Bonus stamp to {selectedSlugs.size} selected
+                    </button>
+                    <button type="button" onClick={clearSelection}>Clear</button>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -219,11 +264,14 @@ export default function WalletCampaigns() {
                   <span>Offers redeemed</span>
                   <span>Last active</span>
                   <span>Status</span>
+                  <span></span>
                 </div>
                 {filteredCustomers.map(c => {
                   const stale = (daysSince(c.updated_at) ?? 0) >= STALE_DAYS
+                  const isStamping = stampingSlugs.has(c.slug)
+                  const wasStamped = justStamped.has(c.slug)
                   return (
-                    <label className="wc-customer-row" key={c.slug}>
+                    <div className="wc-customer-row" key={c.slug}>
                       <input
                         type="checkbox"
                         checked={selectedSlugs.has(c.slug)}
@@ -242,7 +290,17 @@ export default function WalletCampaigns() {
                         {c.has_active_offer && <span className="wc-badge wc-badge-offer"><Gift size={11} /> Has offer</span>}
                         {stale && <span className="wc-badge wc-badge-stale">Win-back</span>}
                       </span>
-                    </label>
+                      <button
+                        type="button"
+                        className="wc-bonus-btn"
+                        disabled={isStamping}
+                        onClick={() => giveBonusStamp(c.slug)}
+                        title="Push a free bonus stamp to this customer's Wallet card right now"
+                      >
+                        {wasStamped ? <Check size={12} /> : <Stamp size={12} />}
+                        {isStamping ? 'Sending…' : wasStamped ? 'Sent' : '+1 Stamp'}
+                      </button>
+                    </div>
                   )
                 })}
               </div>

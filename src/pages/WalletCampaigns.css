@@ -88,18 +88,18 @@
   color: #111827; flex: 1;
 }
 
-.wc-customer-table { display: flex; flex-direction: column; gap: 2px; max-height: 360px; overflow-y: auto; }
+.wc-customer-table { display: flex; flex-direction: column; gap: 2px; max-height: 420px; overflow-y: auto; }
 .wc-customer-row {
   display: grid;
-  grid-template-columns: 22px 1.6fr 70px 130px 90px 1.2fr;
+  grid-template-columns: 22px 1.5fr 60px 120px 80px 1fr 100px;
   align-items: center; gap: 10px; padding: 8px 6px; font-size: 0.82rem;
-  border-bottom: 1px solid #f3f4f6; cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
 }
 .wc-customer-row:hover { background: #fafafa; }
-.wc-customer-row input[type="checkbox"] { width: auto; margin: 0; }
+.wc-customer-row input[type="checkbox"] { width: auto; margin: 0; cursor: pointer; }
 .wc-customer-head {
   font-weight: 700; font-size: 0.74rem; color: #9ca3af; text-transform: uppercase;
-  letter-spacing: 0.03em; cursor: default; border-bottom: 1px solid #e5e7eb;
+  letter-spacing: 0.03em; border-bottom: 1px solid #e5e7eb;
 }
 .wc-customer-head:hover { background: none; }
 .wc-customer-name { display: flex; flex-direction: column; font-weight: 600; }
@@ -113,9 +113,22 @@
 .wc-badge-offer { background: #ede9fe; color: rgb(109, 40, 217); }
 .wc-badge-stale { background: #fef3c7; color: #92400e; }
 
+.wc-bonus-btn {
+  background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 7px;
+  padding: 5px 8px; font-size: 0.72rem; font-weight: 700; color: rgb(15, 81, 50);
+  display: inline-flex; align-items: center; gap: 4px; cursor: pointer; white-space: nowrap;
+}
+.wc-bonus-btn:hover { background: #dcfce7; }
+.wc-bonus-btn:disabled { opacity: 0.6; cursor: default; }
+
+.wc-tool-bonus {
+  background: #f0fdf4 !important; border-color: #bbf7d0 !important; color: rgb(15, 81, 50) !important;
+}
+.wc-tool-bonus:hover { background: #dcfce7 !important; }
+
 @media (max-width: 700px) {
-  .wc-customer-row { grid-template-columns: 18px 1.4fr 50px 0 0 1fr; }
-  .wc-customer-row span:nth-child(4), .wc-customer-row span:nth-child(5) { display: none; }
+  .wc-customer-row { grid-template-columns: 18px 1.3fr 40px 0 0 0 90px; }
+  .wc-customer-row span:nth-child(4), .wc-customer-row span:nth-child(5), .wc-customer-row span:nth-child(6) { display: none; }
 }
 
 @media (max-width: 560px) {
