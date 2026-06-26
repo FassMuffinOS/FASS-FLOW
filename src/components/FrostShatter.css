@@ -1,0 +1,36 @@
+.frost-shatter {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  pointer-events: none;
+  visibility: visible;
+  transition: visibility 0s 1.5s linear;
+}
+.frost-shatter.is-breaking {
+  visibility: hidden;
+}
+
+.frost-shard {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255,255,255,0.24), rgba(176,224,255,0.1) 45%, rgba(8,28,48,0.32));
+  border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(5px) saturate(1.15);
+  opacity: 1;
+  transform: translate(0, 0) rotate(0deg) scale(1);
+  transition: transform 0.95s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease, filter 0.6s ease;
+  will-change: transform, opacity;
+}
+
+.frost-shatter.is-breaking .frost-shard {
+  opacity: 0;
+  filter: blur(3px);
+  transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frost-shard { transition: opacity 0.4s ease; }
+  .frost-shatter.is-breaking .frost-shard { transform: none; }
+}

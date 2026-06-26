@@ -53,6 +53,13 @@
   letter-spacing: 0.16em;
   color: var(--teal);
   margin: 0 0 18px;
+  opacity: 0;
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 0.6s var(--ease-out, ease), opacity 0.35s ease;
+}
+.hero-eyebrow.word-in {
+  opacity: 1;
+  clip-path: inset(0 0 0 0);
 }
 
 .hero-headline {
@@ -65,8 +72,37 @@
   line-height: 1.08;
 }
 
+.headline-line { display: inline-block; }
+
+.headline-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(26px) scale(1.08);
+  filter: blur(13px);
+  transition:
+    opacity 0.45s var(--ease-out, ease),
+    transform 0.55s var(--ease-out, ease),
+    filter 0.55s var(--ease-out, ease);
+}
+.headline-word.word-in {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
 .headline-accent {
   color: var(--teal);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-eyebrow,
+  .headline-word {
+    transition: none !important;
+    opacity: 1 !important;
+    clip-path: inset(0 0 0 0) !important;
+    transform: none !important;
+    filter: none !important;
+  }
 }
 
 .hero-subhead {
@@ -93,11 +129,15 @@
   font-size: 1.05rem;
   padding: 16px 32px;
   box-shadow: 0 8px 24px rgba(29,158,117,0.28);
-  transition: background 0.2s, transform 0.25s var(--ease-out, ease), box-shadow 0.25s var(--ease-out, ease);
+  transition: background 0.2s, transform 0.18s var(--ease-out, ease), box-shadow 0.25s var(--ease-out, ease);
 }
 .hero-cta:hover {
-  transform: translateY(-2px) scale(1.015);
   box-shadow: 0 14px 36px rgba(29,158,117,0.4);
+}
+/* Fallback lift for touch/keyboard input, where the JS magnetic-pull
+   mousemove handler never fires. */
+.hero-cta:focus-visible {
+  transform: translateY(-2px) scale(1.015);
 }
 .hero-cta-shine {
   position: absolute;
