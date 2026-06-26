@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Stamp, Gift, Copy, Check, Loader, Plus, Minus } from 'lucide-react'
+import { Stamp, Gift, Copy, Check, Loader, Plus, Minus, PartyPopper } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { getBusinessProfile } from '../lib/businessProfile'
 import './Rewards.css'
@@ -27,6 +27,7 @@ export default function Rewards() {
 
   const [copied, setCopied] = useState(false)
   const [stampingSlug, setStampingSlug] = useState(null)
+  const [redeemingSlug, setRedeemingSlug] = useState(null)
 
   const load = useCallback(async () => {
     if (!session?.user || !API_BASE) { setLoading(false); return }
@@ -98,6 +99,24 @@ export default function Rewards() {
     }
   }
 
+  async function redeem(slug) {
+    if (!session?.user || !API_BASE) return
+    setRedeemingSlug(slug)
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/rewards/redeem`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug, business_user_id: session.user.id }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setCards(prev => prev.map(c => c.slug === slug ? { ...c, stamps: data.stamps, redeemed_count: data.redeemed_count } : c))
+      }
+    } finally {
+      setRedeemingSlug(null)
+    }
+  }
+
   function copyJoinLink() {
     if (!session?.user) return
     const url = `${window.location.origin}/rewards/join/${session.user.id}`
@@ -163,22 +182,38 @@ export default function Rewards() {
               <p className="rw-note">No one has joined yet — share the link above to get your first customer card.</p>
             ) : (
               <div className="rw-customers">
-                {cards.map(c => (
-                  <div className="rw-customer-row" key={c.slug}>
-                    <div className="rw-customer-info">
-                      <span className="rw-customer-name">{c.customer_name || 'Customer'}</span>
-                      <span className="rw-customer-stamps"><Gift size={13} /> {c.stamps} / {threshold} stamps</span>
+                {cards.map(c => {
+                  const ready = c.stamps >= threshold
+                  return (
+                    <div className={`rw-customer-row ${ready ? 'rw-customer-row--ready' : ''}`} key={c.slug}>
+                      <div className="rw-customer-info">
+                        <span className="rw-customer-name">{c.customer_name || 'Customer'}</span>
+                        <span className="rw-customer-stamps"><Gift size={13} /> {c.stamps} / {threshold} stamps</span>
+                        {c.redeemed_count > 0 && (
+                          <span className="rw-customer-redeemed">Redeemed {c.redeemed_count}x</span>
+                        )}
+                      </div>
+                      <div className="rw-customer-actions">
+                        {ready && (
+                          <button
+                            type="button"
+                            className="rw-redeem-btn"
+                            onClick={() => redeem(c.slug)}
+                            disabled={redeemingSlug === c.slug}
+                          >
+                            <PartyPopper size={14} /> {redeemingSlug === c.slug ? 'Redeeming…' : 'Redeem reward'}
+                          </button>
+                        )}
+                        <button type="button" className="rw-stamp-btn" onClick={() => stamp(c.slug, -1)} disabled={stampingSlug === c.slug || c.stamps <= 0}>
+                          <Minus size={14} />
+                        </button>
+                        <button type="button" className="rw-stamp-btn rw-stamp-btn--add" onClick={() => stamp(c.slug, 1)} disabled={stampingSlug === c.slug}>
+                          <Plus size={14} /> Stamp
+                        </button>
+                      </div>
                     </div>
-                    <div className="rw-customer-actions">
-                      <button type="button" className="rw-stamp-btn" onClick={() => stamp(c.slug, -1)} disabled={stampingSlug === c.slug || c.stamps <= 0}>
-                        <Minus size={14} />
-                      </button>
-                      <button type="button" className="rw-stamp-btn rw-stamp-btn--add" onClick={() => stamp(c.slug, 1)} disabled={stampingSlug === c.slug}>
-                        <Plus size={14} /> Stamp
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
             <p className="rw-note rw-note-block">After stamping, the customer needs to re-download their card (same link they used to add it) to see the new count — live auto-update is coming next.</p>
