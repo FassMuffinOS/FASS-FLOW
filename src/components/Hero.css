@@ -13,6 +13,19 @@
   50% { background-position: 100% 60%; }
 }
 
+.hero-mesh-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.85;
+  mask-image: radial-gradient(ellipse 75% 65% at 50% 35%, rgba(0,0,0,0.9), transparent 90%);
+}
+.network-mesh-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
 .hero-grid-overlay {
   position: absolute;
   inset: 0;

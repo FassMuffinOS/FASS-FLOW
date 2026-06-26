@@ -1,10 +1,15 @@
 import { ArrowRight } from 'lucide-react'
 import Reveal from './Reveal'
+import NetworkMesh from './NetworkMesh'
 import './Hero.css'
 
 export default function Hero() {
   return (
     <section className="hero">
+      <div className="hero-mesh-wrap" aria-hidden="true">
+        <NetworkMesh />
+      </div>
+
       <div className="container hero-inner">
 
         <Reveal as="p" className="hero-eyebrow" delay={0}>
