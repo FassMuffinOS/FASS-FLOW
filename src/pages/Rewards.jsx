@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Stamp, Gift, Copy, Check, Loader, Plus, Minus } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { getBusinessProfile } from '../lib/businessProfile'
 import './Rewards.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -40,6 +41,11 @@ export default function Rewards() {
         setDescription(data.program.reward_description || '')
       } else {
         setProgram(null)
+        // No program set up yet — prefill the business name from the
+        // shared profile (e.g. already captured via Wallet's lookup) so
+        // setup isn't asking for something FASS already knows.
+        const profile = await getBusinessProfile(session.user.id)
+        if (profile?.business_name) setBusinessName(profile.business_name)
       }
     } catch {
       setProgram(null)

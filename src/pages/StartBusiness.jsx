@@ -5,6 +5,7 @@ import {
   Megaphone, ArrowRight, IdCard, Wallet as WalletIcon,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { getBusinessProfile, saveBusinessProfile } from '../lib/businessProfile'
 import './StartBusiness.css'
 
 // Foundation steps apply no matter what's being sold — structure, state
@@ -123,15 +124,6 @@ const BUDGET_ITEMS = [
   { label: 'FASS Wallet card + capability page', range: 'Free to start' },
 ]
 
-function loadChecklist(userId) {
-  if (!userId) return {}
-  try {
-    return JSON.parse(localStorage.getItem(`fass_start_checklist_${userId}`) || '{}')
-  } catch {
-    return {}
-  }
-}
-
 export default function StartBusiness() {
   const { session } = useAuth()
   const navigate = useNavigate()
@@ -139,22 +131,35 @@ export default function StartBusiness() {
 
   const [path, setPath] = useState(null) // 'product' | 'service' | null
   const [done, setDone] = useState({})
+  // Identity (business_name etc.) already captured elsewhere — e.g. via
+  // Wallet's "find my business" lookup — so this wizard can say "we already
+  // have you" instead of asking from scratch.
+  const [knownBusinessName, setKnownBusinessName] = useState(null)
 
+  // Loaded from the shared business profile (Start/Wallet/Rewards all read
+  // and write this same backend record) instead of per-tool localStorage,
+  // so progress here is visible to — and from — the other tools.
   useEffect(() => {
     if (!userId) return
-    setPath(localStorage.getItem(`fass_start_path_${userId}`) || null)
-    setDone(loadChecklist(userId))
+    let cancelled = false
+    getBusinessProfile(userId).then(profile => {
+      if (cancelled || !profile) return
+      setPath(profile.biz_path || null)
+      setDone(profile.checklist || {})
+      setKnownBusinessName(profile.business_name || null)
+    })
+    return () => { cancelled = true }
   }, [userId])
 
   function choosePath(p) {
     setPath(p)
-    if (userId) localStorage.setItem(`fass_start_path_${userId}`, p)
+    if (userId) saveBusinessProfile(userId, { biz_path: p })
   }
 
   function toggleDone(id) {
     setDone(prev => {
       const next = { ...prev, [id]: !prev[id] }
-      if (userId) localStorage.setItem(`fass_start_checklist_${userId}`, JSON.stringify(next))
+      if (userId) saveBusinessProfile(userId, { checklist: { [id]: next[id] } })
       return next
     })
   }
@@ -192,6 +197,12 @@ export default function StartBusiness() {
             <p>Not registered yet? Start here. This is general information to point you to the right official source — not legal or tax advice, and requirements vary by state, so confirm specifics for your situation.</p>
           </div>
         </div>
+
+        {knownBusinessName && (
+          <p className="pp-note sb-known-business">
+            Picked up <strong>{knownBusinessName}</strong> from your Wallet card — no need to re-enter it here.
+          </p>
+        )}
 
         <div className="pp-card">
           <div className="pp-card-head">

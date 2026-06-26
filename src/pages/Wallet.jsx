@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { Wallet as WalletIcon, Download, Lock, Palette, Image, Eye, EyeOff, Check, Search, MapPin } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { getBusinessProfile, saveBusinessProfile } from '../lib/businessProfile'
 import './Passport.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -66,7 +67,23 @@ export default function Wallet() {
     async function loadMine() {
       try {
         const res = await fetch(`${API_BASE}/api/v1/wallet/mine?user_id=${session.user.id}`)
-        if (!res.ok) return // 404 = never started a card yet
+        if (!res.ok) {
+          // No wallet card yet — fall back to the shared business profile in
+          // case identity was captured some other way (e.g. a future tool
+          // writes it before Wallet ever does), so the search box can still
+          // prefill instead of starting from a totally blank slate.
+          const profile = await getBusinessProfile(session.user.id)
+          if (!cancelled && profile?.business_name) {
+            setSavedBusiness({
+              name: profile.business_name,
+              address: profile.address,
+              naics_guess: profile.naics,
+              website: profile.website,
+              phone: profile.phone,
+            })
+          }
+          return
+        }
         const data = await res.json()
         if (cancelled) return
         setSavedBusiness({
@@ -236,6 +253,16 @@ export default function Wallet() {
       }
       const data = await res.json()
       if (data?.slug) setWalletSlug(data.slug)
+      // Push the identity Wallet just captured into the shared profile so
+      // Start Business / Rewards can prefill from it instead of asking
+      // again. Fire-and-forget — the free card itself already succeeded.
+      saveBusinessProfile(session.user.id, {
+        business_name: biz.name,
+        address: biz.address,
+        naics: biz.naics_guess,
+        website: biz.website,
+        phone: biz.phone,
+      })
     } catch {
       setWalletError('Could not create your free card. Try again in a moment.')
     } finally {
@@ -275,7 +302,17 @@ export default function Wallet() {
         return
       }
       const data = await res.json()
-      if (data?.url) { window.location.href = data.url; return }
+      if (data?.url) {
+        saveBusinessProfile(session.user.id, {
+          business_name: biz.name,
+          address: biz.address,
+          naics: biz.naics_guess,
+          website: biz.website,
+          phone: biz.phone,
+        })
+        window.location.href = data.url
+        return
+      }
       setWalletError('Could not start checkout. Try again in a moment.')
     } catch {
       setWalletError('Could not start checkout. Try again in a moment.')

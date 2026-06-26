@@ -1,3 +1,11 @@
+.sb-known-business {
+  background: var(--light-teal);
+  border: 1px solid var(--teal);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 0 0 18px;
+}
+
 .sb-path-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
