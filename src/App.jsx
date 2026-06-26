@@ -37,6 +37,8 @@ import PublicEstimate from './pages/PublicEstimate'
 import Capability from './pages/Capability'
 import Rewards from './pages/Rewards'
 import RewardsJoin from './pages/RewardsJoin'
+import WalletCampaigns from './pages/WalletCampaigns'
+import RedeemScan from './pages/RedeemScan'
 import Wallet from './pages/Wallet'
 import StartBusiness from './pages/StartBusiness'
 import Resize from './pages/Resize'
@@ -175,6 +177,16 @@ function AppRoutes() {
       } />
       <Route path="/rewards" element={
         <ProtectedRoute><Rewards /></ProtectedRoute>
+      } />
+      <Route path="/campaigns" element={
+        <ProtectedRoute><WalletCampaigns /></ProtectedRoute>
+      } />
+      {/* Staff redemption confirm page — landed on after scanning a
+          customer's EXISTING Wallet pass QR with the phone's normal camera
+          app. Protected by the business's own login, same as every other
+          dashboard page. */}
+      <Route path="/rewards/scan/:slug" element={
+        <ProtectedRoute><RedeemScan /></ProtectedRoute>
       } />
       <Route path="/wallet" element={
         <ProtectedRoute><Wallet /></ProtectedRoute>
