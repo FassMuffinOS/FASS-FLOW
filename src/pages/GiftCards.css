@@ -51,10 +51,10 @@
 }
 .gc-issued a { color: rgb(15, 81, 50); display: inline-flex; align-items: center; gap: 4px; text-decoration: underline; }
 
-.gc-table { display: flex; flex-direction: column; gap: 2px; max-height: 420px; overflow-y: auto; }
+.gc-table { display: flex; flex-direction: column; gap: 2px; max-height: 480px; overflow-y: auto; }
 .gc-row {
   display: grid;
-  grid-template-columns: 1.5fr 90px 110px 1fr 100px;
+  grid-template-columns: 1.4fr 80px 100px 1fr 100px 70px;
   align-items: center; gap: 10px; padding: 8px 6px; font-size: 0.82rem;
   border-bottom: 1px solid #f3f4f6;
 }
@@ -82,11 +82,39 @@
 }
 .gc-wallet-link:hover { background: #dcfce7; }
 
+.gc-storefront-row { display: flex; gap: 8px; align-items: center; }
+.gc-storefront-link {
+  flex: 1; border: 1px solid #d1d5db; border-radius: 8px; padding: 9px 11px;
+  font-size: 0.82rem; font-family: inherit; color: #374151; background: #f9fafb;
+}
+.gc-copy-btn {
+  background: rgb(15, 81, 50); color: #fff; border: none; border-radius: 8px;
+  padding: 9px 13px; font-size: 0.8rem; font-weight: 700; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+}
+.gc-copy-btn:hover { background: rgb(12, 65, 40); }
+
+.gc-history-toggle {
+  background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 7px;
+  padding: 5px 8px; font-size: 0.72rem; font-weight: 700; color: #6b7280;
+  display: inline-flex; align-items: center; gap: 3px; cursor: pointer; white-space: nowrap;
+}
+.gc-history-toggle:hover { background: #e5e7eb; }
+
+.gc-history-panel { padding: 4px 6px 10px 16px; border-bottom: 1px solid #f3f4f6; }
+.gc-history-list { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.gc-history-row {
+  display: flex; gap: 14px; font-size: 0.78rem; color: #6b7280; padding: 3px 0;
+}
+.gc-history-amount { font-weight: 700; color: #b91c1c; }
+.gc-history-balance { font-weight: 600; color: rgb(15, 81, 50); }
+
 @media (max-width: 700px) {
-  .gc-row { grid-template-columns: 1.3fr 70px 0 0 90px; }
+  .gc-row { grid-template-columns: 1.3fr 70px 0 0 90px 60px; }
   .gc-row span:nth-child(3), .gc-row span:nth-child(4) { display: none; }
 }
 
 @media (max-width: 560px) {
   .gc-grid { grid-template-columns: 1fr; }
+  .gc-storefront-row { flex-direction: column; align-items: stretch; }
 }

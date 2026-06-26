@@ -1,0 +1,52 @@
+.gcp {
+  min-height: 100vh;
+  background: #f4f6f8;
+  padding: 40px 16px 60px;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #111827;
+}
+
+.gcp-wrap { max-width: 480px; margin: 0 auto; text-align: center; }
+
+.gcp-spin { animation: gcp-spin 1s linear infinite; margin-bottom: 8px; }
+@keyframes gcp-spin { to { transform: rotate(360deg); } }
+
+.gcp-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: linear-gradient(135deg, rgb(15, 81, 50), rgb(22, 120, 75));
+  color: #fff; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 7px 13px; border-radius: 20px; margin-bottom: 16px;
+}
+
+.gcp-success-icon { color: rgb(15, 81, 50); margin-bottom: 8px; }
+.gcp-warn-icon { color: #b45309; margin-bottom: 8px; }
+
+.gcp-title { font-size: 1.4rem; font-weight: 800; margin: 0 0 8px; letter-spacing: -0.02em; }
+.gcp-sub { font-size: 0.92rem; color: #6b7280; margin: 0 0 22px; line-height: 1.5; }
+
+.gcp-form { display: flex; flex-direction: column; gap: 14px; text-align: left; }
+
+.gcp-presets { display: flex; gap: 8px; justify-content: center; }
+.gcp-preset {
+  border: 1px solid #d1d5db; border-radius: 10px; padding: 10px 16px;
+  font-size: 0.95rem; font-weight: 700; background: #fff; color: #374151; cursor: pointer;
+}
+.gcp-preset:hover { border-color: rgb(15, 81, 50); }
+.gcp-preset-active { background: rgb(15, 81, 50); border-color: rgb(15, 81, 50); color: #fff; }
+
+.gcp-field { display: flex; flex-direction: column; gap: 5px; }
+.gcp-label { font-size: 0.78rem; font-weight: 600; color: #374151; display: inline-flex; align-items: center; gap: 4px; }
+.gcp-field input {
+  border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 12px;
+  font-size: 0.9rem; font-family: inherit; color: #111827;
+}
+.gcp-field input:focus { outline: none; border-color: rgb(15, 81, 50); }
+
+.gcp-btn { width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 6px; margin-top: 4px; }
+
+.gcp-note { font-size: 0.82rem; margin: 0; line-height: 1.5; }
+.gcp-note-warn { color: #b45309; }
+.gcp-note-error { color: #b91c1c; }
+
+.gcp-foot { text-align: center; font-size: 0.74rem; color: #9ca3af; margin: 22px 0 4px; line-height: 1.5; }
+.gcp-foot-brand { font-weight: 700; color: #6b7280; margin-top: 6px; }

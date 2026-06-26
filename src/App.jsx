@@ -41,6 +41,7 @@ import WalletCampaigns from './pages/WalletCampaigns'
 import RedeemScan from './pages/RedeemScan'
 import GiftCards from './pages/GiftCards'
 import GiftCardScan from './pages/GiftCardScan'
+import GiftCardPurchase from './pages/GiftCardPurchase'
 import Wallet from './pages/Wallet'
 import StartBusiness from './pages/StartBusiness'
 import Resize from './pages/Resize'
@@ -107,6 +108,11 @@ function AppRoutes() {
           customers (Rewards.jsx's "copy link"). No account, no chrome,
           claims a fresh stamp card and shows the Wallet download. */}
       <Route path="/rewards/join/:businessUserId" element={<RewardsJoin />} />
+      {/* Public, no-login gift card storefront — the link a business shares
+          so a customer can buy a card for themselves or someone else
+          without the business issuing it by hand. Also handles the
+          post-Stripe-Checkout success/cancelled redirect via query params. */}
+      <Route path="/giftcards/buy/:businessUserId" element={<GiftCardPurchase />} />
       <Route path="/join-network" element={<><Nav /><main><JoinNetwork /></main><Footer /></>} />
       <Route path="/pricing" element={<><Nav /><main><Pricing /></main><Footer /></>} />
 

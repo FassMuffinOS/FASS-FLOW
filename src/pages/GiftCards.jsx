@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Gift, Send, Loader, DollarSign, User, Phone, Download, Ticket, Wallet } from 'lucide-react'
+import { Gift, Send, Loader, DollarSign, User, Phone, Download, Ticket, Wallet, Link2, Copy, Check, ChevronDown, ChevronUp, History } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import './GiftCards.css'
 
@@ -24,6 +24,14 @@ export default function GiftCards() {
   const [value, setValue] = useState('')
   const [issuing, setIssuing] = useState(false)
   const [issuedNotice, setIssuedNotice] = useState(null)
+  const [linkCopied, setLinkCopied] = useState(false)
+
+  // Per-card redemption history — fetched on demand when a row is expanded
+  // rather than upfront for every card, since most businesses will have far
+  // more cards than anyone wants to inspect at once.
+  const [expandedSlug, setExpandedSlug] = useState(null)
+  const [history, setHistory] = useState([])
+  const [historyLoading, setHistoryLoading] = useState(false)
 
   const load = useCallback(async () => {
     if (!session?.user || !API_BASE) { setLoading(false); return }
@@ -71,6 +79,33 @@ export default function GiftCards() {
     }
   }
 
+  const storefrontLink = session?.user ? `${window.location.origin}/giftcards/buy/${session.user.id}` : ''
+
+  function copyStorefrontLink() {
+    if (!storefrontLink) return
+    navigator.clipboard.writeText(storefrontLink).then(() => {
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2000)
+    })
+  }
+
+  async function toggleHistory(slug) {
+    if (expandedSlug === slug) { setExpandedSlug(null); return }
+    setExpandedSlug(slug)
+    setHistory([])
+    if (!session?.user || !API_BASE) return
+    setHistoryLoading(true)
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/giftcards/history?slug=${slug}&business_user_id=${session.user.id}`)
+      if (res.ok) {
+        const data = await res.json()
+        setHistory(data.history || [])
+      }
+    } finally {
+      setHistoryLoading(false)
+    }
+  }
+
   if (loading) return <div className="gc"><Loader className="gc-spin" size={18} /> Loading…</div>
 
   return (
@@ -96,6 +131,17 @@ export default function GiftCards() {
           <div className="gc-stat">
             <span className="gc-stat-label">Cards issued</span>
             <span className="gc-stat-value">{cards.length}</span>
+          </div>
+        </div>
+
+        <div className="gc-card">
+          <div className="gc-card-head"><Link2 size={15} /> Sell gift cards online</div>
+          <p className="gc-note">Share this link anywhere — a customer can buy a card for themselves or someone else, pay by card, and get their Wallet download instantly. No login, no dashboard access needed on their end.</p>
+          <div className="gc-storefront-row">
+            <input className="gc-storefront-link" value={storefrontLink} readOnly onFocus={e => e.target.select()} />
+            <button type="button" className="gc-copy-btn" onClick={copyStorefrontLink}>
+              {linkCopied ? <Check size={13} /> : <Copy size={13} />} {linkCopied ? 'Copied' : 'Copy link'}
+            </button>
           </div>
         </div>
 
@@ -141,25 +187,50 @@ export default function GiftCards() {
                 <span>Original value</span>
                 <span>Status</span>
                 <span>Wallet link</span>
+                <span>History</span>
               </div>
               {cards.map(c => (
-                <div className="gc-row" key={c.slug}>
-                  <span className="gc-customer-name">
-                    {c.customer_name || c.slug}
-                    {c.customer_contact && <span className="gc-customer-contact">{c.customer_contact}</span>}
-                  </span>
-                  <span className="gc-balance">${Number(c.balance).toFixed(2)}</span>
-                  <span>${Number(c.original_value).toFixed(2)}</span>
-                  <span>
-                    {c.active ? (
-                      <span className="gc-badge gc-badge-active"><Ticket size={11} /> Active</span>
-                    ) : (
-                      <span className="gc-badge gc-badge-depleted">Fully redeemed</span>
-                    )}
-                  </span>
-                  <a href={`${API_BASE}/api/v1/giftcards/pass?slug=${c.slug}`} target="_blank" rel="noreferrer" className="gc-wallet-link">
-                    <Download size={12} /> Download
-                  </a>
+                <div key={c.slug}>
+                  <div className="gc-row">
+                    <span className="gc-customer-name">
+                      {c.customer_name || c.slug}
+                      {c.customer_contact && <span className="gc-customer-contact">{c.customer_contact}</span>}
+                    </span>
+                    <span className="gc-balance">${Number(c.balance).toFixed(2)}</span>
+                    <span>${Number(c.original_value).toFixed(2)}</span>
+                    <span>
+                      {c.active ? (
+                        <span className="gc-badge gc-badge-active"><Ticket size={11} /> Active</span>
+                      ) : (
+                        <span className="gc-badge gc-badge-depleted">Fully redeemed</span>
+                      )}
+                    </span>
+                    <a href={`${API_BASE}/api/v1/giftcards/pass?slug=${c.slug}`} target="_blank" rel="noreferrer" className="gc-wallet-link">
+                      <Download size={12} /> Download
+                    </a>
+                    <button type="button" className="gc-history-toggle" onClick={() => toggleHistory(c.slug)}>
+                      <History size={12} /> {expandedSlug === c.slug ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                    </button>
+                  </div>
+                  {expandedSlug === c.slug && (
+                    <div className="gc-history-panel">
+                      {historyLoading ? (
+                        <span className="gc-note"><Loader size={12} className="gc-spin" /> Loading history…</span>
+                      ) : history.length === 0 ? (
+                        <span className="gc-note">No redemptions yet on this card.</span>
+                      ) : (
+                        <div className="gc-history-list">
+                          {history.map((h, i) => (
+                            <div className="gc-history-row" key={i}>
+                              <span>{new Date(h.redeemed_at).toLocaleString()}</span>
+                              <span className="gc-history-amount">-${Number(h.amount).toFixed(2)}</span>
+                              <span className="gc-history-balance">${Number(h.balance_after).toFixed(2)} left</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
