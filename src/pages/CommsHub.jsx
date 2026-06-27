@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { MessageCircle, Send, Loader, Plus, X } from 'lucide-react'
+import { MessageCircle, Send, Loader, Plus, X, Sparkles, Pencil, Check } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import './CommsHub.css'
 
@@ -34,6 +34,9 @@ export default function CommsHub() {
   const [sending, setSending] = useState(false)
   const [showNew, setShowNew] = useState(false)
   const [newPhone, setNewPhone] = useState('')
+  const [contact, setContact] = useState(null)
+  const [editingContact, setEditingContact] = useState(false)
+  const [contactForm, setContactForm] = useState({ name: '', company: '', naics: '', last_award_date: '', notes: '' })
 
   const loadThreads = useCallback(async () => {
     if (!userId || !API_BASE) { setLoading(false); return }
@@ -76,10 +79,65 @@ export default function CommsHub() {
     }
   }, [userId])
 
+  const loadContact = useCallback(async (phone) => {
+    if (!userId || !phone) return
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/comms/contact?business_user_id=${userId}&phone=${encodeURIComponent(phone)}`)
+      if (res.ok) {
+        const data = await res.json()
+        setContact(data.contact || null)
+        setContactForm({
+          name: data.contact?.name || '',
+          company: data.contact?.company || '',
+          naics: data.contact?.naics || '',
+          last_award_date: data.contact?.last_award_date || '',
+          notes: data.contact?.notes || '',
+        })
+      }
+    } catch (err) {
+      console.error('CommsHub: failed to load contact', err)
+    }
+  }, [userId])
+
   function openThread(phone) {
     setActivePhone(phone)
     setShowNew(false)
+    setEditingContact(false)
     loadThread(phone)
+    loadContact(phone)
+  }
+
+  async function saveContact(phone) {
+    if (!userId || !phone) return
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/comms/contact`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ business_user_id: userId, phone, ...contactForm }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setContact(data.contact || null)
+        setEditingContact(false)
+      }
+    } catch (err) {
+      console.error('CommsHub: failed to save contact', err)
+    }
+  }
+
+  async function dismissNudge(phone, e) {
+    e.stopPropagation()
+    if (!userId || !phone) return
+    try {
+      await fetch(`${API_BASE}/api/v1/comms/contact/dismiss-nudge`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ business_user_id: userId, phone, days: 14 }),
+      })
+      await loadThreads()
+    } catch (err) {
+      console.error('CommsHub: failed to dismiss nudge', err)
+    }
   }
 
   async function sendMessage(phone, body) {
@@ -140,13 +198,20 @@ export default function CommsHub() {
               onClick={() => openThread(t.phone)}
             >
               <div className="ch-thread-top">
-                <span className="ch-thread-phone">{t.phone}</span>
+                <span className="ch-thread-phone">{t.contact_name || t.phone}</span>
                 <span className="ch-thread-time">{timeAgo(t.last_at)}</span>
               </div>
               <div className="ch-thread-preview">
                 {t.last_direction === 'out' ? 'You: ' : ''}{t.last_body}
               </div>
               {t.unread > 0 && <span className="ch-thread-unread">{t.unread}</span>}
+              {t.show_nudge && (
+                <div className="ch-nudge" title="No activity in a while — might be worth a check-in">
+                  <Sparkles size={12} />
+                  <span>Quiet {t.days_quiet}d</span>
+                  <button className="ch-nudge-dismiss" onClick={(e) => dismissNudge(t.phone, e)}>Dismiss</button>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -170,7 +235,17 @@ export default function CommsHub() {
 
           {!showNew && activePhone && (
             <>
-              <div className="ch-panel-head">{activePhone}</div>
+              <div className="ch-panel-head">{contact?.name || activePhone}</div>
+              <ContactIdentity
+                phone={activePhone}
+                contact={contact}
+                editing={editingContact}
+                form={contactForm}
+                setForm={setContactForm}
+                onEdit={() => setEditingContact(true)}
+                onCancel={() => setEditingContact(false)}
+                onSave={() => saveContact(activePhone)}
+              />
               <div className="ch-messages">
                 {threadLoading && <div className="ch-empty">Loading…</div>}
                 {!threadLoading && thread.map(m => (
@@ -205,6 +280,44 @@ export default function CommsHub() {
           )}
         </div>
       </div>
+    </div>
+  )
+}
+
+// The "blue bubble trust" layer — a thin strip of business context above
+// the message timeline so a prime/KO contact reads this as a system that
+// knows who they are, not a personal text. Every field is optional; an
+// empty strip just shows "Add company / NAICS" so the prompt to fill it in
+// is there without ever blocking a send.
+function ContactIdentity({ phone, contact, editing, form, setForm, onEdit, onCancel, onSave }) {
+  if (editing) {
+    return (
+      <div className="ch-identity ch-identity-edit">
+        <input placeholder="Contact name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+        <input placeholder="Company" value={form.company} onChange={e => setForm({ ...form, company: e.target.value })} />
+        <input placeholder="NAICS code(s)" value={form.naics} onChange={e => setForm({ ...form, naics: e.target.value })} />
+        <input type="date" placeholder="Last award date" value={form.last_award_date || ''} onChange={e => setForm({ ...form, last_award_date: e.target.value })} />
+        <input placeholder="Notes" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />
+        <div className="ch-identity-actions">
+          <button className="btn-primary" onClick={onSave}><Check size={14} /> Save</button>
+          <button className="btn-outline" onClick={onCancel}>Cancel</button>
+        </div>
+      </div>
+    )
+  }
+
+  const hasIdentity = contact?.company || contact?.naics || contact?.last_award_date
+  return (
+    <div className="ch-identity" onClick={onEdit} title="Click to edit contact details">
+      {hasIdentity ? (
+        <>
+          {contact.company && <span className="ch-identity-chip">{contact.company}</span>}
+          {contact.naics && <span className="ch-identity-chip">NAICS {contact.naics}</span>}
+          {contact.last_award_date && <span className="ch-identity-chip">Last award {contact.last_award_date}</span>}
+        </>
+      ) : (
+        <span className="ch-identity-empty"><Pencil size={11} /> Add company / NAICS for {phone}</span>
+      )}
     </div>
   )
 }

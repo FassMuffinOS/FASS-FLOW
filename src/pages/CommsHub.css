@@ -144,6 +144,82 @@
   font-weight: 700;
 }
 
+/* Nudge — deliberately quiet styling (amber, small, dismissible) so it
+   reads as a passive observation in the thread list, not an alert. */
+.ch-nudge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  font-size: 0.7rem;
+  color: #92660a;
+  background: #fff6e0;
+  border-radius: 8px;
+  padding: 3px 8px;
+  width: fit-content;
+}
+
+.ch-nudge svg { color: #c98a0a; }
+
+.ch-nudge-dismiss {
+  background: none;
+  border: none;
+  color: #92660a;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.7rem;
+  padding: 0;
+  margin-left: 4px;
+}
+
+/* Contact Identity strip — the "blue bubble trust" layer above the
+   timeline. Click-to-edit, never blocks sending if left empty. */
+.ch-identity {
+  padding: 8px 18px;
+  border-bottom: 1px solid var(--gray-100);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.ch-identity-chip {
+  background: var(--gray-100);
+  color: var(--gray-700);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.ch-identity-empty {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--gray-400);
+  font-size: 0.76rem;
+}
+
+.ch-identity-edit {
+  flex-direction: column;
+  cursor: default;
+}
+
+.ch-identity-edit input {
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  padding: 6px 9px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  width: 100%;
+}
+
+.ch-identity-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+
 .ch-close {
   background: none;
   border: none;
