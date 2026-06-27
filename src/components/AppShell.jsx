@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase'
 import {
   Compass, ClipboardCheck, Kanban, ClipboardList, BookOpen,
   ShieldCheck, LogOut, GraduationCap, IdCard, DollarSign, Network, Mail,
-  Award, LifeBuoy, Handshake, Calculator, HardHat, Camera,
+  LifeBuoy, Handshake, Calculator, HardHat, Camera,
   Radar, Images, Trophy, Flame, Menu, X, Send, Lock, ChevronDown, Stamp, Wallet, Rocket, Crop, Megaphone, Gift, Landmark,
 } from 'lucide-react'
 import AlertsBell from './AlertsBell'
@@ -56,8 +56,11 @@ const NAV_GROUPS = [
     { name: 'Gift Cards', icon: Gift, to: '/giftcards', match: ['/giftcards'], tier: 'free' },
   ] },
   { label: 'Learn', items: [
-    { name: 'Classroom', icon: BookOpen, to: '/classroom', match: ['/classroom'], tier: 'locked' },
-    { name: 'Masterclass', icon: Award, to: '/masterclass', match: ['/masterclass'], tier: 'locked' },
+    // "Masterclass" used to be its own nav item pointing at /masterclass —
+    // the pre-purchase sales page. Signed-in users now get redirected
+    // straight from /masterclass to /classroom (App.jsx's MasterclassRoute),
+    // so Classroom is the only Learn destination a logged-in user needs.
+    { name: 'Classroom', icon: BookOpen, to: '/classroom', match: ['/classroom', '/masterclass'], tier: 'locked' },
     { name: 'Glossary', icon: GraduationCap, to: '/glossary', match: ['/glossary'], tier: 'free' },
   ] },
   { label: 'Account', items: [

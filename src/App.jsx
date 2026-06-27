@@ -71,13 +71,13 @@ function ProtectedRoute({ children }) {
   return <AppShell>{children}</AppShell>
 }
 
-// Masterclass / Support / BD Partner are sales pages a logged-out visitor
-// can land on directly, but they're also real product surfaces a signed-in
-// customer clicks into from the Dashboard. Previously those routes always
-// rendered the public marketing Nav+Footer, which meant a signed-in user
-// lost the app sidebar (WARDOG, Pipeline, Inbox, etc.) the moment they
-// opened one of these — no way back in except browser-back. Now: signed-in
-// users get the same AppShell sidebar every other authenticated page uses;
+// Support / BD Partner are sales pages a logged-out visitor can land on
+// directly, but they're also real product surfaces a signed-in customer
+// clicks into from the Dashboard. Previously those routes always rendered
+// the public marketing Nav+Footer, which meant a signed-in user lost the
+// app sidebar (WARDOG, Pipeline, Inbox, etc.) the moment they opened one
+// of these — no way back in except browser-back. Now: signed-in users get
+// the same AppShell sidebar every other authenticated page uses;
 // logged-out visitors still get the public marketing chrome.
 function AuthAwarePage({ children }) {
   const { session, loading } = useAuth()
@@ -86,12 +86,26 @@ function AuthAwarePage({ children }) {
   return <><Nav /><main>{children}</main><Footer /></>
 }
 
+// Masterclass is the pre-purchase sales pitch — it should only ever sell to
+// someone who hasn't bought yet. A signed-in user clicking "Masterclass"
+// already paid (or is logging into the app they own); showing them the
+// $175 enroll CTA inside their own sidebar reads as if the product doesn't
+// know they're a customer. So: logged out -> public sales page. Logged in
+// -> straight into the real class (Classroom), which is where the actual
+// 10 nights, worksheets, and certificate live.
+function MasterclassRoute() {
+  const { session, loading } = useAuth()
+  if (loading) return null
+  if (session) return <Navigate to="/classroom" replace />
+  return <><Nav /><main><Masterclass /></main><Footer /></>
+}
+
 function AppRoutes() {
   return (
     <Routes>
       {/* Public routes with Nav + Footer */}
       <Route path="/" element={<><Nav /><main><Landing /></main><Footer /></>} />
-      <Route path="/masterclass" element={<AuthAwarePage><Masterclass /></AuthAwarePage>} />
+      <Route path="/masterclass" element={<MasterclassRoute />} />
       <Route path="/support" element={<AuthAwarePage><Support /></AuthAwarePage>} />
       <Route path="/bd-partner" element={<AuthAwarePage><BDPartner /></AuthAwarePage>} />
 
