@@ -7,12 +7,23 @@ import {
   ArrowLeft, Sun, Moon, Lock, CheckCircle2, ChevronDown,
   ChevronUp, BookOpen, Target, ClipboardCheck, Star, Unlock, Rocket,
   Download, Award, Flame, Zap, Stamp, MessageCircle, Send, Sparkles, Notebook as NotebookIcon,
+  KeyRound, FileText, HelpCircle, Wand2, ListTree,
 } from 'lucide-react'
 import { MASTERCLASS_NIGHTS } from '../data/masterclassNights'
 import './Classroom.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
 const EARLY_UNLOCK_NIGHT = 3
+
+// Quick-action prompts for the Notebook chat — turns "type a question into a
+// blank box" into one tap, same instinct as Thinkific-style course AI
+// assistants ("explain this", "quiz me") instead of a generic empty input.
+const QUICK_PROMPTS = [
+  { label: 'Summarize', icon: FileText, prompt: 'Summarize this mission in 3 bullet points.' },
+  { label: 'Quiz Me', icon: HelpCircle, prompt: 'Quiz me with 3 short questions on this mission, one at a time.' },
+  { label: 'Explain Simply', icon: Wand2, prompt: 'Explain this mission like I\'m brand new to government contracting.' },
+  { label: 'Show Examples', icon: ListTree, prompt: 'Give me a concrete, real-world example of this mission applied to my business.' },
+]
 
 export default function Classroom() {
   const { session } = useAuth()
@@ -198,10 +209,11 @@ export default function Classroom() {
     }
   }
 
-  async function askNotebook(night) {
-    if (!chatInput.trim() || chatLoading) return
+  async function askNotebook(night, override) {
+    const text = (override ?? chatInput).trim()
+    if (!text || chatLoading) return
     const userId = session.user.id
-    const message = chatInput.trim()
+    const message = text
     const history = chatMessages[night.n] || []
     setChatMessages(prev => ({ ...prev, [night.n]: [...history, { role: 'user', content: message }] }))
     setChatInput('')
@@ -260,7 +272,7 @@ export default function Classroom() {
     w.document.write(`
       <html>
         <head>
-          <title>Night ${night.n} Worksheet — ${night.title}</title>
+          <title>Mission ${night.n} Worksheet — ${night.title}</title>
           <style>
             body { font-family: -apple-system, Helvetica, Arial, sans-serif; padding: 48px; color: #14242f; }
             .eyebrow { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #2a9d8f; font-weight: 700; margin-bottom: 6px; }
@@ -276,12 +288,12 @@ export default function Classroom() {
           </style>
         </head>
         <body>
-          <div class="eyebrow">FASS Masterclass — Week ${night.week}</div>
-          <h1>Night ${night.n}: ${night.title}</h1>
+          <div class="eyebrow">FASS Masterclass — Mission ${night.n} of ${MASTERCLASS_NIGHTS.length}</div>
+          <h1>${night.title}</h1>
           <h2>${night.subtitle}</h2>
           <div class="meta"><span>Name: ____________________________</span><span>Date: ______________</span></div>
           ${items.map(i => `<div class="field"><label>${i}</label><div class="line"></div></div>`).join('')}
-          <footer>FASS Technologies LLC · 10-Night Government Contracting Masterclass</footer>
+          <footer>FASS Technologies LLC · Government Contracting Masterclass</footer>
         </body>
       </html>
     `)
@@ -318,9 +330,9 @@ export default function Classroom() {
             <h1>FASS Government Contracting Masterclass</h1>
             <div class="lead">This certifies that</div>
             <div class="name">${name}</div>
-            <div class="course">has successfully completed all ten nights of training in<br/>opportunity scoring, compliance, capability statements, pricing, and proposal assembly.</div>
+            <div class="course">has successfully completed all ten missions of training in<br/>opportunity scoring, compliance, capability statements, pricing, and proposal assembly.</div>
             <div class="date">Awarded ${date}</div>
-            <div class="sig">FASS Technologies LLC<span>10-Night Government Contracting Masterclass</span></div>
+            <div class="sig">FASS Technologies LLC<span>Government Contracting Masterclass</span></div>
           </div>
         </body>
       </html>
@@ -358,14 +370,15 @@ export default function Classroom() {
           <aside className="cr-sidebar">
             <div className="cr-sidebar-course">
               <span className="cr-sidebar-course-label">Course</span>
-              <h2>10-Night Government Contracting Masterclass</h2>
+              <h2>Government Contracting Masterclass</h2>
+              <p className="cr-sidebar-course-speed">10 missions · most students finish the core training in under 2 hours</p>
             </div>
 
             <div className="cr-sidebar-progress">
               <div className="cr-progress-bar">
                 <div className="cr-progress-fill" style={{ width: `${pct}%` }} />
               </div>
-              <span className="cr-progress-label">{pct}% complete · {completedCount}/{MASTERCLASS_NIGHTS.length} nights</span>
+              <span className="cr-progress-label">{pct}% complete · {completedCount}/{MASTERCLASS_NIGHTS.length} missions</span>
             </div>
 
             <div className="cr-sidebar-rewards">
@@ -396,7 +409,7 @@ export default function Classroom() {
                       {!unlocked ? <Lock size={14} /> : done ? <CheckCircle2 size={16} /> : <span className="cr-curr-dot">{night.n}</span>}
                     </span>
                     <span className="cr-curr-text">
-                      <span className="cr-curr-week">Week {night.week} · Night {night.n}</span>
+                      <span className="cr-curr-week">Mission {night.n}</span>
                       <span className="cr-curr-title">{night.title}</span>
                     </span>
                   </button>
@@ -413,7 +426,7 @@ export default function Classroom() {
             {xpToast && (
               <div className="cr-xp-toast">
                 {xpToast.leveled_up ? <Award size={14} /> : <Zap size={14} />}
-                +{xpToast.xp_gain} XP{xpToast.leveled_up ? ' — Level up!' : ''}
+                Mission Complete — +{xpToast.xp_gain} XP{xpToast.leveled_up ? ' — Level up!' : ''}
               </div>
             )}
 
@@ -422,7 +435,7 @@ export default function Classroom() {
                 <div className="cr-grad-icon"><Rocket size={28} /></div>
                 <h2>You finished the training. Here's the live system you're trained to use.</h2>
                 <p>
-                  You completed all {MASTERCLASS_NIGHTS.length} nights — opportunity scoring, compliance discipline,
+                  You completed all {MASTERCLASS_NIGHTS.length} missions — opportunity scoring, compliance discipline,
                   proposal assembly, all of it. WARDOG, R-E-A-D, Pipeline, and FASS FILL are the tools built to run
                   what you just learned, every day, on autopilot.
                 </p>
@@ -447,7 +460,7 @@ export default function Classroom() {
               <div className="cr-early-banner">
                 <div className="cr-early-icon"><Unlock size={18} /></div>
                 <div className="cr-early-text">
-                  <strong>Night {EARLY_UNLOCK_NIGHT} complete — WARDOG is unlocked early.</strong>
+                  <strong>Mission {EARLY_UNLOCK_NIGHT} complete — WARDOG is unlocked early.</strong>
                   <span>You don't have to wait until graduation. See live opportunities matching your NAICS code right now.</span>
                 </div>
                 <button className="cr-early-cta" onClick={() => navigate('/wardog')}>
@@ -464,9 +477,14 @@ export default function Classroom() {
               return (
                 <article className="cr-lesson">
                   <div className="cr-lesson-head">
-                    <span className="cr-lesson-eyebrow">Week {night.week} · Night {night.n}</span>
+                    <span className="cr-lesson-eyebrow">Mission {night.n} of {MASTERCLASS_NIGHTS.length}</span>
                     <h1>{night.title}</h1>
                     <p>{night.subtitle}</p>
+                    {night.unlocks && (
+                      <button className="cr-unlocks-tag" onClick={() => navigate(night.unlocks.to)}>
+                        <KeyRound size={12} /> Powers: {night.unlocks.label}
+                      </button>
+                    )}
                   </div>
 
                   <div className="cr-block">
@@ -519,15 +537,30 @@ export default function Classroom() {
                       onClick={() => setChatOpenNight(chatOpenNight === night.n ? null : night.n)}
                     >
                       <MessageCircle size={14} />
-                      Ask the Notebook about Night {night.n}
+                      Ask the Notebook about this mission
                       {chatOpenNight === night.n ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                     </button>
                     {chatOpenNight === night.n && (
                       <div className="cr-notebook-chat">
                         <p className="cr-notebook-hint">
-                          <NotebookIcon size={12} /> Sources: Night {night.n} content + your business profile.
-                          Ask about this lesson, or ask it to apply tonight's lesson to your specific business.
+                          <NotebookIcon size={12} /> Sources: this mission's content + your business profile.
+                          Ask about this lesson, or ask it to apply this mission to your specific business.
                         </p>
+                        <div className="cr-quick-prompts">
+                          {QUICK_PROMPTS.map(qp => {
+                            const QpIcon = qp.icon
+                            return (
+                              <button
+                                key={qp.label}
+                                className="cr-quick-prompt-chip"
+                                disabled={chatLoading}
+                                onClick={() => askNotebook(night, qp.prompt)}
+                              >
+                                <QpIcon size={12} /> {qp.label}
+                              </button>
+                            )
+                          })}
+                        </div>
                         <div className="cr-chat-log">
                           {(chatMessages[night.n] || []).length === 0 && (
                             <p className="cr-chat-empty">No questions yet — try "How does this apply to my business?"</p>
@@ -579,7 +612,7 @@ export default function Classroom() {
                       <span className="cr-completed-tag"><CheckCircle2 size={14} /> Completed</span>
                     ) : (
                       <button className="cr-complete-btn" disabled={saving} onClick={() => markComplete(night.n)}>
-                        {saving ? 'Saving…' : 'Mark Night Complete'}
+                        {saving ? 'Saving…' : 'Complete Mission'}
                       </button>
                     )}
                   </div>

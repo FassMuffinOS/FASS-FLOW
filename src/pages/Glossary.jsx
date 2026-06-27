@@ -10,7 +10,7 @@ const FREE_INCLUDES = [
 ]
 
 const MASTERCLASS_UNLOCKS = [
-  'All 10 Nights of the curriculum — entity setup through closeout, in order',
+  'All 10 Missions of the curriculum — entity setup through closeout, in order',
   'The full R-E-A-D bid/no-bid workflow, walked through step by step',
   'A worked capabilities-statement example and the complete Proposal Assembly Checklist',
   'Direct instructor access (live cohort) or the self-paced ebook on your own schedule',
@@ -341,7 +341,7 @@ export default function Glossary() {
         <div>
           <h3>Ready to stop looking terms up and start using them?</h3>
           <p>
-            The 10-Night Masterclass walks through bid strategy, compliance, and pricing night by night —
+            The 10-Mission Masterclass walks through bid strategy, compliance, and pricing mission by mission —
             or grab the self-paced ebook and work through it on your own schedule. Founding pricing is
             currently $175 (50% off $350) while we scale to our first 100 students.
           </p>

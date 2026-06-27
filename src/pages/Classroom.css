@@ -970,3 +970,63 @@
     max-width: 100%;
   }
 }
+
+/* ── Mission rename + speed-first framing ── */
+
+.cr-sidebar-course-speed {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 6px 0 0;
+  line-height: 1.4;
+}
+
+.cr-unlocks-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--teal);
+  background: var(--light-teal);
+  color: var(--teal);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cr-unlocks-tag:hover {
+  background: var(--teal);
+  color: #fff;
+}
+
+.cr-quick-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 12px;
+}
+
+.cr-quick-prompt-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cr-quick-prompt-chip:hover:not(:disabled) {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+.cr-quick-prompt-chip:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

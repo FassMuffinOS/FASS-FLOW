@@ -13,10 +13,10 @@ const FULL_PRICE = 350
 const PROMO_PRICE = 175
 const PROMO_LABEL = 'Founding 100 pricing — 50% off while we scale'
 
-// Per-night summaries now pulled straight from the real curriculum data that
+// Per-mission summaries now pulled straight from the real curriculum data that
 // powers the Classroom — same titles, same subtitles, same lesson count. The
 // sales page no longer says less than the product actually delivers.
-const NIGHTS = MASTERCLASS_NIGHTS.map(night => ({
+const MISSIONS = MASTERCLASS_NIGHTS.map(night => ({
   n: String(night.n).padStart(2, '0'),
   title: night.title,
   body: night.subtitle,
@@ -40,7 +40,7 @@ const NOT_FOR_YOU_IF = [
 
 export default function Masterclass() {
   const [sampleNight, setSampleNight] = useState(1)
-  const night = MASTERCLASS_NIGHTS.find(n => n.n === sampleNight) || MASTERCLASS_NIGHTS[0]
+  const mission = MASTERCLASS_NIGHTS.find(n => n.n === sampleNight) || MASTERCLASS_NIGHTS[0]
 
   return (
     <div className="mc">
@@ -50,15 +50,16 @@ export default function Masterclass() {
         <div className="container mc-hero-inner">
           <span className="mc-label">FASS Masterclass — Launch Accelerator</span>
           <h1 className="mc-headline">
-            10 nights. Everything you need to compete for government contracts.
+            10 short missions. Everything you need to compete for government contracts.
           </h1>
           <p className="mc-subhead">
             Most service businesses lose before they start — wrong codes, wrong forms, no bid discipline.
-            This Masterclass fixes that. We assume you know nothing and build the foundation correctly.
+            This Masterclass fixes that in focused, fast sessions — most students finish the core training
+            in under 2 hours, then put it to work at their own pace.
           </p>
           <p className="mc-subhead" style={{ marginTop: 4 }}>
             A guided launch program, not a subscription tier — includes the workbook, live setup help, and
-            building your first real pipeline inside FASS Flow by night 10.
+            building your first real pipeline inside FASS Flow by Mission 10.
           </p>
           <span className="mc-promo-badge">{PROMO_LABEL}</span>
           <div className="mc-price-block">
@@ -105,15 +106,15 @@ export default function Masterclass() {
         </div>
       </section>
 
-      {/* ── 10 Nights ── */}
+      {/* ── 10 Missions ── */}
       <section className="mc-nights">
         <div className="container">
           <span className="mc-label">The curriculum</span>
-          <h2 className="mc-section-title mc-nights-title">What you learn, night by night</h2>
+          <h2 className="mc-section-title mc-nights-title">What you learn, mission by mission</h2>
           <div className="mc-nights-grid">
-            {NIGHTS.map(n => (
+            {MISSIONS.map(n => (
               <div className="mc-night-card" key={n.n}>
-                <span className="mc-night-num">Night {n.n}</span>
+                <span className="mc-night-num">Mission {n.n}</span>
                 <h3 className="mc-night-title">{n.title}</h3>
                 <p className="mc-night-body">{n.body}</p>
                 <div className="mc-night-meta">
@@ -127,16 +128,17 @@ export default function Masterclass() {
         </div>
       </section>
 
-      {/* ── Proof of depth: a real night, in full ── */}
+      {/* ── Proof of depth: a real mission, in full ── */}
       <section className="mc-sample">
         <div className="container">
           <span className="mc-label">See it for yourself</span>
           <h2 className="mc-section-title mc-nights-title">
-            This isn't a webinar. Here's an actual night, unlocked.
+            This isn't a webinar. Here's an actual mission, unlocked.
           </h2>
           <p className="mc-sample-intro">
-            Every night in the Classroom looks like this — real objectives, real teaching, a real homework
-            assignment, a printable worksheet, and a place to track what you did. Pick any night below to see it.
+            Every mission in the Classroom looks like this — real objectives, real teaching, a real homework
+            assignment, a printable worksheet, and a place to track what you did. Most take 10–20 minutes.
+            Pick any mission below to see it.
           </p>
 
           <div className="mc-sample-picker">
@@ -153,46 +155,46 @@ export default function Masterclass() {
 
           <div className="mc-sample-card">
             <div className="mc-sample-head">
-              <span className="mc-night-num">Week {night.week} · Night {night.n}</span>
-              <h3>{night.title}</h3>
-              <p>{night.subtitle}</p>
+              <span className="mc-night-num">Mission {mission.n} of {MASTERCLASS_NIGHTS.length}</span>
+              <h3>{mission.title}</h3>
+              <p>{mission.subtitle}</p>
             </div>
 
             <div className="mc-sample-block">
               <h4>Objectives</h4>
               <ul>
-                {night.objectives.map((o, i) => <li key={i}>{o}</li>)}
+                {mission.objectives.map((o, i) => <li key={i}>{o}</li>)}
               </ul>
             </div>
 
-            {night.sections.slice(0, 2).map((s, i) => (
+            {mission.sections.slice(0, 2).map((s, i) => (
               <div className="mc-sample-block" key={i}>
                 <h4>{s.heading}</h4>
                 <p>{s.body}</p>
               </div>
             ))}
-            {night.sections.length > 2 && (
+            {mission.sections.length > 2 && (
               <p className="mc-sample-more">
-                + {night.sections.length - 2} more lesson{night.sections.length - 2 === 1 ? '' : 's'} this night, unlocked in the Classroom.
+                + {mission.sections.length - 2} more lesson{mission.sections.length - 2 === 1 ? '' : 's'} this mission, unlocked in the Classroom.
               </p>
             )}
 
             <div className="mc-sample-block">
               <h4>Homework</h4>
-              <p>{night.homework}</p>
+              <p>{mission.homework}</p>
             </div>
 
-            {night.worksheet && night.worksheet.length > 0 && (
+            {mission.worksheet && mission.worksheet.length > 0 && (
               <div className="mc-sample-block">
                 <h4><Download size={13} /> Downloadable worksheet — fields you fill in</h4>
                 <ul className="mc-sample-worksheet">
-                  {night.worksheet.map((w, i) => <li key={i}>{w}</li>)}
+                  {mission.worksheet.map((w, i) => <li key={i}>{w}</li>)}
                 </ul>
               </div>
             )}
 
             <div className="mc-sample-locked">
-              <Lock size={13} /> Night {night.n + 1 > MASTERCLASS_NIGHTS.length ? '—' : night.n + 1} unlocks once this one is marked complete.
+              <Lock size={13} /> Mission {mission.n + 1 > MASTERCLASS_NIGHTS.length ? '—' : mission.n + 1} unlocks once this one is marked complete.
             </div>
           </div>
         </div>
@@ -201,28 +203,28 @@ export default function Masterclass() {
       {/* ── How it's tracked ── */}
       <section className="mc-mechanics">
         <div className="container mc-mechanics-inner">
-          <span className="mc-label">How the 10 nights actually work</span>
+          <span className="mc-label">How the 10 missions actually work</span>
           <h2 className="mc-section-title mc-nights-title">Built like a class, not a video library</h2>
           <div className="mc-mechanics-grid">
             <div className="mc-mech-card">
               <Lock size={18} />
               <h3>Sequential unlock</h3>
-              <p>Night 2 doesn't open until Night 1 is marked complete. No skipping ahead and missing the foundation.</p>
+              <p>Mission 2 doesn't open until Mission 1 is marked complete. No skipping ahead and missing the foundation.</p>
             </div>
             <div className="mc-mech-card">
               <ClipboardCheck size={18} />
-              <h3>Real homework, every night</h3>
-              <p>Each night ends with an assignment tied to your actual business — your NAICS code, your solicitation, your price.</p>
+              <h3>Real homework, every mission</h3>
+              <p>Each mission ends with an assignment tied to your actual business — your NAICS code, your solicitation, your price.</p>
             </div>
             <div className="mc-mech-card">
               <Download size={18} />
               <h3>Printable worksheets</h3>
-              <p>Every night has a downloadable worksheet with the exact fields to fill in — no guessing what "homework" means.</p>
+              <p>Every mission has a downloadable worksheet with the exact fields to fill in — no guessing what "homework" means.</p>
             </div>
             <div className="mc-mech-card">
               <Award size={18} />
               <h3>Certificate of Completion</h3>
-              <p>Finish all 10 nights and get a Certificate of Completion from FASS Technologies LLC, downloadable on the spot.</p>
+              <p>Finish all 10 missions and get a Certificate of Completion from FASS Technologies LLC, downloadable on the spot.</p>
             </div>
           </div>
         </div>
@@ -263,7 +265,7 @@ export default function Masterclass() {
           <h2>Ready to start?</h2>
           <p>
             <span className="mc-bottom-old-price">${FULL_PRICE}</span> ${PROMO_PRICE} for our first 100 students.
-            10 nights. The system that puts Maryland service businesses in the room.
+            10 missions. The system that puts Maryland service businesses in the room.
           </p>
           <a href={STRIPE_PAYMENT_LINK} className="btn-primary mc-cta">
             Enroll now — ${PROMO_PRICE}

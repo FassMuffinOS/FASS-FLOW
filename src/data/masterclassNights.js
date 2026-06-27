@@ -1,6 +1,12 @@
-// ── FASS Government Contracting Masterclass — 10-Night Curriculum ──
+// ── FASS Government Contracting Masterclass — 10-Mission Curriculum ──
 // Structured from the official workbook (FASS Technologies LLC, June 2026).
-// Each night unlocks after the previous one is marked complete.
+// Each mission unlocks after the previous one is marked complete.
+//
+// `unlocks` ties each mission to a real, already-live FASS Flow tool so
+// finishing a mission hands the student something they can use immediately —
+// not just a checkmark. `n`/`night`/"Night" stay as internal field/column
+// names (masterclass_progress.night in Supabase) — only display copy says
+// "Mission" now.
 
 export const MASTERCLASS_NIGHTS = [
   {
@@ -8,6 +14,7 @@ export const MASTERCLASS_NIGHTS = [
     week: 1,
     title: 'The Opportunity',
     subtitle: 'Why government is your biggest untapped customer',
+    unlocks: { label: 'WARDOG', to: '/wardog' },
     objectives: [
       'Understand how much federal, state, and local government spends with small businesses every year',
       'Learn why most small businesses never access this market — and why that is your advantage',
@@ -53,6 +60,7 @@ export const MASTERCLASS_NIGHTS = [
     week: 1,
     title: 'Entity Setup',
     subtitle: 'SAM.gov, eMMA, and your federal identity',
+    unlocks: { label: 'Business Profile', to: '/start' },
     objectives: [
       'Understand what a UEI is and why it is the foundation of everything',
       'Walk through the SAM.gov registration process step by step',
@@ -98,6 +106,7 @@ export const MASTERCLASS_NIGHTS = [
     week: 1,
     title: 'NAICS Codes & Certifications',
     subtitle: 'Unlocking set-asides and preferences',
+    unlocks: { label: 'WARDOG filters', to: '/wardog' },
     objectives: [
       'Select the right NAICS codes for your specific business',
       'Understand the difference between federal and state small business programs',
@@ -141,6 +150,7 @@ export const MASTERCLASS_NIGHTS = [
     week: 1,
     title: 'Your Capabilities Statement',
     subtitle: 'The document that gets you in the room',
+    unlocks: { label: 'FASS FILL', to: '/fill' },
     objectives: [
       'Understand what a capabilities statement is and when to use it',
       'Know every section a professional capabilities statement must include',
@@ -186,6 +196,7 @@ export const MASTERCLASS_NIGHTS = [
     week: 1,
     title: 'Capabilities Statement Workshop',
     subtitle: 'Review, refine, and make it submission-ready',
+    unlocks: { label: 'Passport', to: '/passport' },
     objectives: [
       'Receive structured feedback on your capabilities statement draft',
       'Apply the contracting officer’s lens — what they look for and what turns them off',
@@ -230,6 +241,7 @@ export const MASTERCLASS_NIGHTS = [
     week: 2,
     title: 'Reading a Solicitation',
     subtitle: 'Extracting everything that matters in two hours',
+    unlocks: { label: 'R-E-A-D', to: '/read' },
     objectives: [
       'Understand the structure of a federal and state solicitation',
       'Know exactly what to extract from any solicitation within two hours of finding it',
@@ -275,6 +287,7 @@ export const MASTERCLASS_NIGHTS = [
     week: 2,
     title: 'Bid / No-Bid',
     subtitle: 'The decision that saves you from losing before you start',
+    unlocks: { label: 'Pipeline', to: '/pipeline' },
     objectives: [
       'Apply the six bid/no-bid questions to a real solicitation',
       'Identify the no-go triggers that disqualify a bid before submission',
@@ -317,6 +330,7 @@ export const MASTERCLASS_NIGHTS = [
     week: 2,
     title: 'Pricing Your Bid',
     subtitle: 'Building a number that wins without losing money',
+    unlocks: { label: 'Estimator', to: '/estimator' },
     objectives: [
       'Build a price from the bottom up using verified labor, provider, and supply costs',
       'Understand what payroll burden, fringe, and insurance add to direct labor cost',
@@ -364,6 +378,7 @@ export const MASTERCLASS_NIGHTS = [
     week: 2,
     title: 'Writing the Response',
     subtitle: 'Telling your story in the agency’s language',
+    unlocks: { label: 'Client Proposals', to: '/proposals' },
     objectives: [
       'Structure a technical narrative that mirrors the solicitation’s evaluation criteria',
       'Write past performance entries that are specific, verifiable, and relevant',
@@ -409,6 +424,7 @@ export const MASTERCLASS_NIGHTS = [
     week: 2,
     title: 'After the Award',
     subtitle: 'Performing, documenting, and compounding',
+    unlocks: { label: 'FASS Wallet', to: '/wallet' },
     objectives: [
       'Understand what happens after an award is issued and what your obligations are',
       'Build the documentation and performance record that makes the next bid stronger',
