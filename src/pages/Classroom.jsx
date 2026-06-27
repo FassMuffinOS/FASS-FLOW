@@ -10,6 +10,7 @@ import {
   KeyRound, FileText, HelpCircle, Wand2, ListTree,
 } from 'lucide-react'
 import { MASTERCLASS_NIGHTS } from '../data/masterclassNights'
+import { logBusinessEvent } from '../lib/businessEvents'
 import './Classroom.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -157,6 +158,7 @@ export default function Classroom() {
       .upsert({ user_id: session.user.id, night: n, homework_notes: notes }, { onConflict: 'user_id,night' })
     await loadProgress()
     setSaving(false)
+    logBusinessEvent(session.user.id, 'government_readiness', 'mission_complete', 3, `Completed Mission ${n}`)
 
     // Auto-advance to the night that just unlocked — same "next lesson"
     // momentum a real course platform gives you instead of leaving the

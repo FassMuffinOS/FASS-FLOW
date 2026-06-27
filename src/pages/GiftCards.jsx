@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Gift, Send, Loader, DollarSign, User, Phone, Download, Ticket, Wallet, Link2, Copy, Check, ChevronDown, ChevronUp, History } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { logBusinessEvent } from '../lib/businessEvents'
 import './GiftCards.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -69,6 +70,7 @@ export default function GiftCards() {
       if (res.ok) {
         const data = await res.json()
         setIssuedNotice(data.slug)
+        logBusinessEvent(session.user.id, 'customer_growth', 'gift_card_issued', 2, `Issued a $${value} gift card`)
         setCustomerName('')
         setCustomerContact('')
         setValue('')

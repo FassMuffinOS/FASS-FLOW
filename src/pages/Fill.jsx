@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { supabase } from '../lib/supabase'
+import { logBusinessEvent } from '../lib/businessEvents'
 import { parseSolicitation, buildOutline } from '../lib/solicitationParser'
 import { aiEnabled, analyzeSolicitation, draftSection, extractFromImages } from '../lib/aiClient'
 import {
@@ -437,6 +438,7 @@ export default function Fill() {
       if (proposal) {
         proposalId = proposal.id
         setLinkedProposalId(proposal.id)
+        logBusinessEvent(session.user.id, 'documentation', 'proposal_drafted', 3, `Drafted "${activeDoc.title}"`)
       }
     }
 
@@ -454,7 +456,10 @@ export default function Fill() {
         parsed: activeDoc.parsed, outline: activeDoc.outline,
         proposal_id: proposalId || null,
       }).select().single()
-      if (data) setActiveDoc(data)
+      if (data) {
+        setActiveDoc(data)
+        logBusinessEvent(session.user.id, 'documentation', 'fill_document_created', 5, `Built compliance matrix for "${activeDoc.title}"`)
+      }
     }
     await loadDocs()
     setSaving(false)

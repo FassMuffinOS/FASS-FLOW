@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '../context/AuthContext'
 import JobCaptures from '../components/JobCaptures'
 import { supabase } from '../lib/supabase'
+import { logBusinessEvent } from '../lib/businessEvents'
 import {
   ShieldCheck, Trophy, Calendar, FileText, Users, Plus, Trash2,
   ExternalLink, Sparkles, Building2, Search, ShieldAlert, Landmark,
@@ -148,6 +149,10 @@ export default function Witness() {
   async function updateMilestoneStatus(id, status) {
     setMilestones(prev => prev.map(m => m.id === id ? { ...m, status } : m))
     await supabase.from('witness_milestones').update({ status }).eq('id', id)
+    if (status === 'done') {
+      const ms = milestones.find(m => m.id === id)
+      logBusinessEvent(session.user.id, 'operations', 'milestone_done', 2, `Completed milestone "${ms?.title || ''}"`)
+    }
   }
 
   async function deleteMilestone(id) {
@@ -163,7 +168,10 @@ export default function Witness() {
       .insert({ user_id: session.user.id, proposal_id: selectedAward.id, name: docName.trim(), category: docCategory, url: docUrl || null })
       .select('*').single()
     if (err) setError(err.message)
-    else setDocuments(prev => [data, ...prev])
+    else {
+      setDocuments(prev => [data, ...prev])
+      logBusinessEvent(session.user.id, 'operations', 'document_uploaded', 2, `Uploaded "${docName.trim()}"`)
+    }
     setDocName(''); setDocUrl('')
   }
 

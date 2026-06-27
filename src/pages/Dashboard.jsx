@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import { BookOpen, Compass, GraduationCap, X } from 'lucide-react'
 import OnboardingChecklist from '../components/OnboardingChecklist'
 import MilestoneBadges from '../components/MilestoneBadges'
+import BusinessHealth from '../components/BusinessHealth'
 import FunnelTracker from '../components/FunnelTracker'
 import SolicitationTicker from '../components/SolicitationTicker'
 import GetStarted from '../components/GetStarted'
@@ -72,6 +73,8 @@ export default function Dashboard() {
               waits." Existing users see the dashboard exactly as before. */}
           {!isNewStudent && (
             <>
+              <BusinessHealth />
+
               <FunnelTracker />
 
               <OnboardingChecklist />

@@ -1,0 +1,156 @@
+.bh-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 24px;
+}
+
+.bh-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gray-600);
+  margin-bottom: 14px;
+}
+
+.bh-head svg { color: var(--teal); }
+
+.bh-body {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.bh-ring-wrap {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+}
+
+.bh-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.bh-ring-bg {
+  fill: none;
+  stroke: var(--gray-200);
+  stroke-width: 8;
+}
+
+.bh-ring-fg {
+  fill: none;
+  stroke: var(--teal);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.bh-ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+}
+
+.bh-ring-score {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--gray-900);
+}
+
+.bh-ring-pct {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--gray-500);
+}
+
+.bh-detail {
+  flex: 1;
+  min-width: 0;
+}
+
+.bh-delta {
+  margin-bottom: 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.bh-delta-up {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--teal);
+}
+
+.bh-delta-down {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #c0392b;
+}
+
+.bh-delta-flat {
+  color: var(--gray-500);
+  font-weight: 600;
+}
+
+.bh-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bh-cat-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 40px;
+  align-items: center;
+  gap: 10px;
+}
+
+.bh-cat-label {
+  font-size: 0.76rem;
+  color: var(--gray-600);
+  font-weight: 600;
+}
+
+.bh-cat-bar {
+  height: 6px;
+  background: var(--gray-200);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.bh-cat-bar-fill {
+  height: 100%;
+  background: var(--teal);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.bh-cat-score {
+  font-size: 0.74rem;
+  color: var(--gray-500);
+  font-weight: 700;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .bh-body {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bh-cat-row {
+    grid-template-columns: 100px 1fr 36px;
+  }
+}

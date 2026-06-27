@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { supabase } from '../lib/supabase'
+import { logBusinessEvent } from '../lib/businessEvents'
 import JobCaptures from '../components/JobCaptures'
 import {
   LayoutGrid, List, Sun, Moon, ArrowLeft,
@@ -522,6 +523,18 @@ export default function Pipeline() {
     if (selected?.id === id) setSelected(prev => ({ ...prev, stage }))
     await supabase.from('proposals').update({ stage }).eq('id', id)
     await logEvent(id, 'stage_change', { field: 'stage', old_value: prevStage, new_value: stage })
+
+    // Business Health: every stage move counts as operations progress;
+    // submitting a bid and winning the award are the two milestones that
+    // matter most, so they earn a bigger, differently-categorized bonus.
+    const record = records.find(r => r.id === id)
+    logBusinessEvent(session.user.id, 'operations', 'stage_change', 1, `Moved "${record?.title || 'a bid'}" to ${STAGE_MAP[stage]?.label || stage}`)
+    if (stage === 'submitted') {
+      logBusinessEvent(session.user.id, 'documentation', 'bid_submitted', 5, `Submitted "${record?.title || 'a bid'}"`)
+    }
+    if (stage === 'awarded') {
+      logBusinessEvent(session.user.id, 'customer_growth', 'contract_awarded', 15, `Won "${record?.title || 'a contract'}"`)
+    }
   }
 
   // Edit a tracked field (bid value or due date) with an audit trail.

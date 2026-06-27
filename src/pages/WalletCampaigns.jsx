@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Megaphone, Send, Loader, Users, Ticket, DollarSign, Repeat, CalendarClock, Search, Gift, Moon, X, Stamp, Check } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { logBusinessEvent } from '../lib/businessEvents'
 import './WalletCampaigns.css'
 
 const STALE_DAYS = 30
@@ -149,6 +150,7 @@ export default function WalletCampaigns() {
       if (res.ok) {
         const data = await res.json()
         setSentNotice(`Sent to ${data.sent_count} customer card${data.sent_count === 1 ? '' : 's'}.`)
+        logBusinessEvent(session.user.id, 'marketing', 'campaign_sent', 3, `Sent campaign to ${data.sent_count} customers`)
         setMessage('')
         setDetail('')
         setExpiresAt('')
