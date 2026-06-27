@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
 import HomeBand from './components/HomeBand'
+import AffiliateBand from './components/AffiliateBand'
 import HowItWorks from './components/HowItWorks'
 import Pricing from './components/Pricing'
 import Footer from './components/Footer'
@@ -27,6 +28,9 @@ import Passport from './pages/Passport'
 import ShowMeTheMoney from './pages/ShowMeTheMoney'
 import Admin from './pages/Admin'
 import BDPartnerAdmin from './pages/BDPartnerAdmin'
+import AffiliateProgram from './pages/AffiliateProgram'
+import AffiliateDashboard from './pages/AffiliateDashboard'
+import AffiliateAdmin from './pages/AffiliateAdmin'
 import JoinNetwork from './pages/JoinNetwork'
 import Network from './pages/Network'
 import Inbox from './pages/Inbox'
@@ -65,6 +69,7 @@ function Landing() {
     <SmoothScroll>
       <Hero />
       <HomeBand />
+      <AffiliateBand />
       <HowItWorks />
     </SmoothScroll>
   )
@@ -186,6 +191,11 @@ function AppRoutes() {
       <Route path="/join-network" element={<><Nav /><main><JoinNetwork /></main><Footer /></>} />
       <Route path="/pricing" element={<><Nav /><main><Pricing /></main><Footer /></>} />
 
+      {/* Public affiliate pitch/join page — logged-out visitors see the
+          pitch + a "sign in to get your link" CTA; logged-in visitors can
+          join on the spot. Uses AuthAwarePage chrome rules. */}
+      <Route path="/affiliates" element={<AuthAwarePage><AffiliateProgram /></AuthAwarePage>} />
+
       {/* Auth routes — no Nav/Footer */}
       <Route path="/signin" element={<SignIn />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
@@ -199,6 +209,9 @@ function AppRoutes() {
           /admin, not linked in nav. A client's own /bd-partner route never
           reads from here; it only ever queries by its own session user_id. */}
       <Route path="/admin/bd-partner" element={<BDPartnerAdmin />} />
+      {/* Founder-side affiliate payout console — same admin-secret gate,
+          not linked in nav. */}
+      <Route path="/admin/affiliates" element={<AffiliateAdmin />} />
 
       {/* Protected routes — no Nav/Footer (dashboard has its own header) */}
       <Route path="/dashboard" element={
@@ -272,6 +285,9 @@ function AppRoutes() {
       } />
       <Route path="/comms" element={
         <ProtectedRoute><CommsHub /></ProtectedRoute>
+      } />
+      <Route path="/affiliates/dashboard" element={
+        <ProtectedRoute><AffiliateDashboard /></ProtectedRoute>
       } />
       {/* Staff redemption confirm page — landed on after scanning a
           customer's EXISTING Wallet pass QR with the phone's normal camera

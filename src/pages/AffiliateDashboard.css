@@ -1,0 +1,190 @@
+.afd-page {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+
+.afd-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 0;
+  color: var(--text-muted, #5a6472);
+}
+
+.afd-join-card {
+  max-width: 440px;
+  margin: 60px auto;
+  text-align: center;
+  background: var(--card-bg, #f7f8fa);
+  border-radius: 16px;
+  padding: 36px 28px;
+}
+
+.afd-join-card h2 {
+  margin: 14px 0 6px;
+  font-size: 1.2rem;
+}
+
+.afd-join-card p {
+  margin: 0 0 18px;
+  color: var(--text-muted, #5a6472);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.afd-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.afd-head h1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.afd-sub {
+  margin: 6px 0 20px;
+  color: var(--text-muted, #5a6472);
+  font-size: 0.9rem;
+}
+
+.afd-link-box {
+  background: var(--card-bg, #f7f8fa);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+}
+
+.afd-link-label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, #8a93a0);
+  margin-bottom: 8px;
+}
+
+.afd-link-row {
+  display: flex;
+  gap: 8px;
+}
+
+.afd-link-row input {
+  flex: 1;
+  border: 1px solid var(--border, #e2e5ea);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 0.88rem;
+  background: #fff;
+}
+
+.afd-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.afd-stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 26px;
+}
+
+.afd-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: var(--card-bg, #f7f8fa);
+  border-radius: 12px;
+  padding: 16px 8px;
+  color: var(--teal, #1D9E75);
+}
+
+.afd-stat-value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text, #1B2A4A);
+}
+
+.afd-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted, #8a93a0);
+}
+
+.afd-cal-head {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+}
+
+.afd-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.afd-cal-cell {
+  background: var(--card-bg, #f7f8fa);
+  border-radius: 10px;
+  padding: 8px 9px;
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.afd-cal-today {
+  outline: 2px solid var(--teal, #1D9E75);
+}
+
+.afd-cal-day {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted, #8a93a0);
+}
+
+.afd-cal-idea {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: var(--text, #1B2A4A);
+  flex: 1;
+}
+
+.afd-cal-activity {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.afd-cal-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.afd-cal-clicks {
+  background: rgba(27, 42, 74, 0.1);
+  color: var(--navy, #1B2A4A);
+}
+
+.afd-cal-earn {
+  background: rgba(29, 158, 117, 0.15);
+  color: var(--teal, #1D9E75);
+}
+
+@media (max-width: 760px) {
+  .afd-stat-row { grid-template-columns: repeat(2, 1fr); }
+  .afd-cal-grid { grid-template-columns: repeat(3, 1fr); }
+  .afd-link-row { flex-direction: column; }
+}

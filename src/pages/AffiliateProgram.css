@@ -1,0 +1,164 @@
+.afp-hero {
+  padding: 64px 0 48px;
+  background: linear-gradient(135deg, var(--navy, #1B2A4A), #122036);
+  color: #fff;
+}
+
+.afp-hero-inner {
+  max-width: 640px;
+}
+
+.afp-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--teal, #1D9E75);
+  margin-bottom: 14px;
+}
+
+.afp-headline {
+  font-size: 2.1rem;
+  font-weight: 800;
+  line-height: 1.15;
+  margin: 0 0 14px;
+}
+
+.afp-subhead {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0 0 24px;
+}
+
+.afp-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.afp-hero-note {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.afp-error {
+  margin-top: 12px;
+  color: #ff9b9b;
+  font-size: 0.85rem;
+}
+
+.afp-link-box {
+  margin-top: 22px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  padding: 18px 20px;
+}
+
+.afp-link-label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 8px;
+}
+
+.afp-link-row {
+  display: flex;
+  gap: 8px;
+}
+
+.afp-link-row input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #fff;
+  padding: 9px 12px;
+  font-size: 0.88rem;
+}
+
+.afp-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.afp-dash-link {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.afp-why {
+  padding: 56px 0;
+}
+
+.afp-section-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0 0 24px;
+}
+
+.afp-why-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.afp-card {
+  display: flex;
+  gap: 14px;
+  background: var(--card-bg, #f7f8fa);
+  border-radius: 14px;
+  padding: 18px 20px;
+}
+
+.afp-card-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: rgba(29, 158, 117, 0.12);
+  color: var(--teal, #1D9E75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.afp-card-title {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.afp-card-body {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text-muted, #5a6472);
+}
+
+.afp-legal-band {
+  padding: 0 0 56px;
+}
+
+.afp-legal {
+  font-size: 0.78rem;
+  color: var(--text-muted, #8a93a0);
+  line-height: 1.6;
+}
+
+@media (max-width: 760px) {
+  .afp-headline { font-size: 1.6rem; }
+  .afp-why-grid { grid-template-columns: 1fr; }
+  .afp-link-row { flex-direction: column; }
+}
