@@ -1,31 +1,30 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useLocation } from 'react-router-dom'
-import { Handshake, Plus, Loader, MessageCircle, X, Inbox as InboxIcon } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { Handshake, Plus, Loader, MessageCircle, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { logBusinessEvent } from '../lib/businessEvents'
-import ChatThread from '../components/ChatThread'
 import './TeamUp.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
 
 // Team Up — the public "looking for partners" board. Any signed-in user can
-// browse open posts and start a chat with the author (see ChatThread.jsx /
-// chat.py). Posts can be written from scratch here, or pre-filled from a
+// browse open posts and start a chat with the author, which hands off to the
+// dedicated Messages page (see Messages.jsx / chat.py) rather than an inline
+// modal. Posts can be written from scratch here, or pre-filled from a
 // Pipeline record via the "Find a Partner" button, which navigates here with
 // router state (the same pattern R-E-A-D's WARDOG prefill uses) rather than
 // a prop, since this page is reached via a route, not direct composition.
 export default function TeamUp() {
   const { session } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
   const prefill = location.state?.prefill || null
   const userId = session?.user?.id
-  const [tab, setTab] = useState('board') // 'board' | 'mine' | 'inbox'
+  const [tab, setTab] = useState('board') // 'board' | 'mine'
   const [posts, setPosts] = useState([])
   const [myPosts, setMyPosts] = useState([])
-  const [threads, setThreads] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(Boolean(prefill))
-  const [openThread, setOpenThread] = useState(null) // { id, name }
 
   const [title, setTitle] = useState(prefill?.title || '')
   const [bring, setBring] = useState('')
@@ -59,25 +58,15 @@ export default function TeamUp() {
     }
   }, [userId])
 
-  const loadThreads = useCallback(async () => {
-    if (!userId || !API_BASE) return
-    try {
-      const res = await fetch(`${API_BASE}/api/v1/chat/threads/mine?user_id=${userId}`)
-      if (res.ok) setThreads((await res.json()).threads || [])
-    } catch (err) {
-      console.error('Team Up: failed to load threads', err)
-    }
-  }, [userId])
-
   useEffect(() => {
     let cancelled = false
     async function loadAll() {
-      await Promise.all([loadBoard(), loadMine(), loadThreads()])
+      await Promise.all([loadBoard(), loadMine()])
       if (!cancelled) setLoading(false)
     }
     loadAll()
     return () => { cancelled = true }
-  }, [loadBoard, loadMine, loadThreads])
+  }, [loadBoard, loadMine])
 
   async function submitPost(e) {
     e.preventDefault()
@@ -124,7 +113,7 @@ export default function TeamUp() {
     })
     if (res.ok) {
       const data = await res.json()
-      setOpenThread({ id: data.thread_id, name: post.profiles?.full_name || 'Business' })
+      navigate('/messages', { state: { openThreadId: data.thread_id, openName: post.profiles?.full_name || 'Business' } })
     }
   }
 
@@ -143,9 +132,6 @@ export default function TeamUp() {
       <div className="teamup-tabs">
         <button className={tab === 'board' ? 'active' : ''} onClick={() => setTab('board')}>Board</button>
         <button className={tab === 'mine' ? 'active' : ''} onClick={() => setTab('mine')}>My posts</button>
-        <button className={tab === 'inbox' ? 'active' : ''} onClick={() => setTab('inbox')}>
-          <InboxIcon size={14} /> Messages {threads.length > 0 && `(${threads.length})`}
-        </button>
       </div>
 
       {showForm && (
@@ -170,14 +156,8 @@ export default function TeamUp() {
         <div className="teamup-loading"><Loader size={18} className="spin" /></div>
       ) : tab === 'board' ? (
         <BoardList posts={posts} userId={userId} onMessage={messageAuthor} />
-      ) : tab === 'mine' ? (
-        <MyPosts posts={myPosts} onClose={closePost} />
       ) : (
-        <ThreadList threads={threads} onOpen={t => setOpenThread({ id: t.id, name: t.other_participants?.[0]?.full_name || 'Conversation' })} />
-      )}
-
-      {openThread && (
-        <ChatThread threadId={openThread.id} otherName={openThread.name} onClose={() => { setOpenThread(null); loadThreads() }} />
+        <MyPosts posts={myPosts} onClose={closePost} />
       )}
     </div>
   )
@@ -234,25 +214,6 @@ function MyPosts({ posts, onClose }) {
             </div>
           )}
         </div>
-      ))}
-    </div>
-  )
-}
-
-function ThreadList({ threads, onOpen }) {
-  if (threads.length === 0) {
-    return <div className="teamup-empty">No conversations yet — message someone from the board to start one.</div>
-  }
-  return (
-    <div className="teamup-list">
-      {threads.map(t => (
-        <button key={t.id} className="teamup-thread-row" onClick={() => onOpen(t)}>
-          <div>
-            <strong>{t.other_participants?.map(p => p.full_name || 'Member').join(', ') || 'Conversation'}</strong>
-            {t.post_title && <span className="teamup-thread-post"> · {t.post_title}</span>}
-          </div>
-          <p>{t.last_message?.body || 'No messages yet'}</p>
-        </button>
       ))}
     </div>
   )

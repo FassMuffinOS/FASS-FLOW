@@ -7,7 +7,7 @@ import {
   ShieldCheck, LogOut, GraduationCap, IdCard, DollarSign, Network, Mail,
   LifeBuoy, Handshake, Calculator, HardHat, Camera,
   Radar, Images, Trophy, Flame, Menu, X, Send, Lock, ChevronDown, Stamp, Wallet, Rocket, Crop, Megaphone, Gift, Landmark,
-  Sparkles, Users, Award,
+  Sparkles, Users, Award, MessageCircle,
 } from 'lucide-react'
 import AlertsBell from './AlertsBell'
 import './AppShell.css'
@@ -28,6 +28,7 @@ const NAV_GROUPS = [
     { name: 'Start a Business', icon: Rocket, to: '/start', match: ['/start'], tier: 'free' },
     { name: 'Resize Tool', icon: Crop, to: '/resize', match: ['/resize'], tier: 'free' },
     { name: 'Dashboard', icon: Compass, to: '/dashboard', match: ['/dashboard'], tier: 'free' },
+    { name: 'Messages', icon: MessageCircle, to: '/messages', match: ['/messages'], tier: 'free' },
   ] },
   { label: 'Find work', items: [
     { name: 'WARDOG', icon: Radar, to: '/wardog', match: ['/wardog'], tier: 'free' },

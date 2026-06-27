@@ -47,6 +47,7 @@ import Rewards from './pages/Rewards'
 import RewardsJoin from './pages/RewardsJoin'
 import WalletCampaigns from './pages/WalletCampaigns'
 import TeamUp from './pages/TeamUp'
+import Messages from './pages/Messages'
 import CommsHub from './pages/CommsHub'
 import RedeemScan from './pages/RedeemScan'
 import GiftCards from './pages/GiftCards'
@@ -282,6 +283,9 @@ function AppRoutes() {
       } />
       <Route path="/teamup" element={
         <ProtectedRoute><TeamUp /></ProtectedRoute>
+      } />
+      <Route path="/messages" element={
+        <ProtectedRoute><Messages /></ProtectedRoute>
       } />
       <Route path="/comms" element={
         <ProtectedRoute><CommsHub /></ProtectedRoute>
