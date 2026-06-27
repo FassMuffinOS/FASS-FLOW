@@ -13,6 +13,22 @@ const REACTION_EMOJI = ['👍', '❤️', '😂', '😮', '😢', '🙏']
 const API_BASE = import.meta.env.VITE_API_URL || ''
 const MAX_POPUPS = 3
 
+// Same minimal markdown formatter as Messages.jsx — AI replies use
+// **bold**/"- " bullets, dock bubbles render plain text otherwise.
+function renderMessageBody(text) {
+  return text.split('\n').map((line, i) => {
+    const trimmed = line.trim()
+    const isBullet = /^[-*]\s+/.test(trimmed)
+    const content = isBullet ? trimmed.replace(/^[-*]\s+/, '') : line
+    const parts = content.split(/(\*\*[^*]+\*\*)/g).map((part, j) =>
+      part.startsWith('**') && part.endsWith('**')
+        ? <strong key={j}>{part.slice(2, -2)}</strong>
+        : part
+    )
+    return <span key={i} style={{ display: 'block' }}>{isBullet ? '• ' : ''}{parts}</span>
+  })
+}
+
 // Persistent, old-Facebook-style chat dock — fixed to the bottom-right of
 // every authenticated page (mounted once in AppShell, not per-route), so a
 // conversation stays open while you navigate between WARDOG, Pipeline, etc.
@@ -34,7 +50,12 @@ export default function ChatDock({ userId }) {
     if (!userId || !API_BASE) return
     try {
       const res = await fetch(`${API_BASE}/api/v1/chat/threads/mine?user_id=${userId}`)
-      if (res.ok) setThreads((await res.json()).threads || [])
+      if (res.ok) {
+        setThreads((await res.json()).threads || [])
+      } else {
+        const err = await res.json().catch(() => ({}))
+        console.error('ChatDock: /threads/mine failed', res.status, err.detail)
+      }
     } catch (err) {
       console.error('ChatDock: failed to load threads', err)
     }
@@ -367,7 +388,7 @@ function ChatPopup({ userId, threadId, name, minimized, online, onClose, onToggl
                               </a>
                             )
                           )}
-                          {m.body && <span>{m.body}</span>}
+                          {m.body && <span>{renderMessageBody(m.body)}</span>}
                           {m.edited_at && <span className="dock-edited-tag"> (edited)</span>}
                         </>
                       )}

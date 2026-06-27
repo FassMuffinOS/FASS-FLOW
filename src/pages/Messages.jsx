@@ -14,6 +14,24 @@ import './Messages.css'
 const API_BASE = import.meta.env.VITE_API_URL || ''
 const REACTION_EMOJI = ['👍', '❤️', '😂', '😮', '😢', '🙏']
 
+// The AI assistant's replies come back as markdown (**bold**, "- " bullet
+// lists). Bubbles render plain text, so without this the asterisks/dashes
+// show up literally. Minimal hand-rolled formatter rather than pulling in a
+// markdown lib for two constructs.
+function renderMessageBody(text) {
+  return text.split('\n').map((line, i) => {
+    const trimmed = line.trim()
+    const isBullet = /^[-*]\s+/.test(trimmed)
+    const content = isBullet ? trimmed.replace(/^[-*]\s+/, '') : line
+    const parts = content.split(/(\*\*[^*]+\*\*)/g).map((part, j) =>
+      part.startsWith('**') && part.endsWith('**')
+        ? <strong key={j}>{part.slice(2, -2)}</strong>
+        : part
+    )
+    return <span key={i} style={{ display: 'block' }}>{isBullet ? '• ' : ''}{parts}</span>
+  })
+}
+
 // Platform-wide Messenger — replaces the old "Messages" tab buried inside
 // Team Up. Anyone can find and DM anyone else here (see GET
 // /chat/people/search), not just someone who posted to the partner board.
@@ -60,7 +78,12 @@ export default function Messages() {
     if (!userId || !API_BASE) return
     try {
       const res = await fetch(`${API_BASE}/api/v1/chat/threads/mine?user_id=${userId}`)
-      if (res.ok) setThreads((await res.json()).threads || [])
+      if (res.ok) {
+        setThreads((await res.json()).threads || [])
+      } else {
+        const err = await res.json().catch(() => ({}))
+        console.error('Messages: /threads/mine failed', res.status, err.detail)
+      }
     } catch (err) {
       console.error('Messages: failed to load threads', err)
     } finally {
@@ -370,7 +393,7 @@ export default function Messages() {
                                 </a>
                               )
                             )}
-                            {m.body && <span>{m.body}</span>}
+                            {m.body && <span>{renderMessageBody(m.body)}</span>}
                             {m.edited_at && <span className="msg-edited-tag"> (edited)</span>}
                           </>
                         )}
