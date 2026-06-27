@@ -43,6 +43,7 @@ import CapturesGallery from './pages/CapturesGallery'
 import ClientProposals from './pages/ClientProposals'
 import PublicEstimate from './pages/PublicEstimate'
 import Capability from './pages/Capability'
+import Profile from './pages/Profile'
 import Rewards from './pages/Rewards'
 import RewardsJoin from './pages/RewardsJoin'
 import WalletCampaigns from './pages/WalletCampaigns'
@@ -286,6 +287,13 @@ function AppRoutes() {
       } />
       <Route path="/messages" element={
         <ProtectedRoute><Messages /></ProtectedRoute>
+      } />
+      {/* Discoverable Business Profile — reputation stats (XP/rank, contracts
+          won, wallet members, businesses helped) computed live off existing
+          tables (see profiles.py). Linked from chat's verified-profile panel,
+          people search, and Team Up cards. */}
+      <Route path="/profile/:userId" element={
+        <ProtectedRoute><Profile /></ProtectedRoute>
       } />
       <Route path="/comms" element={
         <ProtectedRoute><CommsHub /></ProtectedRoute>
