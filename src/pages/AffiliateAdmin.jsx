@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Megaphone, Loader2, RefreshCw, DollarSign, PlusCircle } from 'lucide-react'
+import { Megaphone, Loader2, RefreshCw, DollarSign, PlusCircle, Users } from 'lucide-react'
 import './AffiliateAdmin.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -26,7 +26,7 @@ export default function AffiliateAdmin() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [selected, setSelected] = useState(null)
-  const [detail, setDetail] = useState({ conversions: [], payouts: [] })
+  const [detail, setDetail] = useState({ conversions: [], payouts: [], recruits: [] })
   const [detailLoading, setDetailLoading] = useState(false)
 
   const [convSource, setConvSource] = useState('masterclass')
@@ -78,7 +78,7 @@ export default function AffiliateAdmin() {
         headers: { 'X-Admin-Secret': secret },
       })
       const data = await res.json().catch(() => ({}))
-      setDetail({ conversions: data.conversions || [], payouts: data.payouts || [] })
+      setDetail({ conversions: data.conversions || [], payouts: data.payouts || [], recruits: data.recruits || [] })
     } catch (err) {
       console.error('AffiliateAdmin: failed to load detail', err)
     } finally {
@@ -193,6 +193,12 @@ export default function AffiliateAdmin() {
                 <span className={`afa-row-status afa-status-${a.status}`}>{a.status}</span>
               </div>
               <div className="afa-row-meta">code: {a.code} · earned ${a.total_earned?.toFixed(2)} · paid ${a.total_paid?.toFixed(2)}</div>
+              {a.recruited_by_name && <div className="afa-row-meta">recruited by {a.recruited_by_name}</div>}
+              {a.recruit_count > 0 && (
+                <div className="afa-row-meta">
+                  <Users size={11} style={{ verticalAlign: 'text-bottom' }} /> {a.recruit_count} recruit{a.recruit_count > 1 ? 's' : ''} · ${a.override_earned?.toFixed(2)} override
+                </div>
+              )}
               <div className="afa-row-balance">${a.balance_due?.toFixed(2)} due</div>
             </div>
           ))}
@@ -290,6 +296,22 @@ export default function AffiliateAdmin() {
                         <span className="afa-entry-time">{timeAgo(p.paid_at)}</span>
                       </div>
                       {p.note && <span className="afa-entry-sub">{p.note}</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="afa-timeline-head">Recruited creators (10% override)</div>
+              {!detailLoading && detail.recruits.length === 0 && <div className="afa-empty">Hasn't recruited anyone yet.</div>}
+              <div className="afa-timeline">
+                {detail.recruits.map(r => (
+                  <div key={r.user_id} className="afa-entry">
+                    <div className="afa-entry-body">
+                      <div className="afa-entry-top">
+                        <span className="afa-entry-title">{r.code}</span>
+                        <span className="afa-entry-time">{timeAgo(r.created_at)}</span>
+                      </div>
+                      <span className={`afa-row-status afa-status-${r.status}`}>{r.status}</span>
                     </div>
                   </div>
                 ))}

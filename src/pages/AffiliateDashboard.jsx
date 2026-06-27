@@ -1,10 +1,58 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Megaphone, Copy, Link2, Loader2, MousePointerClick, UserPlus, DollarSign, Wallet } from 'lucide-react'
+import {
+  Megaphone, Copy, Link2, Loader2, MousePointerClick, UserPlus, DollarSign, Wallet,
+  Target, CheckCircle2, Circle, Calculator, MessageSquare, Users, Check, Trophy, Sparkles,
+} from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import './AffiliateDashboard.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
+
+// Same four pitch points shown on the public /affiliates page — repeated
+// here inline so someone who lands on the dashboard before joining (the
+// account-first flow: sign up -> straight to dashboard) still sees the
+// offer instead of a bare "join" button with no context.
+const WHY = [
+  '30% commission on every plan signup and Wallet unlock through your link',
+  'No application, no follower minimum — sign up and start sharing today',
+  'Your own link, stats dashboard, and a growth calendar of post ideas',
+  'Recruit other creators and earn 10% of everything they earn too',
+]
+
+// Daily/weekly directive — a specific action, not just a content idea.
+// Distinct from CONTENT_IDEAS below: that's "what to post," this is "what
+// to actually go do today" (DM someone, follow up, check a number).
+const ASSIGNMENTS = [
+  'DM 3 people in your niche who run a small business — ask if they\'ve heard of FASS Flow',
+  'Check your click count from this week — if it\'s 0, post your link somewhere today',
+  'Follow up with anyone who clicked your link but hasn\'t signed up yet',
+  'Find 1 other creator in your space and send them your recruiting pitch',
+  'Add your affiliate link to one place you haven\'t yet (bio, newsletter, pinned post)',
+  'Re-read your top-performing post and write a follow-up using the same angle',
+  'Ask 1 follower directly: "Want me to send you the tool I use for [pain point]?"',
+]
+
+// Copy-paste sales scripts — the actual asks, not just talking points.
+// Each one is meant to be used close to verbatim.
+const PITCH_SCRIPTS = [
+  {
+    title: 'Cold DM to a small business owner',
+    body: "Hey! Saw you run [business] — I started using a tool called FASS Flow that handles bidding, contracts, and a loyalty/rewards Wallet pass for local businesses. I get a small commission if you check it out, but honestly I'd send it your way either way: [your link]. No pressure, just thought of you.",
+  },
+  {
+    title: 'Social post caption',
+    body: "If you run a small business and you're still tracking jobs/bids in a notebook or spreadsheet, you need to see this. I've been using FASS Flow and it's saved me hours — link in bio if you want to try it free.",
+  },
+  {
+    title: 'Recruiting another creator',
+    body: "I'm promoting a tool called FASS Flow as an affiliate — 30% commission, no follower minimum, real dashboard to track everything. If you recruit other creators under your link, you also earn 10% of what they make. Want my link to check it out? [your link]",
+  },
+  {
+    title: 'Email newsletter footer',
+    body: "P.S. — I've been using FASS Flow to run the business side of things (bidding, contracts, customer rewards). If you want to try it, here's my link — using it helps support this newsletter too: [your link]",
+  },
+]
 
 // Rotating content-idea prompts, one per day-of-month slot. Generic enough
 // to work for any creator niche, specific enough to actually be useful —
@@ -42,6 +90,17 @@ const CONTENT_IDEAS = [
   'Plan next month\'s content now so you\'re never starting from zero',
 ]
 
+// Day-1 onboarding mission — three fixed checklist items, each worth a
+// flat 100 XP (see XP_VALUES in affiliates.py). "Generate referral link"
+// is auto-completed by join() the moment the account exists; the other two
+// are self-reported claims (there's no real signal for "read your profile"
+// or "watched the video") but are still idempotent server-side.
+const ONBOARDING_ITEMS = [
+  { key: 'join', label: 'Generate your referral link', auto: true },
+  { key: 'complete_profile', label: 'Look over your profile and confirm it\'s ready to share', auto: false },
+  { key: 'watch_onboarding', label: 'Watch the 2-minute creator onboarding walkthrough', auto: false },
+]
+
 export default function AffiliateDashboard() {
   const { session } = useAuth()
   const navigate = useNavigate()
@@ -52,8 +111,81 @@ export default function AffiliateDashboard() {
   const [stats, setStats] = useState(null)
   const [clicks, setClicks] = useState([])
   const [conversions, setConversions] = useState([])
+  const [recruits, setRecruits] = useState([])
   const [joining, setJoining] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [copiedScript, setCopiedScript] = useState(null)
+  const [gamification, setGamification] = useState(null)
+  const [marking, setMarking] = useState(false)
+  const [claiming, setClaiming] = useState(null)
+  const [xpToast, setXpToast] = useState(null)
+
+  function flashXp(amount) {
+    if (!amount) return
+    setXpToast(amount)
+    setTimeout(() => setXpToast(null), 2200)
+  }
+
+  const assignmentDone = !!gamification?.assignment_done_today
+
+  async function toggleAssignmentDone() {
+    if (!userId || assignmentDone || marking) return
+    setMarking(true)
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/affiliates/assignment/done`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok) {
+        setGamification(g => g ? { ...g, assignment_done_today: true } : g)
+        flashXp(data.xp_amount)
+        await load()
+      }
+    } catch (err) {
+      console.error('AffiliateDashboard: failed to mark assignment done', err)
+    } finally {
+      setMarking(false)
+    }
+  }
+
+  async function claimOnboarding(key) {
+    if (!userId || claiming) return
+    setClaiming(key)
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/affiliates/xp/claim`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, action: key }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok) {
+        setGamification(g => g ? { ...g, onboarding: { ...g.onboarding, [key]: true } } : g)
+        flashXp(data.xp_amount)
+        await load()
+      }
+    } catch (err) {
+      console.error('AffiliateDashboard: failed to claim onboarding item', err)
+    } finally {
+      setClaiming(null)
+    }
+  }
+
+  // Payout calculator — frontend-only "what could I earn" estimator.
+  // Plan prices mirror Pricing.jsx's real tiers so the numbers are honest.
+  const PLAN_OPTIONS = [
+    { label: 'Starter — $99/mo', price: 99 },
+    { label: 'Pro — $200/mo', price: 200 },
+    { label: 'Elite — $499/mo', price: 499 },
+  ]
+  const [calcReferrals, setCalcReferrals] = useState(5)
+  const [calcPlanIdx, setCalcPlanIdx] = useState(1)
+  const [calcRecruits, setCalcRecruits] = useState(0)
+  const calcPlanPrice = PLAN_OPTIONS[calcPlanIdx].price
+  const calcOwnMonthly = calcReferrals * calcPlanPrice * 0.30
+  const calcOverrideMonthly = calcRecruits * calcOwnMonthly * 0.10
+  const calcTotalMonthly = calcOwnMonthly + calcOverrideMonthly
 
   const load = useCallback(async () => {
     if (!userId || !API_BASE) return
@@ -65,6 +197,8 @@ export default function AffiliateDashboard() {
         setStats(data.stats || null)
         setClicks(data.clicks || [])
         setConversions(data.conversions || [])
+        setRecruits(data.recruits || [])
+        setGamification(data.gamification || null)
       }
     } catch (err) {
       console.error('AffiliateDashboard: failed to load', err)
@@ -114,6 +248,14 @@ export default function AffiliateDashboard() {
     })
   }
 
+  function copyScript(idx, text) {
+    const withLink = text.replace('[your link]', link || '[your link]')
+    navigator.clipboard.writeText(withLink).then(() => {
+      setCopiedScript(idx)
+      setTimeout(() => setCopiedScript(null), 1800)
+    })
+  }
+
   // Combined growth calendar: every day of the current month gets a
   // rotating content idea AND, if anything actually happened that day
   // (clicks recorded, conversions earned), that real activity overlaid
@@ -160,8 +302,13 @@ export default function AffiliateDashboard() {
       <div className="afd-page">
         <div className="afd-join-card">
           <Megaphone size={22} />
-          <h2>You're not an affiliate yet</h2>
-          <p>Get your referral link and start earning 30% on every plan signup and Wallet unlock you bring in.</p>
+          <h2>Welcome — let's get you earning</h2>
+          <p>You're signed in. One click sets up your referral link, stats, and growth calendar.</p>
+          <ul className="afd-join-why">
+            {WHY.map(point => (
+              <li key={point}><Check size={14} /> {point}</li>
+            ))}
+          </ul>
           <button className="btn-primary" onClick={join} disabled={joining}>
             {joining ? <Loader2 size={16} className="spin" /> : <Link2 size={16} />}
             {joining ? 'Creating your link…' : 'Get my affiliate link'}
@@ -171,13 +318,69 @@ export default function AffiliateDashboard() {
     )
   }
 
+  const onboardingDone = gamification?.onboarding
+    ? ONBOARDING_ITEMS.every(item => gamification.onboarding[item.key])
+    : false
+
   return (
     <div className="afd-page">
+      {xpToast && (
+        <div className="afd-xp-toast"><Sparkles size={15} /> +{xpToast} XP</div>
+      )}
+
       <div className="afd-head">
         <h1><Megaphone size={20} /> Affiliate Dashboard</h1>
         <button className="btn-outline afd-pitch-link" onClick={() => navigate('/affiliates')}>Program details</button>
       </div>
       <p className="afd-sub">Your referral link, lifetime stats, and a growth calendar — content ideas plus what actually happened, day by day.</p>
+
+      {gamification && (
+        <div className="afd-level-card">
+          <div className="afd-level-badge">
+            <Trophy size={18} />
+            <div>
+              <span className="afd-level-rank">{gamification.rank}</span>
+              <span className="afd-level-num">Level {gamification.level}</span>
+            </div>
+          </div>
+          <div className="afd-level-bar-wrap">
+            <div className="afd-level-bar-track">
+              <div className="afd-level-bar-fill" style={{ width: `${gamification.level_progress_pct}%` }} />
+            </div>
+            <span className="afd-level-bar-label">
+              {gamification.xp_into_level} / {gamification.xp_into_level + gamification.xp_to_next_level} XP
+              {gamification.next_rank ? ` to ${gamification.next_rank}` : ' — top rank'}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {gamification && !onboardingDone && (
+        <div className="afd-section afd-onboarding">
+          <div className="afd-section-head"><Target size={17} /> Day-1 onboarding mission</div>
+          <p className="afd-section-sub">Knock these out and you're fully set up — each one is +100 XP.</p>
+          <div className="afd-onboarding-list">
+            {ONBOARDING_ITEMS.map(item => {
+              const done = !!gamification.onboarding?.[item.key]
+              return (
+                <div className={`afd-onboarding-item ${done ? 'afd-onboarding-item-done' : ''}`} key={item.key}>
+                  {done ? <CheckCircle2 size={17} /> : <Circle size={17} />}
+                  <span>{item.label}</span>
+                  {!done && !item.auto && (
+                    <button
+                      className="afd-onboarding-claim"
+                      onClick={() => claimOnboarding(item.key)}
+                      disabled={claiming === item.key}
+                    >
+                      {claiming === item.key ? <Loader2 size={13} className="spin" /> : 'Mark done'}
+                    </button>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="afd-link-box">
         <span className="afd-link-label">Your link</span>
@@ -187,6 +390,18 @@ export default function AffiliateDashboard() {
             <Copy size={14} /> {copied ? 'Copied' : 'Copy'}
           </button>
         </div>
+      </div>
+
+      <div className={`afd-assignment ${assignmentDone ? 'afd-assignment-done' : ''}`}>
+        <div className="afd-assignment-icon"><Target size={18} /></div>
+        <div className="afd-assignment-body">
+          <span className="afd-assignment-label">Today's assignment</span>
+          <p>{ASSIGNMENTS[(now.getDate() - 1) % ASSIGNMENTS.length]}</p>
+        </div>
+        <button className="afd-assignment-toggle" onClick={toggleAssignmentDone} disabled={assignmentDone || marking}>
+          {marking ? <Loader2 size={18} className="spin" /> : assignmentDone ? <CheckCircle2 size={18} /> : <Circle size={18} />}
+          {assignmentDone ? 'Done · +25 XP' : 'Mark done'}
+        </button>
       </div>
 
       <div className="afd-stat-row">
@@ -212,6 +427,19 @@ export default function AffiliateDashboard() {
         </div>
       </div>
 
+      <div className="afd-stat-row afd-stat-row-secondary">
+        <div className="afd-stat">
+          <Users size={16} />
+          <span className="afd-stat-value">{stats?.recruit_count ?? 0}</span>
+          <span className="afd-stat-label">creators recruited</span>
+        </div>
+        <div className="afd-stat">
+          <DollarSign size={16} />
+          <span className="afd-stat-value">${stats?.override_earned?.toFixed(2) ?? '0.00'}</span>
+          <span className="afd-stat-label">override earnings</span>
+        </div>
+      </div>
+
       <div className="afd-cal-head">Growth calendar — {monthLabel}</div>
       <div className="afd-cal-grid">
         {days.map(day => {
@@ -232,6 +460,89 @@ export default function AffiliateDashboard() {
             </div>
           )
         })}
+      </div>
+
+      <div className="afd-section">
+        <div className="afd-section-head"><Calculator size={17} /> Payout calculator</div>
+        <p className="afd-section-sub">Estimate what you could earn — adjust to your own numbers.</p>
+        <div className="afd-calc">
+          <div className="afd-calc-row">
+            <label>Referrals you bring in per month</label>
+            <input
+              type="range" min="0" max="50" value={calcReferrals}
+              onChange={e => setCalcReferrals(Number(e.target.value))}
+            />
+            <span className="afd-calc-value">{calcReferrals}</span>
+          </div>
+          <div className="afd-calc-row">
+            <label>Average plan they sign up for</label>
+            <select value={calcPlanIdx} onChange={e => setCalcPlanIdx(Number(e.target.value))}>
+              {PLAN_OPTIONS.map((p, i) => <option key={p.label} value={i}>{p.label}</option>)}
+            </select>
+          </div>
+          <div className="afd-calc-row">
+            <label>Other creators you recruit (earning the same)</label>
+            <input
+              type="range" min="0" max="20" value={calcRecruits}
+              onChange={e => setCalcRecruits(Number(e.target.value))}
+            />
+            <span className="afd-calc-value">{calcRecruits}</span>
+          </div>
+          <div className="afd-calc-result">
+            <div className="afd-calc-result-row">
+              <span>Your own commission (30%)</span>
+              <span>${calcOwnMonthly.toFixed(2)}/mo</span>
+            </div>
+            <div className="afd-calc-result-row">
+              <span>Recruiting override (10%)</span>
+              <span>${calcOverrideMonthly.toFixed(2)}/mo</span>
+            </div>
+            <div className="afd-calc-result-row afd-calc-total">
+              <span>Estimated total</span>
+              <span>${calcTotalMonthly.toFixed(2)}/mo</span>
+            </div>
+          </div>
+          <p className="afd-calc-note">Estimate only — actual commission is calculated on real signups and recorded in your stats above.</p>
+        </div>
+      </div>
+
+      <div className="afd-section">
+        <div className="afd-section-head"><MessageSquare size={17} /> Pitch scripts</div>
+        <p className="afd-section-sub">Copy-paste scripts for selling and recruiting — your link gets dropped in automatically.</p>
+        <div className="afd-scripts">
+          {PITCH_SCRIPTS.map((s, idx) => (
+            <div className="afd-script" key={s.title}>
+              <div className="afd-script-head">
+                <span className="afd-script-title">{s.title}</span>
+                <button className="btn-outline afd-copy-btn" onClick={() => copyScript(idx, s.body)}>
+                  <Copy size={13} /> {copiedScript === idx ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+              <p className="afd-script-body">{s.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="afd-section">
+        <div className="afd-section-head"><Users size={17} /> Recruit other creators</div>
+        <p className="afd-section-sub">
+          Share the same link above to recruit — anyone who clicks it and later joins as an affiliate
+          becomes your recruit automatically. You earn 10% of every commission they make, for as long
+          as they're active. One level deep — no chains beyond that.
+        </p>
+        {recruits.length === 0 ? (
+          <div className="afd-recruits-empty">No one's joined under your link yet — share it using the recruiting script above.</div>
+        ) : (
+          <div className="afd-recruits-list">
+            {recruits.map(r => (
+              <div className="afd-recruit-row" key={r.user_id}>
+                <span className="afd-recruit-code">{r.code}</span>
+                <span className={`afd-recruit-status afd-status-${r.status}`}>{r.status}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

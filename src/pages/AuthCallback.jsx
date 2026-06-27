@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getBusinessProfile } from '../lib/businessProfile'
+import { consumePostAuthRedirect } from '../lib/postAuthRedirect'
 import { Loader } from 'lucide-react'
 import './SignIn.css'
 
@@ -44,6 +45,17 @@ export default function AuthCallback() {
 
     routed.current = true
     ;(async () => {
+      // A stashed redirect (set right before sending someone to /signin,
+      // e.g. the affiliate program's "Become an affiliate" CTA) means they
+      // came here for something specific that has nothing to do with the
+      // business-profile onboarding wizard — being an affiliate doesn't
+      // require a business at all. Honor it and skip the /start gate
+      // entirely, whether they're a brand-new signup or a returning user.
+      const redirect = consumePostAuthRedirect()
+      if (redirect) {
+        navigate(redirect, { replace: true })
+        return
+      }
       try {
         const profile = await getBusinessProfile(session.user.id)
         navigate(profile ? '/dashboard' : '/start', { replace: true })

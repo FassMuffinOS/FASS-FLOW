@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { consumePostAuthRedirect } from '../lib/postAuthRedirect'
 import './SignIn.css'
 
 // Minimal inline brand marks — lucide-react doesn't ship logo glyphs, and
@@ -74,7 +75,7 @@ export default function SignIn() {
       setError(error.message)
       setLoading(false)
     } else {
-      navigate('/dashboard')
+      navigate(consumePostAuthRedirect() || '/dashboard')
     }
   }
 

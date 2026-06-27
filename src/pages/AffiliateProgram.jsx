@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Megaphone, ArrowRight, Check, Copy, Link2, Loader2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { setPostAuthRedirect } from '../lib/postAuthRedirect'
 import './AffiliateProgram.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -95,8 +96,11 @@ export default function AffiliateProgram() {
           </p>
 
           {!session && (
-            <button className="btn-primary afp-cta" onClick={() => navigate('/signin')}>
-              Sign in to get your link <ArrowRight size={18} />
+            <button
+              className="btn-primary afp-cta"
+              onClick={() => { setPostAuthRedirect('/affiliates/dashboard'); navigate('/signin') }}
+            >
+              Sign up to get your link <ArrowRight size={18} />
             </button>
           )}
 
