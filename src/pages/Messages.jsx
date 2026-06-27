@@ -48,6 +48,7 @@ export default function Messages() {
   const [openMenuId, setOpenMenuId] = useState(null)
   const [openPickerId, setOpenPickerId] = useState(null)
   const [uploading, setUploading] = useState(false)
+  const [startError, setStartError] = useState(null)
   const bottomRef = useRef(null)
   const fileInputRef = useRef(null)
 
@@ -137,19 +138,27 @@ export default function Messages() {
   }
 
   async function startThreadWith(person) {
-    setShowSearch(false)
-    const res = await fetch(`${API_BASE}/api/v1/chat/threads/start`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: userId, other_user_id: person.id, post_id: null }),
-    })
-    if (res.ok) {
+    setStartError(null)
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/chat/threads/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, other_user_id: person.id, post_id: null }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        setStartError(err.detail || `Couldn't start that conversation (${res.status}).`)
+        return
+      }
       const data = await res.json()
+      setShowSearch(false)
       setActiveId(data.thread_id)
       setActiveName(person.full_name || person.company_name || 'Conversation')
       setActiveOtherId(person.id)
       setMobileShowThread(true)
       loadThreads()
+    } catch {
+      setStartError('Network error — could not reach the server.')
     }
   }
 
@@ -455,7 +464,14 @@ export default function Messages() {
         )}
       </div>
 
-      {showSearch && <PeopleSearch userId={userId} onPick={startThreadWith} onClose={() => setShowSearch(false)} />}
+      {showSearch && (
+        <PeopleSearch
+          userId={userId}
+          onPick={startThreadWith}
+          onClose={() => { setShowSearch(false); setStartError(null) }}
+          error={startError}
+        />
+      )}
     </div>
   )
 }
@@ -464,7 +480,7 @@ function isImageType(mime) {
   return Boolean(mime && mime.startsWith('image/'))
 }
 
-function PeopleSearch({ userId, onPick, onClose }) {
+function PeopleSearch({ userId, onPick, onClose, error }) {
   const [q, setQ] = useState('')
   const [people, setPeople] = useState([])
   const [loading, setLoading] = useState(true)
@@ -499,6 +515,7 @@ function PeopleSearch({ userId, onPick, onClose }) {
           <Search size={15} />
           <input autoFocus value={q} onChange={e => onChange(e.target.value)} placeholder="Search people by name…" />
         </div>
+        {error && <div className="msg-search-error">{error}</div>}
         <div className="msg-search-results">
           {loading ? (
             <div className="msg-loading"><Loader size={16} className="spin" /></div>

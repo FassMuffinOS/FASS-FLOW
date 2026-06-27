@@ -27,6 +27,7 @@ export default function ChatDock({ userId }) {
   const [threads, setThreads] = useState([])
   const [popups, setPopups] = useState([]) // [{ id, name, minimized, otherId }]
   const [showSearch, setShowSearch] = useState(false)
+  const [startError, setStartError] = useState(null)
   const onlineIds = usePresence(userId)
 
   const loadThreads = useCallback(async () => {
@@ -74,16 +75,24 @@ export default function ChatDock({ userId }) {
   }
 
   async function startWith(person) {
-    setShowSearch(false)
-    const res = await fetch(`${API_BASE}/api/v1/chat/threads/start`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: userId, other_user_id: person.id, post_id: null }),
-    })
-    if (res.ok) {
+    setStartError(null)
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/chat/threads/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, other_user_id: person.id, post_id: null }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        setStartError(err.detail || `Couldn't start that conversation (${res.status}).`)
+        return
+      }
       const data = await res.json()
+      setShowSearch(false)
       openPopup({ id: data.thread_id, other_participants: [{ user_id: person.id, full_name: person.full_name || person.company_name }] })
       loadThreads()
+    } catch {
+      setStartError('Network error — could not reach the server.')
     }
   }
 
@@ -149,7 +158,14 @@ export default function ChatDock({ userId }) {
         )}
       </div>
 
-      {showSearch && <DockSearch userId={userId} onPick={startWith} onClose={() => setShowSearch(false)} />}
+      {showSearch && (
+        <DockSearch
+          userId={userId}
+          onPick={startWith}
+          onClose={() => { setShowSearch(false); setStartError(null) }}
+          error={startError}
+        />
+      )}
     </div>
   )
 }
@@ -432,7 +448,7 @@ function isImageType(mime) {
   return Boolean(mime && mime.startsWith('image/'))
 }
 
-function DockSearch({ userId, onPick, onClose }) {
+function DockSearch({ userId, onPick, onClose, error }) {
   const [q, setQ] = useState('')
   const [people, setPeople] = useState([])
   const [loading, setLoading] = useState(true)
@@ -467,6 +483,7 @@ function DockSearch({ userId, onPick, onClose }) {
           <Search size={13} />
           <input autoFocus value={q} onChange={e => onChange(e.target.value)} placeholder="Search people…" />
         </div>
+        {error && <div className="dock-search-error">{error}</div>}
         <div className="dock-search-results">
           {loading ? (
             <div className="dock-loading"><Loader size={14} className="spin" /></div>

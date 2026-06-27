@@ -317,6 +317,14 @@
   font-size: 0.9rem;
 }
 
+.msg-search-error {
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  color: #b42318;
+  background: #fef3f2;
+  border-bottom: 1px solid var(--gray-200);
+}
+
 .msg-search-results {
   overflow-y: auto;
   flex: 1;
