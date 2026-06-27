@@ -6,6 +6,7 @@ import { BookOpen, Compass, GraduationCap, X } from 'lucide-react'
 import OnboardingChecklist from '../components/OnboardingChecklist'
 import MilestoneBadges from '../components/MilestoneBadges'
 import BusinessHealth from '../components/BusinessHealth'
+import EngagementPulse from '../components/EngagementPulse'
 import DailyFeed from '../components/DailyFeed'
 import FunnelTracker from '../components/FunnelTracker'
 import SolicitationTicker from '../components/SolicitationTicker'
@@ -77,6 +78,8 @@ export default function Dashboard() {
               <DailyFeed />
 
               <BusinessHealth />
+
+              <EngagementPulse />
 
               <FunnelTracker />
 

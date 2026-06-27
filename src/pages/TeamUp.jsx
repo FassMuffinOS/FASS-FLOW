@@ -33,22 +33,40 @@ export default function TeamUp() {
   const [naics, setNaics] = useState(prefill?.naics || '')
   const [submitting, setSubmitting] = useState(false)
 
+  // Each loader catches its own failure so one bad request (a transient
+  // 500, a CORS hiccup right after a redeploy, etc.) can't take the other
+  // two down with it — and, critically, can't leave loadAll's Promise.all
+  // forever unresolved, which is what made the board's spinner spin forever
+  // the first time this shipped (see partner_network_fk_fix.sql for the
+  // actual server-side bug that was triggering these failures).
   const loadBoard = useCallback(async () => {
     if (!API_BASE) return
-    const res = await fetch(`${API_BASE}/api/v1/partners/posts`)
-    if (res.ok) setPosts((await res.json()).posts || [])
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/partners/posts`)
+      if (res.ok) setPosts((await res.json()).posts || [])
+    } catch (err) {
+      console.error('Team Up: failed to load board', err)
+    }
   }, [])
 
   const loadMine = useCallback(async () => {
     if (!userId || !API_BASE) return
-    const res = await fetch(`${API_BASE}/api/v1/partners/posts/mine?user_id=${userId}`)
-    if (res.ok) setMyPosts((await res.json()).posts || [])
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/partners/posts/mine?user_id=${userId}`)
+      if (res.ok) setMyPosts((await res.json()).posts || [])
+    } catch (err) {
+      console.error('Team Up: failed to load my posts', err)
+    }
   }, [userId])
 
   const loadThreads = useCallback(async () => {
     if (!userId || !API_BASE) return
-    const res = await fetch(`${API_BASE}/api/v1/chat/threads/mine?user_id=${userId}`)
-    if (res.ok) setThreads((await res.json()).threads || [])
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/chat/threads/mine?user_id=${userId}`)
+      if (res.ok) setThreads((await res.json()).threads || [])
+    } catch (err) {
+      console.error('Team Up: failed to load threads', err)
+    }
   }, [userId])
 
   useEffect(() => {
