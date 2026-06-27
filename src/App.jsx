@@ -39,6 +39,7 @@ import Capability from './pages/Capability'
 import Rewards from './pages/Rewards'
 import RewardsJoin from './pages/RewardsJoin'
 import WalletCampaigns from './pages/WalletCampaigns'
+import TeamUp from './pages/TeamUp'
 import RedeemScan from './pages/RedeemScan'
 import GiftCards from './pages/GiftCards'
 import GiftCardScan from './pages/GiftCardScan'
@@ -211,6 +212,9 @@ function AppRoutes() {
       } />
       <Route path="/campaigns" element={
         <ProtectedRoute><WalletCampaigns /></ProtectedRoute>
+      } />
+      <Route path="/teamup" element={
+        <ProtectedRoute><TeamUp /></ProtectedRoute>
       } />
       {/* Staff redemption confirm page — landed on after scanning a
           customer's EXISTING Wallet pass QR with the phone's normal camera

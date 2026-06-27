@@ -7,7 +7,7 @@ import {
   ShieldCheck, LogOut, GraduationCap, IdCard, DollarSign, Network, Mail,
   LifeBuoy, Handshake, Calculator, HardHat, Camera,
   Radar, Images, Trophy, Flame, Menu, X, Send, Lock, ChevronDown, Stamp, Wallet, Rocket, Crop, Megaphone, Gift, Landmark,
-  Sparkles,
+  Sparkles, Users,
 } from 'lucide-react'
 import AlertsBell from './AlertsBell'
 import './AppShell.css'
@@ -52,6 +52,7 @@ const NAV_GROUPS = [
     { name: 'Network', icon: Network, to: '/network', match: ['/network'], tier: 'locked' },
     { name: 'Funding', icon: DollarSign, to: '/money', match: ['/money'], tier: 'locked' },
     { name: 'BD Partner', icon: Handshake, to: '/bd-partner', match: ['/bd-partner'], tier: 'locked' },
+    { name: 'Team Up', icon: Users, to: '/teamup', match: ['/teamup'], tier: 'free' },
     { name: 'Rewards', icon: Stamp, to: '/rewards', match: ['/rewards'], tier: 'free' },
     { name: 'Wallet Messaging', icon: Megaphone, to: '/campaigns', match: ['/campaigns'], tier: 'free' },
     { name: 'Gift Cards', icon: Gift, to: '/giftcards', match: ['/giftcards'], tier: 'free' },

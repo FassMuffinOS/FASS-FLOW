@@ -10,7 +10,7 @@ import {
   ChevronUp, ChevronDown, ExternalLink,
   CheckCircle, AlertCircle, Clock,
   Trophy, Ban, Search, RefreshCw,
-  History, Pencil, Check, X as XIcon, MessageSquarePlus
+  History, Pencil, Check, X as XIcon, MessageSquarePlus, Users
 } from 'lucide-react'
 import './Pipeline.css'
 
@@ -340,7 +340,19 @@ function ActivityFeed({ events, loading, onAddNote }) {
 
 // ── Detail Modal ──────────────────────────────────────────
 function RecordModal({ record, onClose, onStageChange, events, loadingEvents, onAddNote, onEditField }) {
+  const navigate = useNavigate()
   if (!record) return null
+
+  function findAPartner() {
+    navigate('/teamup', {
+      state: {
+        prefill: {
+          title: `Looking for a partner on "${record.title}"`,
+          proposalId: record.id,
+        },
+      },
+    })
+  }
   const ws = record.read_worksheet || {}
   const answers = ws.answers || {}
   const notes = ws.notes || {}
@@ -371,6 +383,9 @@ function RecordModal({ record, onClose, onStageChange, events, loadingEvents, on
           {formatMoney(record.estimated_value) && (
             <span className="modal-value-tag">{formatMoney(record.estimated_value)}</span>
           )}
+          <button className="btn-outline modal-partner-btn" onClick={findAPartner}>
+            <Users size={14} /> Find a Partner
+          </button>
         </div>
 
         <div className="modal-stage-change">
