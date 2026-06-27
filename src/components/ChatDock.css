@@ -334,3 +334,246 @@
   .dock-root { right: 8px; }
   .dock-popup, .dock-bar { width: calc(100vw - 16px); max-width: 300px; }
 }
+
+/* v2: presence, reactions, edit/delete, attachments, seen ----------------- */
+
+.dock-avatar-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.dock-online-dot {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2px solid var(--white);
+}
+
+.dock-msg-row {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-width: 85%;
+}
+
+.dock-msg-row:has(.dock-bubble-mine) {
+  align-self: flex-end;
+}
+
+.dock-hover-actions {
+  display: none;
+  position: absolute;
+  top: -12px;
+  right: 2px;
+  gap: 2px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 999px;
+  padding: 1px 3px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dock-msg-row:hover .dock-hover-actions {
+  display: flex;
+}
+
+.dock-hover-actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--gray-500);
+  display: flex;
+  padding: 1px;
+}
+
+.dock-emoji-picker {
+  position: absolute;
+  top: -28px;
+  right: 2px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  padding: 3px 5px;
+  display: flex;
+  gap: 3px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  z-index: 10;
+  font-size: 0.85rem;
+}
+
+.dock-emoji-picker button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.dock-action-menu {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.dock-action-menu button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  font-size: 0.72rem;
+  white-space: nowrap;
+  color: var(--gray-700);
+}
+
+.dock-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.dock-reaction-chip {
+  background: var(--white);
+  border: 1px solid var(--gray-300);
+  border-radius: 999px;
+  font-size: 0.65rem;
+  padding: 0 5px;
+  cursor: pointer;
+}
+
+.dock-deleted-text {
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.dock-edited-tag {
+  font-size: 0.65rem;
+  opacity: 0.65;
+}
+
+.dock-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dock-edit-row input {
+  flex: 1;
+  border: none;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  font-size: 0.82rem;
+  outline: none;
+}
+
+.dock-edit-row button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  display: flex;
+}
+
+.dock-seen-label {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  align-self: flex-end;
+  font-size: 0.62rem;
+  color: var(--gray-400);
+}
+
+.dock-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1400;
+}
+
+.dock-confirm-box {
+  background: var(--white);
+  border-radius: 10px;
+  padding: 14px 16px;
+  width: 220px;
+  text-align: center;
+}
+
+.dock-confirm-box p {
+  margin: 0 0 10px;
+  font-size: 0.82rem;
+  color: var(--gray-800);
+}
+
+.dock-confirm-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.dock-confirm-actions button {
+  border: 1px solid var(--gray-300);
+  background: var(--white);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.dock-confirm-delete {
+  background: #ef4444 !important;
+  color: var(--white);
+  border: none !important;
+  font-weight: 600;
+}
+
+.dock-file-input {
+  display: none;
+}
+
+.dock-attach-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--gray-500);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.dock-attach-btn:disabled {
+  opacity: 0.5;
+}
+
+.dock-attachment-img {
+  max-width: 160px;
+  max-height: 160px;
+  border-radius: 8px;
+  display: block;
+}
+
+.dock-attachment-file {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: inherit;
+  text-decoration: underline;
+  font-size: 0.78rem;
+}

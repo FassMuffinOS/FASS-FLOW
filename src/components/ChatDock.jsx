@@ -1,8 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MessageCircle, X, Minus, Send, Loader, Search, Plus } from 'lucide-react'
+import {
+  MessageCircle, X, Minus, Send, Loader, Search, Plus, Paperclip,
+  Smile, MoreHorizontal, Pencil, Trash2, Check, CheckCheck,
+} from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { usePresence } from '../hooks/usePresence'
 import './ChatDock.css'
+
+const REACTION_EMOJI = ['👍', '❤️', '😂', '😮', '😢', '🙏']
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
 const MAX_POPUPS = 3
@@ -19,8 +25,9 @@ export default function ChatDock({ userId }) {
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(true)
   const [threads, setThreads] = useState([])
-  const [popups, setPopups] = useState([]) // [{ id, name, minimized }]
+  const [popups, setPopups] = useState([]) // [{ id, name, minimized, otherId }]
   const [showSearch, setShowSearch] = useState(false)
+  const onlineIds = usePresence(userId)
 
   const loadThreads = useCallback(async () => {
     if (!userId || !API_BASE) return
@@ -49,10 +56,11 @@ export default function ChatDock({ userId }) {
 
   function openPopup(thread) {
     const name = thread.other_participants?.map(p => p.full_name || 'Member').join(', ') || 'Conversation'
+    const otherId = thread.other_participants?.[0]?.user_id || null
     setPopups(prev => {
       const exists = prev.find(p => p.id === thread.id)
       if (exists) return prev.map(p => p.id === thread.id ? { ...p, minimized: false } : p)
-      return [...prev, { id: thread.id, name, minimized: false }].slice(-MAX_POPUPS)
+      return [...prev, { id: thread.id, name, minimized: false, otherId }].slice(-MAX_POPUPS)
     })
     setCollapsed(true)
   }
@@ -74,7 +82,7 @@ export default function ChatDock({ userId }) {
     })
     if (res.ok) {
       const data = await res.json()
-      openPopup({ id: data.thread_id, other_participants: [{ full_name: person.full_name || person.company_name }] })
+      openPopup({ id: data.thread_id, other_participants: [{ user_id: person.id, full_name: person.full_name || person.company_name }] })
       loadThreads()
     }
   }
@@ -92,6 +100,7 @@ export default function ChatDock({ userId }) {
           threadId={p.id}
           name={p.name}
           minimized={p.minimized}
+          online={p.otherId ? onlineIds.has(p.otherId) : false}
           onClose={() => closePopup(p.id)}
           onToggleMinimize={() => toggleMinimize(p.id)}
           onMessageSent={loadThreads}
@@ -118,12 +127,18 @@ export default function ChatDock({ userId }) {
             ) : (
               threads.map(t => {
                 const name = t.other_participants?.map(p => p.full_name || 'Member').join(', ') || 'Conversation'
+                const otherId = t.other_participants?.[0]?.user_id
                 return (
                   <button key={t.id} className="dock-list-row" onClick={() => openPopup(t)}>
-                    <span className="dock-avatar">{initials(name)}</span>
+                    <span className="dock-avatar-wrap">
+                      <span className="dock-avatar">{initials(name)}</span>
+                      {otherId && onlineIds.has(otherId) && <span className="dock-online-dot" />}
+                    </span>
                     <span className="dock-list-info">
                       <span className="dock-list-name">{name}</span>
-                      <span className="dock-list-preview">{t.last_message?.body || 'No messages yet'}</span>
+                      <span className="dock-list-preview">
+                        {t.last_message?.deleted_at ? 'Message deleted' : (t.last_message?.body || (t.last_message ? '📎 Attachment' : 'No messages yet'))}
+                      </span>
                     </span>
                     {t.unread_count > 0 && <span className="dock-unread-badge">{t.unread_count}</span>}
                   </button>
@@ -139,12 +154,19 @@ export default function ChatDock({ userId }) {
   )
 }
 
-function ChatPopup({ userId, threadId, name, minimized, onClose, onToggleMinimize, onMessageSent }) {
+function ChatPopup({ userId, threadId, name, minimized, online, onClose, onToggleMinimize, onMessageSent }) {
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(true)
   const [draft, setDraft] = useState('')
   const [sending, setSending] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [openMenuId, setOpenMenuId] = useState(null)
+  const [openPickerId, setOpenPickerId] = useState(null)
+  const [editingId, setEditingId] = useState(null)
+  const [editDraft, setEditDraft] = useState('')
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const bottomRef = useRef(null)
+  const fileInputRef = useRef(null)
 
   const loadMessages = useCallback(async () => {
     if (!API_BASE) return
@@ -171,13 +193,14 @@ function ChatPopup({ userId, threadId, name, minimized, onClose, onToggleMinimiz
   }, [messages.length, minimized])
 
   // Filtered to this thread only, so opening several popups at once doesn't
-  // mean each one re-renders on every message sent platform-wide.
+  // mean each one re-renders on every message sent platform-wide. UPDATE
+  // events cover Seen / edit / delete the same way Messages.jsx handles them.
   useEffect(() => {
     const channel = supabase
       .channel(`dock-thread-${threadId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `thread_id=eq.${threadId}` }, payload => {
         const msg = payload.new
-        setMessages(prev => prev.some(m => m.id === msg.id) ? prev : [...prev, msg])
+        setMessages(prev => prev.some(m => m.id === msg.id) ? prev : [...prev, { ...msg, reactions: [] }])
         if (msg.sender_id !== userId) {
           fetch(`${API_BASE}/api/v1/chat/threads/${threadId}/read`, {
             method: 'POST',
@@ -186,6 +209,10 @@ function ChatPopup({ userId, threadId, name, minimized, onClose, onToggleMinimiz
           }).catch(() => {})
         }
         onMessageSent()
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_messages', filter: `thread_id=eq.${threadId}` }, payload => {
+        const msg = payload.new
+        setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, ...msg, reactions: m.reactions } : m))
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
@@ -212,10 +239,73 @@ function ChatPopup({ userId, threadId, name, minimized, onClose, onToggleMinimiz
     }
   }
 
+  async function uploadFile(file) {
+    if (!file) return
+    setUploading(true)
+    try {
+      const form = new FormData()
+      form.append('user_id', userId)
+      form.append('file', file)
+      const res = await fetch(`${API_BASE}/api/v1/chat/threads/${threadId}/attachments`, { method: 'POST', body: form })
+      if (res.ok) {
+        const created = await res.json()
+        setMessages(prev => prev.some(m => m.id === created.id) ? prev : [...prev, created])
+        onMessageSent()
+      }
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  async function saveEdit() {
+    const body = editDraft.trim()
+    if (!body || !editingId) return
+    const res = await fetch(`${API_BASE}/api/v1/chat/threads/${threadId}/messages/${editingId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, body }),
+    })
+    if (res.ok) {
+      const updated = await res.json()
+      setMessages(prev => prev.map(m => m.id === updated.id ? updated : m))
+    }
+    setEditingId(null)
+  }
+
+  async function confirmDelete(messageId) {
+    setConfirmDeleteId(null)
+    const res = await fetch(`${API_BASE}/api/v1/chat/threads/${threadId}/messages/${messageId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId }),
+    })
+    if (res.ok) {
+      const updated = await res.json()
+      setMessages(prev => prev.map(m => m.id === updated.id ? updated : m))
+    }
+  }
+
+  async function toggleReaction(messageId, emoji) {
+    setOpenPickerId(null)
+    const res = await fetch(`${API_BASE}/api/v1/chat/messages/${messageId}/reactions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, emoji }),
+    })
+    if (res.ok) {
+      const { reactions } = await res.json()
+      setMessages(prev => prev.map(m => m.id === messageId ? { ...m, reactions } : m))
+    }
+  }
+
   return (
     <div className={`dock-popup ${minimized ? 'dock-popup-min' : ''}`}>
       <div className="dock-popup-head" onClick={onToggleMinimize}>
-        <span className="dock-avatar dock-avatar-sm">{initials(name)}</span>
+        <span className="dock-avatar-wrap">
+          <span className="dock-avatar dock-avatar-sm">{initials(name)}</span>
+          {online && <span className="dock-online-dot" />}
+        </span>
         <span className="dock-popup-name">{name}</span>
         <div className="dock-popup-actions">
           <button onClick={e => { e.stopPropagation(); onToggleMinimize() }} aria-label="Minimize"><Minus size={13} /></button>
@@ -230,13 +320,100 @@ function ChatPopup({ userId, threadId, name, minimized, onClose, onToggleMinimiz
             ) : messages.length === 0 ? (
               <div className="dock-empty-thread">Say hello.</div>
             ) : (
-              messages.map(m => (
-                <div key={m.id} className={`dock-bubble ${m.sender_id === userId ? 'dock-bubble-mine' : ''}`}>{m.body}</div>
-              ))
+              messages.map(m => {
+                const mine = m.sender_id === userId
+                const isEditing = editingId === m.id
+                return (
+                  <div key={m.id} className="dock-msg-row">
+                    <div className={`dock-bubble ${mine ? 'dock-bubble-mine' : ''}`}>
+                      {m.deleted_at ? (
+                        <span className="dock-deleted-text">Message deleted</span>
+                      ) : isEditing ? (
+                        <div className="dock-edit-row">
+                          <input
+                            autoFocus
+                            value={editDraft}
+                            onChange={e => setEditDraft(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') setEditingId(null) }}
+                          />
+                          <button onClick={saveEdit}><Check size={11} /></button>
+                        </div>
+                      ) : (
+                        <>
+                          {m.attachment_url && (
+                            isImageType(m.attachment_type) ? (
+                              <a href={m.attachment_url} target="_blank" rel="noreferrer">
+                                <img src={m.attachment_url} alt={m.attachment_name || 'attachment'} className="dock-attachment-img" />
+                              </a>
+                            ) : (
+                              <a href={m.attachment_url} target="_blank" rel="noreferrer" className="dock-attachment-file">
+                                <Paperclip size={11} /> {m.attachment_name || 'Attachment'}
+                              </a>
+                            )
+                          )}
+                          {m.body && <span>{m.body}</span>}
+                          {m.edited_at && <span className="dock-edited-tag"> (edited)</span>}
+                        </>
+                      )}
+                      {!m.deleted_at && m.reactions?.length > 0 && (
+                        <div className="dock-reactions">
+                          {m.reactions.map(r => (
+                            <button key={r.emoji} className="dock-reaction-chip" onClick={() => toggleReaction(m.id, r.emoji)}>
+                              {r.emoji} {r.user_ids.length}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {!m.deleted_at && !isEditing && (
+                      <div className="dock-hover-actions">
+                        <button onClick={() => setOpenPickerId(openPickerId === m.id ? null : m.id)} aria-label="React"><Smile size={12} /></button>
+                        {mine && <button onClick={() => setOpenMenuId(openMenuId === m.id ? null : m.id)} aria-label="More"><MoreHorizontal size={12} /></button>}
+                      </div>
+                    )}
+
+                    {openPickerId === m.id && (
+                      <div className="dock-emoji-picker">
+                        {REACTION_EMOJI.map(e => <button key={e} onClick={() => toggleReaction(m.id, e)}>{e}</button>)}
+                      </div>
+                    )}
+
+                    {openMenuId === m.id && (
+                      <div className="dock-action-menu">
+                        <button onClick={() => { setOpenMenuId(null); setEditingId(m.id); setEditDraft(m.body) }}><Pencil size={11} /> Edit</button>
+                        <button onClick={() => { setOpenMenuId(null); setConfirmDeleteId(m.id) }}><Trash2 size={11} /> Delete</button>
+                      </div>
+                    )}
+
+                    {confirmDeleteId === m.id && (
+                      <div className="dock-confirm-overlay" onClick={() => setConfirmDeleteId(null)}>
+                        <div className="dock-confirm-box" onClick={e => e.stopPropagation()}>
+                          <p>Delete this message?</p>
+                          <div className="dock-confirm-actions">
+                            <button onClick={() => setConfirmDeleteId(null)}>Cancel</button>
+                            <button className="dock-confirm-delete" onClick={() => confirmDelete(m.id)}>Delete</button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {mine && m.id === [...messages].reverse().find(x => x.sender_id === userId)?.id && !m.deleted_at && (
+                      <span className="dock-seen-label">
+                        {(m.read_by || []).length > 1 ? (<><CheckCheck size={10} /> Seen</>) : (<><Check size={10} /> Sent</>)}
+                      </span>
+                    )}
+                  </div>
+                )
+              })
             )}
             <div ref={bottomRef} />
           </div>
           <div className="dock-popup-input">
+            <input type="file" ref={fileInputRef} className="dock-file-input" onChange={e => uploadFile(e.target.files?.[0])} />
+            <button className="dock-attach-btn" onClick={() => fileInputRef.current?.click()} disabled={uploading} aria-label="Attach file">
+              {uploading ? <Loader size={12} className="spin" /> : <Paperclip size={12} />}
+            </button>
             <input
               value={draft}
               onChange={e => setDraft(e.target.value)}
@@ -249,6 +426,10 @@ function ChatPopup({ userId, threadId, name, minimized, onClose, onToggleMinimiz
       )}
     </div>
   )
+}
+
+function isImageType(mime) {
+  return Boolean(mime && mime.startsWith('image/'))
 }
 
 function DockSearch({ userId, onPick, onClose }) {
