@@ -10,6 +10,7 @@ import {
   Sparkles, Users, Award, MessageCircle,
 } from 'lucide-react'
 import AlertsBell from './AlertsBell'
+import ChatDock from './ChatDock'
 import './AppShell.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -262,6 +263,9 @@ export default function AppShell({ children }) {
       <div className="shell-content">{children}</div>
 
       <AlertsBell />
+      {/* The full Messages page already has its own inline chat UI + realtime
+          subscription, so the floating dock would just duplicate it there. */}
+      {!location.pathname.startsWith('/messages') && <ChatDock userId={userId} />}
     </div>
   )
 }
