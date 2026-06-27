@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   Megaphone, Copy, Link2, Loader2, MousePointerClick, UserPlus, DollarSign, Wallet,
   Target, CheckCircle2, Circle, Calculator, MessageSquare, Users, Check, Trophy, Sparkles,
+  Share2, Send,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import './AffiliateDashboard.css'
@@ -119,6 +120,8 @@ export default function AffiliateDashboard() {
   const [marking, setMarking] = useState(false)
   const [claiming, setClaiming] = useState(null)
   const [xpToast, setXpToast] = useState(null)
+  const [shareCopied, setShareCopied] = useState(false)
+  const [canNativeShare] = useState(() => typeof navigator !== 'undefined' && !!navigator.share)
 
   function flashXp(amount) {
     if (!amount) return
@@ -256,6 +259,53 @@ export default function AffiliateDashboard() {
     })
   }
 
+  // Dynamic "brag" line — leads with whatever's most impressive right now
+  // (rank if it's past the starting tier, otherwise earnings, otherwise a
+  // plain invite) so the share text never reads as a stale template.
+  function shareLine() {
+    if (gamification?.level >= 3) {
+      return `I just hit ${gamification.rank} (Level ${gamification.level}) as a FASS Flow creator partner!`
+    }
+    if (stats?.total_earned > 0) {
+      return `I've earned $${stats.total_earned.toFixed(2)} so far as a FASS Flow creator partner.`
+    }
+    return `I just became a FASS Flow creator partner!`
+  }
+
+  function shareMessage() {
+    return `${shareLine()} They handle bidding, contracts, and customer rewards for small businesses — join with my link:`
+  }
+
+  function shareToX() {
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage())}&url=${encodeURIComponent(link)}`
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
+  function shareToFacebook() {
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}&quote=${encodeURIComponent(shareMessage())}`
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
+  function shareToLinkedIn() {
+    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(link)}`
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
+  async function shareNative() {
+    try {
+      await navigator.share({ title: 'FASS Flow', text: shareMessage(), url: link })
+    } catch {
+      // Cancelled or unsupported mid-call — no-op, user can use the other buttons.
+    }
+  }
+
+  function copyShareText() {
+    navigator.clipboard.writeText(`${shareMessage()} ${link}`).then(() => {
+      setShareCopied(true)
+      setTimeout(() => setShareCopied(false), 1800)
+    })
+  }
+
   // Combined growth calendar: every day of the current month gets a
   // rotating content idea AND, if anything actually happened that day
   // (clicks recorded, conversions earned), that real activity overlaid
@@ -388,6 +438,22 @@ export default function AffiliateDashboard() {
           <input readOnly value={link} onClick={e => e.target.select()} />
           <button className="btn-outline afd-copy-btn" onClick={copyLink}>
             <Copy size={14} /> {copied ? 'Copied' : 'Copy'}
+          </button>
+        </div>
+      </div>
+
+      <div className="afd-share">
+        <span className="afd-link-label">Share your progress</span>
+        <p className="afd-share-preview">{shareMessage()} <span className="afd-share-preview-link">{link}</span></p>
+        <div className="afd-share-row">
+          <button className="afd-share-btn afd-share-x" onClick={shareToX}><Send size={14} /> Share on X</button>
+          <button className="afd-share-btn afd-share-fb" onClick={shareToFacebook}><Send size={14} /> Facebook</button>
+          <button className="afd-share-btn afd-share-li" onClick={shareToLinkedIn}><Send size={14} /> LinkedIn</button>
+          {canNativeShare && (
+            <button className="afd-share-btn afd-share-native" onClick={shareNative}><Share2 size={14} /> More…</button>
+          )}
+          <button className="afd-share-btn afd-share-copy" onClick={copyShareText}>
+            <Copy size={14} /> {shareCopied ? 'Copied' : 'Copy text'}
           </button>
         </div>
       </div>

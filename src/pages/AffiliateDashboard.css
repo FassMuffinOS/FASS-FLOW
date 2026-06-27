@@ -248,6 +248,50 @@
   flex-shrink: 0;
 }
 
+.afd-share {
+  background: var(--card-bg, #f7f8fa);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+}
+
+.afd-share-preview {
+  margin: 8px 0 14px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text, #1B2A4A);
+}
+
+.afd-share-preview-link {
+  color: var(--teal, #1D9E75);
+  font-weight: 700;
+}
+
+.afd-share-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.afd-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: 1px solid var(--border, #e2e5ea);
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px 13px;
+  cursor: pointer;
+  color: var(--navy, #1B2A4A);
+}
+
+.afd-share-btn:hover {
+  border-color: var(--teal, #1D9E75);
+  color: var(--teal, #1D9E75);
+}
+
 .afd-assignment {
   display: flex;
   align-items: center;
