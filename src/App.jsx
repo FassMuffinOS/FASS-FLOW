@@ -26,6 +26,7 @@ import Glossary from './pages/Glossary'
 import Passport from './pages/Passport'
 import ShowMeTheMoney from './pages/ShowMeTheMoney'
 import Admin from './pages/Admin'
+import BDPartnerAdmin from './pages/BDPartnerAdmin'
 import JoinNetwork from './pages/JoinNetwork'
 import Network from './pages/Network'
 import Inbox from './pages/Inbox'
@@ -193,6 +194,11 @@ function AppRoutes() {
           session, since you may be onboarding someone before they have an
           account at all. Not linked anywhere in nav. */}
       <Route path="/admin" element={<Admin />} />
+      {/* Founder-side BD Partner console — see/manage every client (activate,
+          pause, log activity) from one roster. Same admin-secret gate as
+          /admin, not linked in nav. A client's own /bd-partner route never
+          reads from here; it only ever queries by its own session user_id. */}
+      <Route path="/admin/bd-partner" element={<BDPartnerAdmin />} />
 
       {/* Protected routes — no Nav/Footer (dashboard has its own header) */}
       <Route path="/dashboard" element={
