@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Nav from './components/Nav'
@@ -9,6 +10,7 @@ import Footer from './components/Footer'
 import Masterclass from './pages/Masterclass'
 import Support from './pages/Support'
 import BDPartner from './pages/BDPartner'
+import BDPartnerDashboard from './pages/BDPartnerDashboard'
 import ThankYou from './pages/ThankYou'
 import SignIn from './pages/SignIn'
 import AuthCallback from './pages/AuthCallback'
@@ -103,6 +105,51 @@ function MasterclassRoute() {
   return <><Nav /><main><Masterclass /></main><Footer /></>
 }
 
+// BD Partner is the $500/mo white-glove service — same family of bug as
+// Masterclass, but with one key difference: logged-in does NOT mean "has
+// access" here (Masterclass's redirect-only pattern would be wrong). There
+// is no per-business phone-number table for this yet, but there IS a real
+// bd_partner_clients row once someone's been activated, so we ask the
+// backend instead of guessing from session alone:
+//   logged out             -> sales page, public Nav/Footer chrome
+//   logged in, active client -> BDPartnerDashboard (the real tool/log), AppShell
+//   logged in, not a client  -> sales page as an upsell, but inside AppShell
+//                                (not pure marketing chrome — they're a user)
+const API_BASE = import.meta.env.VITE_API_URL || ''
+
+function BDPartnerRoute() {
+  const { session, loading } = useAuth()
+  const [checking, setChecking] = useState(true)
+  const [active, setActive] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    async function checkStatus() {
+      if (!session?.user?.id || !API_BASE) {
+        if (!cancelled) setChecking(false)
+        return
+      }
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/bd-partner/status?user_id=${session.user.id}`)
+        if (res.ok) {
+          const data = await res.json()
+          if (!cancelled) setActive(!!data.active)
+        }
+      } catch (err) {
+        console.error('BDPartnerRoute: failed to check status', err)
+      } finally {
+        if (!cancelled) setChecking(false)
+      }
+    }
+    checkStatus()
+    return () => { cancelled = true }
+  }, [session])
+
+  if (loading || (session && checking)) return null
+  if (!session) return <><Nav /><main><BDPartner /></main><Footer /></>
+  return <AppShell>{active ? <BDPartnerDashboard /> : <BDPartner />}</AppShell>
+}
+
 function AppRoutes() {
   return (
     <Routes>
@@ -110,7 +157,7 @@ function AppRoutes() {
       <Route path="/" element={<><Nav /><main><Landing /></main><Footer /></>} />
       <Route path="/masterclass" element={<MasterclassRoute />} />
       <Route path="/support" element={<AuthAwarePage><Support /></AuthAwarePage>} />
-      <Route path="/bd-partner" element={<AuthAwarePage><BDPartner /></AuthAwarePage>} />
+      <Route path="/bd-partner" element={<BDPartnerRoute />} />
 
       {/* Free resize/reformat utility — the no-login "come back just for
           this" hook. Works fully signed-out; shows the app sidebar instead
