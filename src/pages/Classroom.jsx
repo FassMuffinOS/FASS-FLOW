@@ -22,7 +22,8 @@ export default function Classroom() {
 
   const [progress, setProgress] = useState([])
   const [loading, setLoading] = useState(true)
-  const [openNight, setOpenNight] = useState(null)
+  const [activeNight, setActiveNight] = useState(1)
+  const [hasPickedActive, setHasPickedActive] = useState(false)
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
   const [profile, setProfile] = useState(null)
@@ -79,6 +80,23 @@ export default function Classroom() {
     setLoading(false)
   }
 
+  // Land the student on the first night they haven't finished yet — same
+  // "pick up where you left off" behavior as a real course platform's
+  // lesson sidebar, instead of dumping them at a blank Night 1 every visit.
+  useEffect(() => {
+    if (loading || hasPickedActive) return
+    const completed = new Set(progress.map(p => p.night))
+    const firstOpen = MASTERCLASS_NIGHTS.find(nt => {
+      const unlocked = nt.n === 1 || completed.has(nt.n - 1)
+      return unlocked && !completed.has(nt.n)
+    })
+    const target = firstOpen ? firstOpen.n : MASTERCLASS_NIGHTS[MASTERCLASS_NIGHTS.length - 1].n
+    setActiveNight(target)
+    const row = progress.find(p => p.night === target)
+    setNotes(row?.homework_notes || '')
+    setHasPickedActive(true)
+  }, [loading, progress, hasPickedActive])
+
   async function startCheckout(plan) {
     if (!session?.user) return
     setCheckingOut(true)
@@ -113,13 +131,10 @@ export default function Classroom() {
     return completedNights.has(n - 1)
   }
 
-  function toggleOpen(n) {
+  function selectNight(n) {
     if (!isUnlocked(n)) return
-    if (openNight === n) {
-      setOpenNight(null)
-      return
-    }
-    setOpenNight(n)
+    setActiveNight(n)
+    setHasPickedActive(true)
     const row = progress.find(p => p.night === n)
     setNotes(row?.homework_notes || '')
   }
@@ -131,6 +146,15 @@ export default function Classroom() {
       .upsert({ user_id: session.user.id, night: n, homework_notes: notes }, { onConflict: 'user_id,night' })
     await loadProgress()
     setSaving(false)
+
+    // Auto-advance to the night that just unlocked — same "next lesson"
+    // momentum a real course platform gives you instead of leaving the
+    // student stranded on the lesson they just finished.
+    const next = MASTERCLASS_NIGHTS.find(nt => nt.n === n + 1)
+    if (next) {
+      setActiveNight(next.n)
+      setNotes('')
+    }
 
     const userId = session.user.id
     const night = MASTERCLASS_NIGHTS.find(nt => nt.n === n)
@@ -327,234 +351,244 @@ export default function Classroom() {
         </div>
       </header>
 
-      <main className="cr-main">
-        <div className="cr-container">
+      {loading ? (
+        <p className="cr-loading">Loading your course…</p>
+      ) : (
+        <div className="cr-shell">
+          <aside className="cr-sidebar">
+            <div className="cr-sidebar-course">
+              <span className="cr-sidebar-course-label">Course</span>
+              <h2>10-Night Government Contracting Masterclass</h2>
+            </div>
 
-          <div className="cr-intro">
-            <h1>10-Night Government Contracting Masterclass</h1>
-            <p>Every session builds on the last. Complete each night to unlock the next.</p>
-          </div>
-
-          <div className="cr-progress-wrap">
-            <div className="cr-progress-bar">
-              <div className="cr-progress-fill" style={{ width: `${pct}%` }} />
-            </div>
-            <span className="cr-progress-label">{completedCount} of {MASTERCLASS_NIGHTS.length} nights complete</span>
-          </div>
-
-          <div className="cr-rewards-bar">
-            <div className="cr-reward-pill cr-reward-level">
-              <Zap size={14} /> Level {rewards.level} <span className="cr-reward-sub">{rewards.xp} XP</span>
-            </div>
-            <div className="cr-reward-pill">
-              <Flame size={14} /> {rewards.streak_count || 0}-night streak
-            </div>
-            <div className="cr-reward-pill">
-              <Stamp size={14} /> {rewards.stamps || 0}/{MASTERCLASS_NIGHTS.length} stamps
-            </div>
-            {(rewards.badges || []).length > 0 && (
-              <div className="cr-reward-badges">
-                {rewards.badges.map(b => <span key={b} className="cr-badge-chip">{b.replace(/-/g, ' ')}</span>)}
+            <div className="cr-sidebar-progress">
+              <div className="cr-progress-bar">
+                <div className="cr-progress-fill" style={{ width: `${pct}%` }} />
               </div>
-            )}
-          </div>
-          {xpToast && (
-            <div className="cr-xp-toast">
-              {xpToast.leveled_up ? <Award size={14} /> : <Zap size={14} />}
-              +{xpToast.xp_gain} XP{xpToast.leveled_up ? ' — Level up!' : ''}
+              <span className="cr-progress-label">{pct}% complete · {completedCount}/{MASTERCLASS_NIGHTS.length} nights</span>
             </div>
-          )}
 
-          {graduated ? (
-            <div className="cr-grad">
-              <div className="cr-grad-icon"><Rocket size={28} /></div>
-              <h2>You finished the training. Here's the live system you're trained to use.</h2>
-              <p>
-                You completed all {MASTERCLASS_NIGHTS.length} nights — opportunity scoring, compliance discipline,
-                proposal assembly, all of it. WARDOG, R-E-A-D, Pipeline, and FASS FILL are the tools built to run
-                what you just learned, every day, on autopilot.
-              </p>
-              <div className="cr-grad-actions">
-                <button className="cr-cert-btn" onClick={printCertificate}>
-                  <Award size={15} /> Download Certificate of Completion
-                </button>
-                {isActive ? (
-                  <button className="cr-grad-cta" onClick={() => navigate('/wardog')}>
-                    Go to WARDOG <ArrowLeft size={15} style={{ transform: 'rotate(180deg)' }} />
-                  </button>
-                ) : (
-                  <button className="cr-grad-cta" disabled={checkingOut} onClick={() => startCheckout('starter')}>
-                    {checkingOut ? 'Starting checkout…' : 'Upgrade to FASS Flow — $99/mo'}
-                  </button>
-                )}
-              </div>
-              {!isActive && <p className="cr-grad-note">14-day free trial. Cancel anytime.</p>}
-              {checkoutError && <p className="cr-grad-error">{checkoutError}</p>}
+            <div className="cr-sidebar-rewards">
+              <span className="cr-reward-pill cr-reward-level">
+                <Zap size={13} /> Lvl {rewards.level} <span className="cr-reward-sub">{rewards.xp} XP</span>
+              </span>
+              <span className="cr-reward-pill">
+                <Flame size={13} /> {rewards.streak_count || 0}
+              </span>
+              <span className="cr-reward-pill">
+                <Stamp size={13} /> {rewards.stamps || 0}/{MASTERCLASS_NIGHTS.length}
+              </span>
             </div>
-          ) : earlyUnlocked && !isActive && (
-            <div className="cr-early-banner">
-              <div className="cr-early-icon"><Unlock size={18} /></div>
-              <div className="cr-early-text">
-                <strong>Night {EARLY_UNLOCK_NIGHT} complete — WARDOG is unlocked early.</strong>
-                <span>You don't have to wait until graduation. See live opportunities matching your NAICS code right now.</span>
-              </div>
-              <button className="cr-early-cta" onClick={() => navigate('/wardog')}>
-                Open WARDOG
-              </button>
-            </div>
-          )}
 
-          {loading ? (
-            <p className="cr-loading">Loading your progress…</p>
-          ) : (
-            <div className="cr-nights">
+            <nav className="cr-curriculum">
               {MASTERCLASS_NIGHTS.map(night => {
                 const unlocked = isUnlocked(night.n)
                 const done = completedNights.has(night.n)
-                const open = openNight === night.n
-
+                const active = activeNight === night.n
                 return (
-                  <div key={night.n} className={`cr-night ${!unlocked ? 'cr-locked' : ''} ${done ? 'cr-done' : ''}`}>
-                    <div className="cr-night-head" onClick={() => toggleOpen(night.n)}>
-                      <div className="cr-night-num">
-                        {!unlocked ? <Lock size={16} /> : done ? <CheckCircle2 size={18} /> : <span className="cr-num-dot">{night.n}</span>}
-                      </div>
-                      <div className="cr-night-titles">
-                        <span className="cr-night-week">Week {night.week} · Night {night.n}</span>
-                        <h3>{night.title}</h3>
-                        <p>{night.subtitle}</p>
-                      </div>
-                      <div className="cr-night-toggle">
-                        {unlocked && (open ? <ChevronUp size={18} /> : <ChevronDown size={18} />)}
-                      </div>
+                  <button
+                    key={night.n}
+                    className={`cr-curr-item ${active ? 'cr-curr-active' : ''} ${!unlocked ? 'cr-curr-locked' : ''} ${done ? 'cr-curr-done' : ''}`}
+                    onClick={() => selectNight(night.n)}
+                    disabled={!unlocked}
+                  >
+                    <span className="cr-curr-icon">
+                      {!unlocked ? <Lock size={14} /> : done ? <CheckCircle2 size={16} /> : <span className="cr-curr-dot">{night.n}</span>}
+                    </span>
+                    <span className="cr-curr-text">
+                      <span className="cr-curr-week">Week {night.week} · Night {night.n}</span>
+                      <span className="cr-curr-title">{night.title}</span>
+                    </span>
+                  </button>
+                )
+              })}
+            </nav>
+
+            <button className="cr-sidebar-notebook-link" onClick={() => navigate('/notebook')}>
+              <NotebookIcon size={14} /> Open My Notebook
+            </button>
+          </aside>
+
+          <main className="cr-content">
+            {xpToast && (
+              <div className="cr-xp-toast">
+                {xpToast.leveled_up ? <Award size={14} /> : <Zap size={14} />}
+                +{xpToast.xp_gain} XP{xpToast.leveled_up ? ' — Level up!' : ''}
+              </div>
+            )}
+
+            {graduated ? (
+              <div className="cr-grad">
+                <div className="cr-grad-icon"><Rocket size={28} /></div>
+                <h2>You finished the training. Here's the live system you're trained to use.</h2>
+                <p>
+                  You completed all {MASTERCLASS_NIGHTS.length} nights — opportunity scoring, compliance discipline,
+                  proposal assembly, all of it. WARDOG, R-E-A-D, Pipeline, and FASS FILL are the tools built to run
+                  what you just learned, every day, on autopilot.
+                </p>
+                <div className="cr-grad-actions">
+                  <button className="cr-cert-btn" onClick={printCertificate}>
+                    <Award size={15} /> Download Certificate of Completion
+                  </button>
+                  {isActive ? (
+                    <button className="cr-grad-cta" onClick={() => navigate('/wardog')}>
+                      Go to WARDOG <ArrowLeft size={15} style={{ transform: 'rotate(180deg)' }} />
+                    </button>
+                  ) : (
+                    <button className="cr-grad-cta" disabled={checkingOut} onClick={() => startCheckout('starter')}>
+                      {checkingOut ? 'Starting checkout…' : 'Upgrade to FASS Flow — $99/mo'}
+                    </button>
+                  )}
+                </div>
+                {!isActive && <p className="cr-grad-note">14-day free trial. Cancel anytime.</p>}
+                {checkoutError && <p className="cr-grad-error">{checkoutError}</p>}
+              </div>
+            ) : earlyUnlocked && !isActive && (
+              <div className="cr-early-banner">
+                <div className="cr-early-icon"><Unlock size={18} /></div>
+                <div className="cr-early-text">
+                  <strong>Night {EARLY_UNLOCK_NIGHT} complete — WARDOG is unlocked early.</strong>
+                  <span>You don't have to wait until graduation. See live opportunities matching your NAICS code right now.</span>
+                </div>
+                <button className="cr-early-cta" onClick={() => navigate('/wardog')}>
+                  Open WARDOG
+                </button>
+              </div>
+            )}
+
+            {(() => {
+              const night = MASTERCLASS_NIGHTS.find(nt => nt.n === activeNight)
+              if (!night) return null
+              const done = completedNights.has(night.n)
+
+              return (
+                <article className="cr-lesson">
+                  <div className="cr-lesson-head">
+                    <span className="cr-lesson-eyebrow">Week {night.week} · Night {night.n}</span>
+                    <h1>{night.title}</h1>
+                    <p>{night.subtitle}</p>
+                  </div>
+
+                  <div className="cr-block">
+                    <h4><Target size={14} /> Objectives</h4>
+                    <ul>
+                      {night.objectives.map((o, i) => <li key={i}>{o}</li>)}
+                    </ul>
+                  </div>
+
+                  {night.sections.map((s, i) => (
+                    <div className="cr-block" key={i}>
+                      <h4><BookOpen size={14} /> {s.heading}</h4>
+                      <p>{s.body}</p>
                     </div>
+                  ))}
 
-                    {open && unlocked && (
-                      <div className="cr-night-body">
-                        <div className="cr-block">
-                          <h4><Target size={14} /> Objectives</h4>
-                          <ul>
-                            {night.objectives.map((o, i) => <li key={i}>{o}</li>)}
-                          </ul>
+                  <div className="cr-block">
+                    <h4><ClipboardCheck size={14} /> Homework</h4>
+                    <p>{night.homework}</p>
+                    {night.worksheet && night.worksheet.length > 0 && (
+                      <button className="cr-worksheet-btn" onClick={() => printWorksheet(night)}>
+                        <Download size={14} /> Download Worksheet
+                      </button>
+                    )}
+                  </div>
+
+                  {insightLoading === night.n && (
+                    <div className="cr-insight cr-insight-loading">
+                      <Sparkles size={14} /> Your Notebook is reading your answer…
+                    </div>
+                  )}
+                  {insights[night.n] && (
+                    <div className="cr-insight">
+                      <h4><Sparkles size={14} /> Your Notebook insight</h4>
+                      <p>{insights[night.n].insight}</p>
+                      {insights[night.n].niche_keywords_added?.length > 0 && (
+                        <div className="cr-insight-keywords">
+                          <span>Saved to your business profile:</span>
+                          {insights[night.n].niche_keywords_added.map(k => (
+                            <span key={k} className="cr-keyword-chip">{k}</span>
+                          ))}
                         </div>
+                      )}
+                    </div>
+                  )}
 
-                        {night.sections.map((s, i) => (
-                          <div className="cr-block" key={i}>
-                            <h4><BookOpen size={14} /> {s.heading}</h4>
-                            <p>{s.body}</p>
-                          </div>
-                        ))}
-
-                        <div className="cr-block">
-                          <h4><ClipboardCheck size={14} /> Homework</h4>
-                          <p>{night.homework}</p>
-                          {night.worksheet && night.worksheet.length > 0 && (
-                            <button className="cr-worksheet-btn" onClick={() => printWorksheet(night)}>
-                              <Download size={14} /> Download Worksheet
-                            </button>
+                  <div className="cr-block">
+                    <button
+                      className="cr-notebook-toggle"
+                      onClick={() => setChatOpenNight(chatOpenNight === night.n ? null : night.n)}
+                    >
+                      <MessageCircle size={14} />
+                      Ask the Notebook about Night {night.n}
+                      {chatOpenNight === night.n ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    </button>
+                    {chatOpenNight === night.n && (
+                      <div className="cr-notebook-chat">
+                        <p className="cr-notebook-hint">
+                          <NotebookIcon size={12} /> Sources: Night {night.n} content + your business profile.
+                          Ask about this lesson, or ask it to apply tonight's lesson to your specific business.
+                        </p>
+                        <div className="cr-chat-log">
+                          {(chatMessages[night.n] || []).length === 0 && (
+                            <p className="cr-chat-empty">No questions yet — try "How does this apply to my business?"</p>
+                          )}
+                          {(chatMessages[night.n] || []).map((m, i) => (
+                            <div key={i} className={`cr-chat-msg cr-chat-${m.role}`}>{m.content}</div>
+                          ))}
+                          {chatLoading && chatOpenNight === night.n && (
+                            <div className="cr-chat-msg cr-chat-assistant cr-chat-typing">Thinking…</div>
                           )}
                         </div>
-
-                        {insightLoading === night.n && (
-                          <div className="cr-insight cr-insight-loading">
-                            <Sparkles size={14} /> Your Notebook is reading your answer…
-                          </div>
-                        )}
-                        {insights[night.n] && (
-                          <div className="cr-insight">
-                            <h4><Sparkles size={14} /> Your Notebook insight</h4>
-                            <p>{insights[night.n].insight}</p>
-                            {insights[night.n].niche_keywords_added?.length > 0 && (
-                              <div className="cr-insight-keywords">
-                                <span>Saved to your business profile:</span>
-                                {insights[night.n].niche_keywords_added.map(k => (
-                                  <span key={k} className="cr-keyword-chip">{k}</span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        <div className="cr-block">
-                          <button
-                            className="cr-notebook-toggle"
-                            onClick={() => setChatOpenNight(chatOpenNight === night.n ? null : night.n)}
-                          >
-                            <MessageCircle size={14} />
-                            Ask the Notebook about Night {night.n}
-                            {chatOpenNight === night.n ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                          </button>
-                          {chatOpenNight === night.n && (
-                            <div className="cr-notebook-chat">
-                              <p className="cr-notebook-hint">
-                                <NotebookIcon size={12} /> Sources: Night {night.n} content + your business profile.
-                                Ask about this lesson, or ask it to apply tonight's lesson to your specific business.
-                              </p>
-                              <div className="cr-chat-log">
-                                {(chatMessages[night.n] || []).length === 0 && (
-                                  <p className="cr-chat-empty">No questions yet — try "How does this apply to my business?"</p>
-                                )}
-                                {(chatMessages[night.n] || []).map((m, i) => (
-                                  <div key={i} className={`cr-chat-msg cr-chat-${m.role}`}>{m.content}</div>
-                                ))}
-                                {chatLoading && chatOpenNight === night.n && (
-                                  <div className="cr-chat-msg cr-chat-assistant cr-chat-typing">Thinking…</div>
-                                )}
-                              </div>
-                              <div className="cr-chat-input-row">
-                                <input
-                                  type="text"
-                                  className="cr-chat-input"
-                                  placeholder="Ask the Notebook…"
-                                  value={chatInput}
-                                  onChange={e => setChatInput(e.target.value)}
-                                  onKeyDown={e => e.key === 'Enter' && askNotebook(night)}
-                                />
-                                <button className="cr-chat-send" onClick={() => askNotebook(night)} disabled={chatLoading}>
-                                  <Send size={14} />
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="cr-block">
-                          <h4><Star size={14} /> Key Takeaways</h4>
-                          <ul>
-                            {night.takeaways.map((t, i) => <li key={i}>{t}</li>)}
-                          </ul>
-                        </div>
-
-                        <div className="cr-block">
-                          <h4>Your Notes</h4>
-                          <textarea
-                            className="cr-notes"
-                            placeholder="Jot down what you completed, decisions made, or questions for next time..."
-                            value={notes}
-                            onChange={e => setNotes(e.target.value)}
-                            onBlur={() => done && saveNotesOnly(night.n)}
+                        <div className="cr-chat-input-row">
+                          <input
+                            type="text"
+                            className="cr-chat-input"
+                            placeholder="Ask the Notebook…"
+                            value={chatInput}
+                            onChange={e => setChatInput(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && askNotebook(night)}
                           />
-                        </div>
-
-                        <div className="cr-night-actions">
-                          {done ? (
-                            <span className="cr-completed-tag"><CheckCircle2 size={14} /> Completed</span>
-                          ) : (
-                            <button className="cr-complete-btn" disabled={saving} onClick={() => markComplete(night.n)}>
-                              {saving ? 'Saving…' : 'Mark Night Complete'}
-                            </button>
-                          )}
+                          <button className="cr-chat-send" onClick={() => askNotebook(night)} disabled={chatLoading}>
+                            <Send size={14} />
+                          </button>
                         </div>
                       </div>
                     )}
                   </div>
-                )
-              })}
-            </div>
-          )}
 
+                  <div className="cr-block">
+                    <h4><Star size={14} /> Key Takeaways</h4>
+                    <ul>
+                      {night.takeaways.map((t, i) => <li key={i}>{t}</li>)}
+                    </ul>
+                  </div>
+
+                  <div className="cr-block">
+                    <h4>Your Notes</h4>
+                    <textarea
+                      className="cr-notes"
+                      placeholder="Jot down what you completed, decisions made, or questions for next time..."
+                      value={notes}
+                      onChange={e => setNotes(e.target.value)}
+                      onBlur={() => done && saveNotesOnly(night.n)}
+                    />
+                  </div>
+
+                  <div className="cr-night-actions">
+                    {done ? (
+                      <span className="cr-completed-tag"><CheckCircle2 size={14} /> Completed</span>
+                    ) : (
+                      <button className="cr-complete-btn" disabled={saving} onClick={() => markComplete(night.n)}>
+                        {saving ? 'Saving…' : 'Mark Night Complete'}
+                      </button>
+                    )}
+                  </div>
+                </article>
+              )
+            })()}
+          </main>
         </div>
-      </main>
+      )}
     </div>
   )
 }

@@ -15,8 +15,6 @@
 }
 
 .cr-header-inner {
-  max-width: 920px;
-  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -747,4 +745,228 @@
 .cr-chat-send:disabled {
   opacity: 0.6;
   cursor: default;
+}
+
+/* ===== LMS shell: sidebar curriculum + content pane ===== */
+
+.cr-shell {
+  display: flex;
+  align-items: flex-start;
+  min-height: calc(100vh - 65px);
+}
+
+.cr-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  padding: 24px 18px 32px;
+  position: sticky;
+  top: 65px;
+  height: calc(100vh - 65px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-sizing: border-box;
+}
+
+.cr-sidebar-course-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.cr-sidebar-course h2 {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 4px 0 0;
+  line-height: 1.35;
+}
+
+.cr-sidebar-progress {
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 16px;
+}
+
+.cr-sidebar-rewards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cr-curriculum {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.cr-curr-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 10px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.cr-curr-item:hover:not(:disabled) {
+  background: var(--bg-elevated);
+}
+
+.cr-curr-item:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.cr-curr-active {
+  background: var(--light-teal);
+}
+
+.cr-curr-active:hover {
+  background: var(--light-teal);
+}
+
+.cr-curr-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.cr-curr-active .cr-curr-icon {
+  background: var(--teal);
+  color: #fff;
+}
+
+.cr-curr-done .cr-curr-icon {
+  background: var(--light-teal);
+  color: var(--teal);
+}
+
+.cr-curr-active.cr-curr-done .cr-curr-icon {
+  background: var(--teal);
+  color: #fff;
+}
+
+.cr-curr-dot {
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.cr-curr-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.cr-curr-week {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.cr-curr-active .cr-curr-week {
+  color: var(--teal);
+}
+
+.cr-curr-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+
+.cr-sidebar-notebook-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.cr-sidebar-notebook-link:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+.cr-content {
+  flex: 1;
+  min-width: 0;
+  padding: 32px 40px 80px;
+  max-width: 760px;
+}
+
+.cr-lesson-head {
+  margin-bottom: 8px;
+}
+
+.cr-lesson-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.cr-lesson-head h1 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 4px 0 4px;
+}
+
+.cr-lesson-head p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 24px;
+}
+
+.cr-lesson {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 880px) {
+  .cr-shell {
+    flex-direction: column;
+  }
+
+  .cr-sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cr-content {
+    padding: 24px 18px 60px;
+    max-width: 100%;
+  }
 }
