@@ -6,6 +6,86 @@
   margin: 0 0 18px;
 }
 
+.sb-plan-chip {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--teal);
+  background: var(--light-teal);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.sb-entity-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.sb-entity-chip {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  background: var(--white);
+  overflow: hidden;
+}
+
+.sb-entity-chip.active {
+  border-color: var(--teal);
+  background: var(--light-teal);
+}
+
+.sb-entity-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: none;
+  padding: 9px 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--navy);
+  cursor: pointer;
+}
+
+.sb-entity-active-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--teal);
+}
+
+.sb-entity-delete {
+  border: none;
+  border-left: 1px solid var(--gray-200);
+  background: none;
+  color: var(--gray-400);
+  padding: 9px 10px;
+  cursor: pointer;
+}
+.sb-entity-delete:hover { color: var(--danger, #c0392b); }
+
+.sb-entity-add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px dashed var(--gray-200);
+  border-radius: 10px;
+  background: none;
+  padding: 9px 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--teal);
+  cursor: pointer;
+}
+.sb-entity-add:disabled {
+  color: var(--gray-400);
+  cursor: not-allowed;
+  border-color: var(--gray-200);
+}
+
 .sb-path-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

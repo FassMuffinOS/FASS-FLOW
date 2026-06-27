@@ -47,16 +47,20 @@ import StartBusiness from './pages/StartBusiness'
 import Payouts from './pages/Payouts'
 import Resize from './pages/Resize'
 import AppShell from './components/AppShell'
+import SmoothScroll from './components/SmoothScroll'
 import './index.css'
 import './App.css'
 
 function Landing() {
+  // Lenis smooth scroll is scoped to the public landing page only — it
+  // never wraps ProtectedRoute/AppShell, so dashboard scroll behavior
+  // (tables, modals, etc.) stays native.
   return (
-    <>
+    <SmoothScroll>
       <Hero />
       <HomeBand />
       <HowItWorks />
-    </>
+    </SmoothScroll>
   )
 }
 

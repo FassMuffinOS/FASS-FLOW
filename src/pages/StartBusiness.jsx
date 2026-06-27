@@ -2,11 +2,17 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Rocket, Check, ExternalLink, Package, Wrench, Landmark, DollarSign,
-  Megaphone, ArrowRight, IdCard, Wallet as WalletIcon,
+  Megaphone, ArrowRight, IdCard, Wallet as WalletIcon, Plus, Building2,
+  Trash2, Lock,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { getBusinessProfile, saveBusinessProfile } from '../lib/businessProfile'
+import {
+  getBusinessProfile, saveBusinessProfile,
+  listBusinessEntities, createBusinessEntity, activateBusinessEntity, deleteBusinessEntity,
+} from '../lib/businessProfile'
 import './StartBusiness.css'
+
+const PLAN_LABEL = { free: 'Free', starter: 'Core', pro: 'Pro', team: 'Team' }
 
 // Foundation steps apply no matter what's being sold — structure, state
 // registration, EIN, a separate bank account, basic bookkeeping. These are
@@ -136,20 +142,84 @@ export default function StartBusiness() {
   // have you" instead of asking from scratch.
   const [knownBusinessName, setKnownBusinessName] = useState(null)
 
+  // Multi-entity — business_profiles above stays a mirror of whichever
+  // entity is active, so switching just reloads it; the cap is tier-gated
+  // server-side (Free/Core = 1, Pro = 3, Team = unlimited).
+  const [entities, setEntities] = useState([])
+  const [entityLimit, setEntityLimit] = useState(1)
+  const [plan, setPlan] = useState('free')
+  const [busy, setBusy] = useState(false)
+  const [entityError, setEntityError] = useState('')
+
+  async function loadProfile() {
+    if (!userId) return
+    const profile = await getBusinessProfile(userId)
+    if (!profile) return
+    setPath(profile.biz_path || null)
+    setDone(profile.checklist || {})
+    setKnownBusinessName(profile.business_name || null)
+  }
+
+  async function loadEntities() {
+    if (!userId) return
+    const { entities: list, limit, plan: p } = await listBusinessEntities(userId)
+    setEntities(list || [])
+    setEntityLimit(limit)
+    setPlan(p || 'free')
+  }
+
   // Loaded from the shared business profile (Start/Wallet/Rewards all read
   // and write this same backend record) instead of per-tool localStorage,
   // so progress here is visible to — and from — the other tools.
   useEffect(() => {
     if (!userId) return
     let cancelled = false
-    getBusinessProfile(userId).then(profile => {
-      if (cancelled || !profile) return
-      setPath(profile.biz_path || null)
-      setDone(profile.checklist || {})
-      setKnownBusinessName(profile.business_name || null)
+    Promise.resolve().then(async () => {
+      if (cancelled) return
+      await loadProfile()
+      if (cancelled) return
+      await loadEntities()
     })
     return () => { cancelled = true }
   }, [userId])
+
+  const atCap = entityLimit !== null && entities.length >= entityLimit
+
+  async function handleAddBusiness() {
+    if (busy || atCap) return
+    setEntityError('')
+    setBusy(true)
+    const name = window.prompt('Name this business (you can change it later):', '')
+    if (name === null) { setBusy(false); return }
+    const result = await createBusinessEntity(userId, name.trim() || null)
+    setBusy(false)
+    if (!result.ok) { setEntityError(result.error || 'Could not create business'); return }
+    await loadEntities()
+    await loadProfile()
+  }
+
+  async function handleSwitchEntity(entity) {
+    if (busy || entity.active) return
+    setBusy(true)
+    setEntityError('')
+    const ok = await activateBusinessEntity(userId, entity.id)
+    setBusy(false)
+    if (!ok) { setEntityError('Could not switch businesses'); return }
+    await loadEntities()
+    await loadProfile()
+  }
+
+  async function handleDeleteEntity(entity) {
+    if (busy) return
+    if (!window.confirm(`Remove "${entity.business_name || 'this business'}"? This can't be undone.`)) return
+    setBusy(true)
+    setEntityError('')
+    const result = await deleteBusinessEntity(userId, entity.id)
+    setBusy(false)
+    if (!result.ok) { setEntityError(result.error || 'Could not remove business'); return }
+    await loadEntities()
+    await loadProfile()
+  }
 
   function choosePath(p) {
     setPath(p)
@@ -196,6 +266,43 @@ export default function StartBusiness() {
             <h1>Start your business</h1>
             <p>Not registered yet? Start here. This is general information to point you to the right official source — not legal or tax advice, and requirements vary by state, so confirm specifics for your situation.</p>
           </div>
+        </div>
+
+        <div className="pp-card sb-entities-card">
+          <div className="pp-card-head">
+            <Building2 size={16} /> <span>Your businesses</span>
+            <span className="sb-plan-chip">{PLAN_LABEL[plan] || 'Free'} plan · {entityLimit === null ? 'unlimited' : `${entities.length}/${entityLimit}`}</span>
+          </div>
+          <p className="pp-note pp-note-block">
+            Each business gets its own profile, structure, checklist, and Wallet card. Switch between them any time —
+            the rest of FASS Flow follows whichever one is active.
+          </p>
+          <div className="sb-entity-grid">
+            {entities.map(entity => (
+              <div key={entity.id} className={`sb-entity-chip ${entity.active ? 'active' : ''}`}>
+                <button type="button" className="sb-entity-main" onClick={() => handleSwitchEntity(entity)} disabled={busy}>
+                  <Building2 size={15} />
+                  <span>{entity.business_name || 'Unnamed business'}</span>
+                  {entity.active && <span className="sb-entity-active-dot" aria-label="Active" />}
+                </button>
+                {entities.length > 1 && (
+                  <button type="button" className="sb-entity-delete" onClick={() => handleDeleteEntity(entity)} disabled={busy} aria-label="Remove business">
+                    <Trash2 size={13} />
+                  </button>
+                )}
+              </div>
+            ))}
+            <button type="button" className="sb-entity-add" onClick={handleAddBusiness} disabled={busy || atCap}>
+              {atCap ? <Lock size={14} /> : <Plus size={14} />}
+              {atCap ? `Upgrade for more (${PLAN_LABEL[plan] || 'Free'} plan allows ${entityLimit})` : 'Add another business'}
+            </button>
+          </div>
+          {entityError && <p className="pp-note" style={{ color: 'var(--danger, #c0392b)' }}>{entityError}</p>}
+          {atCap && (
+            <p className="pp-note pp-note-block">
+              Running more than one business? <a href="/pricing">Pro</a> covers up to 3, Team is unlimited.
+            </p>
+          )}
         </div>
 
         {knownBusinessName && (

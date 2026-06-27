@@ -104,7 +104,7 @@ export default function Nav() {
           ) : (
             <>
               <a href="/signin" className="nav-login">Log In</a>
-              <a href="/masterclass" className="btn-primary nav-book">Get Started</a>
+              <a href="/signin" className="btn-primary nav-book">Get Started</a>
             </>
           )}
         </div>
@@ -129,7 +129,7 @@ export default function Nav() {
           ) : (
             <>
               <a href="/signin" onClick={() => setOpen(false)}>Log In</a>
-              <a href="/masterclass" className="btn-primary" style={{ marginTop: 8 }}>Get Started</a>
+              <a href="/signin" className="btn-primary" style={{ marginTop: 8 }}>Get Started</a>
             </>
           )}
         </div>

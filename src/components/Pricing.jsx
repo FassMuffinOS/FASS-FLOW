@@ -7,42 +7,46 @@ import './Pricing.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
 
-// "Lite" is the impulse-buy entry point — same price point as the
-// budget govcon-matching tools it competes with directly, but capped on
-// purpose: read-only opportunity matches (no saved-search alerts) and 1
-// AI synthesis per billing cycle, enforced server-side in /ai/*. It exists
-// to catch the same low-intent traffic those tools catch, then upsell into
-// Core once someone's actually chasing a bid.
+// Offer architecture: one platform, three lanes — Win Work (GovCon),
+// Execute Work (field/job tools), Grow Customers (Wallet/loyalty). Wallet
+// is deliberately surfaced here instead of buried in its own page — it's
+// what makes Pro's $200/mo read as cheap once someone sees gift cards,
+// campaigns, and push messaging are already in the price.
+//
+// "Free" replaces the old paid "Lite" tier — no Stripe checkout at all,
+// profiles.plan already defaults to 'free' in the schema, and quota.py
+// gates the 1-AI-synthesis-per-cycle cap on plan === 'free' directly.
+// "starter"/"pro"/"team" keys are unchanged from the previous tiers, so
+// existing Stripe price IDs and webhook plan-mapping keep working as-is.
 const PLANS = [
   {
-    key: 'lite',
-    name: 'Lite',
-    price: 9.99,
-    tagline: 'See what\'s out there',
+    key: 'free',
+    name: 'Free',
+    price: 0,
+    tagline: 'Get started',
     color: 'default',
     features: [
-      'Matched opportunity feed (read-only)',
+      'Business profile',
+      '1 Wallet card',
+      'Basic customer capture',
+      'Limited Academy preview',
       '1 AI scope/bid synthesis per billing cycle',
-      'No saved-search alerts',
-      'No proposal pipeline or team tools',
-      'Upgrade anytime — nothing to migrate',
     ],
-    cta: 'Start free trial',
+    cta: 'Get started free',
   },
   {
     key: 'starter',
     name: 'Core',
     price: 99,
-    tagline: 'Actually chase the bid',
+    tagline: 'Start winning work',
     color: 'default',
     features: [
-      'Full Academy access (all courses)',
-      'Wardog opportunity alerts (10/mo)',
-      'Unlimited AI synthesis (R-E-A-D, FASS FILL, Show Me The Money)',
-      'Basic bid templates',
-      '1 active proposal',
-      'SAM.gov profile auto-fill',
-      'Email support',
+      'Wardog opportunity alerts',
+      'Pipeline tracking',
+      'Basic proposal tools',
+      '3 Wallet campaigns / mo',
+      'Basic Witness performance tracking',
+      'Full Academy access',
     ],
     cta: 'Start free trial',
   },
@@ -50,17 +54,18 @@ const PLANS = [
     key: 'pro',
     name: 'Pro',
     price: 200,
-    tagline: 'Bid and win',
+    tagline: 'Run the full business',
     color: 'featured',
     badge: 'Most Popular',
     features: [
       'Everything in Core',
-      'Unlimited opportunity alerts',
-      'Advanced proposal builder + AI assist',
-      'Unlimited active proposals',
+      'Procure',
       'Fill — full form automation',
-      'Witness performance tracker',
-      'Priority support + live chat',
+      'Foreman — execution documentation, RFIs, pay apps',
+      'Unlimited Wallet campaigns',
+      'Gift cards',
+      'Push messages',
+      'AI proposal support',
     ],
     cta: 'Start free trial',
   },
@@ -68,16 +73,15 @@ const PLANS = [
     key: 'team',
     name: 'Team',
     price: 499,
-    tagline: 'Scale your pipeline',
+    tagline: 'Scale operations',
     color: 'navy',
     features: [
       'Everything in Pro',
-      'Up to 10 team seats',
-      'Team proposal collaboration',
-      'Custom NAICS + keyword filters',
-      'API access',
-      'Dedicated account manager',
-      'White-label client reports',
+      'Multi-user / crew & staff access',
+      'Cohort & team management',
+      'Advanced reporting',
+      'Stripe Connect payouts',
+      'Priority support',
     ],
     cta: 'Contact sales',
   },
@@ -92,6 +96,12 @@ export default function Pricing() {
   async function handleCta(plan) {
     if (plan.key === 'team') {
       window.location.href = 'mailto:admin@fass.systems?subject=FASS%20Flow%20Team%20plan'
+      return
+    }
+    if (plan.key === 'free') {
+      // No Stripe checkout for Free — profiles.plan already defaults to
+      // 'free' server-side, so this is just account creation/sign-in.
+      navigate(session?.user ? '/dashboard' : '/signin')
       return
     }
     if (!session?.user) {
@@ -128,7 +138,7 @@ export default function Pricing() {
           <span className="section-label">Pricing</span>
           <h2 className="pricing-title">Simple, transparent pricing</h2>
           <p className="pricing-desc">
-            Start free for 14 days. No credit card required. Cancel anytime.
+            Start free, no credit card required. Every paid plan also includes a 14-day trial — cancel anytime.
           </p>
         </Reveal>
 
@@ -151,9 +161,15 @@ export default function Pricing() {
                 <div className="plan-name">{plan.name}</div>
                 <div className="plan-tagline">{plan.tagline}</div>
                 <div className="plan-price-row">
-                  <span className="plan-currency">$</span>
-                  <span className="plan-price">{plan.price}</span>
-                  <span className="plan-period">/mo</span>
+                  {plan.price === 0 ? (
+                    <span className="plan-price">Free</span>
+                  ) : (
+                    <>
+                      <span className="plan-currency">$</span>
+                      <span className="plan-price">{plan.price}</span>
+                      <span className="plan-period">/mo</span>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -181,7 +197,7 @@ export default function Pricing() {
         {error && <p className="pricing-note" style={{ color: 'var(--danger, #c0392b)' }}>{error}</p>}
 
         <p className="pricing-note">
-          All plans include a 14-day free trial. Federal contractor? Ask about our procurement vehicle discounts.
+          Paid plans include a 14-day free trial. Federal contractor? Ask about our procurement vehicle discounts.
         </p>
       </div>
     </section>

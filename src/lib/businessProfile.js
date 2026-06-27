@@ -34,3 +34,61 @@ export async function saveBusinessProfile(userId, fields) {
     return false
   }
 }
+
+// ── Multi-entity (tiered) ──
+// business_profiles above stays a mirror of whichever entity is "active" —
+// these calls manage the real multi-business list behind it. Free/Core get
+// 1 entity, Pro gets 3, Team is unlimited (enforced server-side).
+
+export async function listBusinessEntities(userId) {
+  if (!userId || !API_BASE) return { entities: [], limit: 1, plan: 'free' }
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/business-profile/entities?user_id=${userId}`)
+    if (!res.ok) return { entities: [], limit: 1, plan: 'free' }
+    return await res.json()
+  } catch {
+    return { entities: [], limit: 1, plan: 'free' }
+  }
+}
+
+export async function createBusinessEntity(userId, businessName) {
+  if (!userId || !API_BASE) return { ok: false }
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/business-profile/entities`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, business_name: businessName || null }),
+    })
+    const data = await res.json().catch(() => null)
+    if (!res.ok) return { ok: false, error: data?.detail || 'Could not create business' }
+    return { ok: true, entity: data }
+  } catch {
+    return { ok: false, error: 'Could not create business' }
+  }
+}
+
+export async function activateBusinessEntity(userId, entityId) {
+  if (!userId || !entityId || !API_BASE) return false
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/business-profile/entities/${entityId}/activate?user_id=${userId}`, {
+      method: 'POST',
+    })
+    return res.ok
+  } catch {
+    return false
+  }
+}
+
+export async function deleteBusinessEntity(userId, entityId) {
+  if (!userId || !entityId || !API_BASE) return { ok: false }
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/business-profile/entities/${entityId}?user_id=${userId}`, {
+      method: 'DELETE',
+    })
+    const data = await res.json().catch(() => null)
+    if (!res.ok) return { ok: false, error: data?.detail || 'Could not remove business' }
+    return { ok: true }
+  } catch {
+    return { ok: false, error: 'Could not remove business' }
+  }
+}

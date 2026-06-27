@@ -1,0 +1,141 @@
+/* Custom branded cursor — public landing page only. Native cursor is hidden
+   via body.fass-cursor-active (toggled in FassCursor.jsx's effect), so it
+   never affects the signed-in app where FassCursor isn't mounted. */
+
+body.fass-cursor-active,
+body.fass-cursor-active * {
+  cursor: none !important;
+}
+
+.fass-cursor-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.fc-core {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4fe3ad;
+  box-shadow: 0 0 10px 2px rgba(79, 227, 173, 0.85), 0 0 22px 6px rgba(29, 158, 117, 0.45);
+  transition: width 0.18s ease, height 0.18s ease, background 0.18s ease;
+  will-change: transform;
+}
+.fc-core.fc-down {
+  width: 10px;
+  height: 10px;
+  background: #ffffff;
+}
+
+.fc-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+  will-change: transform;
+}
+.fc-ring.fc-hidden {
+  opacity: 0;
+}
+.fc-hex {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: rgba(79, 227, 173, 0.55);
+  stroke-width: 1.4;
+  animation: fc-hex-spin 9s linear infinite;
+  transition: stroke 0.2s ease;
+}
+.fc-ring.fc-hover .fc-hex {
+  stroke: rgba(255, 255, 255, 0.9);
+  animation-duration: 2.4s;
+}
+
+@keyframes fc-hex-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.fc-trail-node {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 2px;
+  background: rgba(79, 227, 173, calc(0.5 - var(--i) * 0.09));
+  transform: rotate(45deg);
+  will-change: transform;
+}
+
+.fc-ripple-layer {
+  position: fixed;
+  inset: 0;
+}
+/* Click pulse — punchy white-hot core cooling into emerald, reads as a
+   "confirm" tap distinct from the hover lock-on below. */
+.fc-ripple {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 0 rgba(79, 227, 173, 0.5);
+  animation: fc-ripple-out 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+@keyframes fc-ripple-out {
+  from {
+    width: 8px; height: 8px; margin: -4px 0 0 -4px;
+    border-color: rgba(255, 255, 255, 0.95);
+    opacity: 0.9;
+  }
+  60% {
+    border-color: rgba(79, 227, 173, 0.75);
+  }
+  to {
+    width: 58px; height: 58px; margin: -29px 0 0 -29px;
+    border-color: rgba(79, 227, 173, 0);
+    opacity: 0;
+  }
+}
+
+/* Hover "lock-on" pulse — warm amber burst that fires once on the
+   transition into an interactive target, separate from the cool
+   emerald/white click confirm. */
+.fc-pulse-hover {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(224, 158, 67, 0.85);
+  box-shadow: 0 0 12px 2px rgba(224, 158, 67, 0.35);
+  animation: fc-pulse-hover-out 0.46s ease-out forwards;
+}
+@keyframes fc-pulse-hover-out {
+  from {
+    width: 14px; height: 14px; margin: -7px 0 0 -7px;
+    opacity: 0.95;
+    border-color: rgba(224, 158, 67, 0.9);
+  }
+  to {
+    width: 46px; height: 46px; margin: -23px 0 0 -23px;
+    opacity: 0;
+    border-color: rgba(224, 158, 67, 0);
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .fass-cursor-layer { display: none; }
+}

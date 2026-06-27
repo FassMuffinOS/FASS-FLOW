@@ -32,6 +32,59 @@
   line-height: 1.7;
 }
 
+/* Lane grouping — Win Work / Execute Work / Grow Customers */
+.hiw-lane {
+  margin-bottom: 56px;
+}
+.hiw-lane:last-child {
+  margin-bottom: 0;
+}
+
+.hiw-lane-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hiw-lane-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--navy);
+  color: var(--teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hiw-lane-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gray-400);
+  margin-bottom: 2px;
+}
+
+.hiw-lane-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+
+.hiw-lane-desc {
+  font-size: 0.9rem;
+  color: var(--gray-600);
+  line-height: 1.6;
+  max-width: 560px;
+}
+
 /* Steps list */
 .hiw-steps {
   display: flex;

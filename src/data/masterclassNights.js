@@ -33,6 +33,14 @@ export const MASTERCLASS_NIGHTS = [
       },
     ],
     homework: 'Go to sam.gov/content/opportunities. Search your type of work — cleaning, staffing, food service, event support, logistics. Read three opportunity titles and their descriptions. Write down what you notice.',
+    worksheet: [
+      'NAICS code / service type you searched',
+      'Opportunity #1 — title and agency',
+      'Opportunity #2 — title and agency',
+      'Opportunity #3 — title and agency',
+      'Pattern you noticed (set-aside type, dollar range, deadline pattern)',
+      'One agency to research before Night 2',
+    ],
     takeaways: [
       'Government is the largest buyer in the country and is required by law to spend with small businesses',
       'The barrier is not skill — it is knowledge, registration, and process',
@@ -70,6 +78,14 @@ export const MASTERCLASS_NIGHTS = [
       },
     ],
     homework: 'Complete or begin your SAM.gov registration. If already registered, log in and verify your NAICS codes are correct. Screenshot your entity status page and bring it to Night 3.',
+    worksheet: [
+      'UEI (once assigned)',
+      'EIN on file? Y/N',
+      'NAICS codes selected (list all)',
+      'SAM.gov registration status (in progress / active / pending)',
+      'eMMA vendor profile created? Y/N',
+      'Documents still missing',
+    ],
     takeaways: [
       'UEI is your federal identity — free to get, required for everything',
       'SAM.gov registration takes 45–90 minutes and activates in 7–10 days',
@@ -107,6 +123,12 @@ export const MASTERCLASS_NIGHTS = [
       },
     ],
     homework: 'Research your MBE eligibility at mdot.maryland.gov/MBE. Download the application checklist. List the three documents you do not have yet and need to gather.',
+    worksheet: [
+      'MBE eligibility (Y/N/unsure)',
+      'Maryland Small Business Reserve self-certification completed? Y/N',
+      'Three documents needed for MBE application',
+      'Target certification order (1st, 2nd, 3rd)',
+    ],
     takeaways: [
       'Maryland Small Business Reserve self-certification is free and takes 20 minutes — do it today',
       'MBE certification opens subcontracting income before you ever win a prime contract',
@@ -144,6 +166,14 @@ export const MASTERCLASS_NIGHTS = [
       },
     ],
     homework: 'Complete your capabilities statement draft. It should be one to two pages, include all six sections, and have zero placeholder text remaining. Bring it to Night 5 for peer review.',
+    worksheet: [
+      'Company profile section complete? Y/N',
+      'NAICS codes + set-aside status listed? Y/N',
+      'Core competencies (3–5 lines)',
+      'Differentiators — what makes you different',
+      'Past performance entries drafted (list 1–3)',
+      'Contact info verified? Y/N',
+    ],
     takeaways: [
       'A capabilities statement is the single most important document a government contractor can have',
       'Six required sections: company profile, NAICS codes, core competencies, differentiators, past performance, contact',
@@ -181,6 +211,13 @@ export const MASTERCLASS_NIGHTS = [
       },
     ],
     homework: 'Send your finalized capabilities statement to one agency small business office or prime contractor subcontracting contact before Night 6. Document who you sent it to and when.',
+    worksheet: [
+      'Recipient name and agency/company',
+      'Contact role (small business liaison / prime / PTAC)',
+      'Date sent',
+      'Method (email / portal / in person)',
+      'Follow-up date planned',
+    ],
     takeaways: [
       'Contracting officers spend 60–90 seconds on first read — your document must answer four questions immediately',
       'Vague language, unverified certifications, and missing sections are the most common disqualifiers',
@@ -218,6 +255,14 @@ export const MASTERCLASS_NIGHTS = [
       },
     ],
     homework: 'Find one real open solicitation on SAM.gov or eMMA in your NAICS code. Complete the full Opportunity Response Worksheet for it — or run it through FASS FILL. Bring it to Night 7.',
+    worksheet: [
+      'Solicitation number',
+      'Agency',
+      'Due date',
+      'Set-aside type',
+      'Every "shall" / "must" requirement found (list each)',
+      'Amendments acknowledged? Y / N / none posted',
+    ],
     takeaways: [
       'Read solicitations in order: cover page → set-aside → due date → SOW → evaluation factors → price schedule → instructions',
       'Highlight every ‘shall’ and ‘must’ — these are your mandatory requirements and disqualifiers',
@@ -251,6 +296,15 @@ export const MASTERCLASS_NIGHTS = [
       },
     ],
     homework: 'Apply all six bid/no-bid questions to the solicitation you found for Night 6 — or use FASS Flow’s R-E-A-D tool. Write your decision (bid, no-bid, or hold) with the specific reason for each question. Bring to Night 8.',
+    worksheet: [
+      'Can FASS legally bid today? Y / N',
+      'Can FASS meet every mandatory requirement? Y / N',
+      'Can FASS source and verify labor/providers/vendors before pricing? Y / N',
+      'Enough time for a compliant package? Y / N',
+      'Does margin justify the cash-flow exposure and risk? Y / N',
+      'Can FASS substantiate every claim, reference, and certification? Y / N',
+      'Final decision: BID / NO-BID / HOLD — and why',
+    ],
     takeaways: [
       'The bid/no-bid decision protects your time, money, and reputation',
       'Six questions — all six must clear before you commit',
@@ -288,6 +342,16 @@ export const MASTERCLASS_NIGHTS = [
       },
     ],
     homework: 'Build a complete bottom-up price for the solicitation you have been tracking. Show every line item. Bring the price build to Night 9.',
+    worksheet: [
+      'Direct labor / provider cost',
+      'Payroll burden (taxes, workers comp, liability insurance, fringe)',
+      'Project management / oversight line item',
+      'Equipment / supplies cost',
+      'Vendor / subcontractor quotes',
+      'Mobilization cost (mileage, parking, training, background checks)',
+      'Margin / fee',
+      'Total price',
+    ],
     takeaways: [
       'Price from the scope up — never from a target number down',
       'Every component must appear as a line item: labor, burden, overhead, management, supplies, mobilization',
@@ -325,6 +389,14 @@ export const MASTERCLASS_NIGHTS = [
       },
     ],
     homework: 'Draft the technical narrative for your solicitation using FASS Flow’s proposal outline scaffold. It should mirror the solicitation’s evaluation headings. Bring a complete draft to Night 10.',
+    worksheet: [
+      'Section L structure mirrored in your response? Y / N',
+      'Scope understanding — one paragraph summary',
+      'Technical / work plan — one paragraph summary',
+      'Staffing and supervision — one paragraph summary',
+      'Past performance entries finalized (client, value, period, scope, outcome, contact)',
+      'Proposal Assembly Checklist run? Y / N',
+    ],
     takeaways: [
       'Mirror the solicitation’s headings exactly — evaluators score in order',
       'Every claim must be specific, quantified, and verifiable — vague language scores zero',
@@ -362,6 +434,12 @@ export const MASTERCLASS_NIGHTS = [
       },
     ],
     homework: 'Write your 90-day post-award plan. What is the first contract you realistically target — state, local, or sub? What steps do you take in the next 30 days to be ready to execute the moment an award comes?',
+    worksheet: [
+      'First contract realistically targeted (state / local / sub)',
+      'Steps in the next 30 days to be execution-ready',
+      'MBE subcontracting opportunities being pursued',
+      'Who owns documentation and closeout for this contract',
+    ],
     takeaways: [
       'Government contracts are legal obligations — performance failures are documented and follow your company',
       'Every job deserves the full FASS closeout process: mobilize, deploy, manage, close out with evidence',

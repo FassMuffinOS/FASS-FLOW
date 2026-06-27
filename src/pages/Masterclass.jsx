@@ -1,4 +1,6 @@
-import { ArrowRight, Check } from 'lucide-react'
+import { useState } from 'react'
+import { ArrowRight, Check, Lock, Download, Award, ClipboardCheck } from 'lucide-react'
+import { MASTERCLASS_NIGHTS } from '../data/masterclassNights'
 import './Masterclass.css'
 
 // ── Replace this with your real Stripe Payment Link once created ──
@@ -11,18 +13,17 @@ const FULL_PRICE = 350
 const PROMO_PRICE = 175
 const PROMO_LABEL = 'Founding 100 pricing — 50% off while we scale'
 
-const NIGHTS = [
-  { n: '01', title: 'Why government contracts exist for you', body: 'Who buys services from small businesses, why set-asides matter, and why the market is larger than you think.' },
-  { n: '02', title: 'Entity registration: SAM.gov and Maryland eMMA', body: 'Step-by-step registration, common mistakes that kill eligibility, and what active status actually means.' },
-  { n: '03', title: 'NAICS codes and capability profile', body: 'Choosing the right codes for your service, building a capability statement that matches what agencies are buying.' },
-  { n: '04', title: 'Reading a solicitation', body: 'How to open an RFQ or IFB and immediately identify scope, eligibility requirements, evaluation criteria, and red flags.' },
-  { n: '05', title: 'The R-E-A-D bid/no-bid decision', body: 'Six questions that tell you whether to pursue an opportunity before you spend a single hour writing.' },
-  { n: '06', title: 'Pricing government work', body: 'How to build a price that covers your costs, meets the solicitation, and doesn\'t lose money on delivery.' },
-  { n: '07', title: 'Assembling a compliant response', body: 'Required forms, technical narrative, staffing plan, cover letter — what goes in and what order it needs to be in.' },
-  { n: '08', title: 'WARDOG: finding qualified opportunities daily', body: 'How FASS monitors SAM.gov and eMMA for notices that match your real capacity and geography.' },
-  { n: '09', title: 'Execution readiness: preparing to perform after award', body: 'Crew planning, provider coordination, reporting requirements, and the evidence you need to collect from day one.' },
-  { n: '10', title: 'Building past performance that compounds', body: 'How to document each completed contract so the next pursuit is easier — the FASS WITNESS closeout system.' },
-]
+// Per-night summaries now pulled straight from the real curriculum data that
+// powers the Classroom — same titles, same subtitles, same lesson count. The
+// sales page no longer says less than the product actually delivers.
+const NIGHTS = MASTERCLASS_NIGHTS.map(night => ({
+  n: String(night.n).padStart(2, '0'),
+  title: night.title,
+  body: night.subtitle,
+  lessons: night.sections.length,
+  objectives: night.objectives.length,
+  hasWorksheet: (night.worksheet || []).length > 0,
+}))
 
 const FOR_YOU_IF = [
   'You own a service business in Maryland or the DC Metro area',
@@ -38,19 +39,26 @@ const NOT_FOR_YOU_IF = [
 ]
 
 export default function Masterclass() {
+  const [sampleNight, setSampleNight] = useState(1)
+  const night = MASTERCLASS_NIGHTS.find(n => n.n === sampleNight) || MASTERCLASS_NIGHTS[0]
+
   return (
     <div className="mc">
 
       {/* ── Hero ── */}
       <section className="mc-hero">
         <div className="container mc-hero-inner">
-          <span className="mc-label">FASS Masterclass</span>
+          <span className="mc-label">FASS Masterclass — Launch Accelerator</span>
           <h1 className="mc-headline">
             10 nights. Everything you need to compete for government contracts.
           </h1>
           <p className="mc-subhead">
             Most service businesses lose before they start — wrong codes, wrong forms, no bid discipline.
             This Masterclass fixes that. We assume you know nothing and build the foundation correctly.
+          </p>
+          <p className="mc-subhead" style={{ marginTop: 4 }}>
+            A guided launch program, not a subscription tier — includes the workbook, live setup help, and
+            building your first real pipeline inside FASS Flow by night 10.
           </p>
           <span className="mc-promo-badge">{PROMO_LABEL}</span>
           <div className="mc-price-block">
@@ -103,13 +111,119 @@ export default function Masterclass() {
           <span className="mc-label">The curriculum</span>
           <h2 className="mc-section-title mc-nights-title">What you learn, night by night</h2>
           <div className="mc-nights-grid">
-            {NIGHTS.map(night => (
-              <div className="mc-night-card" key={night.n}>
-                <span className="mc-night-num">Night {night.n}</span>
-                <h3 className="mc-night-title">{night.title}</h3>
-                <p className="mc-night-body">{night.body}</p>
+            {NIGHTS.map(n => (
+              <div className="mc-night-card" key={n.n}>
+                <span className="mc-night-num">Night {n.n}</span>
+                <h3 className="mc-night-title">{n.title}</h3>
+                <p className="mc-night-body">{n.body}</p>
+                <div className="mc-night-meta">
+                  <span>{n.objectives} objectives</span>
+                  <span>{n.lessons} lessons</span>
+                  {n.hasWorksheet && <span><ClipboardCheck size={12} /> Worksheet</span>}
+                </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Proof of depth: a real night, in full ── */}
+      <section className="mc-sample">
+        <div className="container">
+          <span className="mc-label">See it for yourself</span>
+          <h2 className="mc-section-title mc-nights-title">
+            This isn't a webinar. Here's an actual night, unlocked.
+          </h2>
+          <p className="mc-sample-intro">
+            Every night in the Classroom looks like this — real objectives, real teaching, a real homework
+            assignment, a printable worksheet, and a place to track what you did. Pick any night below to see it.
+          </p>
+
+          <div className="mc-sample-picker">
+            {MASTERCLASS_NIGHTS.map(n => (
+              <button
+                key={n.n}
+                className={`mc-sample-pick ${sampleNight === n.n ? 'active' : ''}`}
+                onClick={() => setSampleNight(n.n)}
+              >
+                {n.n}
+              </button>
+            ))}
+          </div>
+
+          <div className="mc-sample-card">
+            <div className="mc-sample-head">
+              <span className="mc-night-num">Week {night.week} · Night {night.n}</span>
+              <h3>{night.title}</h3>
+              <p>{night.subtitle}</p>
+            </div>
+
+            <div className="mc-sample-block">
+              <h4>Objectives</h4>
+              <ul>
+                {night.objectives.map((o, i) => <li key={i}>{o}</li>)}
+              </ul>
+            </div>
+
+            {night.sections.slice(0, 2).map((s, i) => (
+              <div className="mc-sample-block" key={i}>
+                <h4>{s.heading}</h4>
+                <p>{s.body}</p>
+              </div>
+            ))}
+            {night.sections.length > 2 && (
+              <p className="mc-sample-more">
+                + {night.sections.length - 2} more lesson{night.sections.length - 2 === 1 ? '' : 's'} this night, unlocked in the Classroom.
+              </p>
+            )}
+
+            <div className="mc-sample-block">
+              <h4>Homework</h4>
+              <p>{night.homework}</p>
+            </div>
+
+            {night.worksheet && night.worksheet.length > 0 && (
+              <div className="mc-sample-block">
+                <h4><Download size={13} /> Downloadable worksheet — fields you fill in</h4>
+                <ul className="mc-sample-worksheet">
+                  {night.worksheet.map((w, i) => <li key={i}>{w}</li>)}
+                </ul>
+              </div>
+            )}
+
+            <div className="mc-sample-locked">
+              <Lock size={13} /> Night {night.n + 1 > MASTERCLASS_NIGHTS.length ? '—' : night.n + 1} unlocks once this one is marked complete.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── How it's tracked ── */}
+      <section className="mc-mechanics">
+        <div className="container mc-mechanics-inner">
+          <span className="mc-label">How the 10 nights actually work</span>
+          <h2 className="mc-section-title mc-nights-title">Built like a class, not a video library</h2>
+          <div className="mc-mechanics-grid">
+            <div className="mc-mech-card">
+              <Lock size={18} />
+              <h3>Sequential unlock</h3>
+              <p>Night 2 doesn't open until Night 1 is marked complete. No skipping ahead and missing the foundation.</p>
+            </div>
+            <div className="mc-mech-card">
+              <ClipboardCheck size={18} />
+              <h3>Real homework, every night</h3>
+              <p>Each night ends with an assignment tied to your actual business — your NAICS code, your solicitation, your price.</p>
+            </div>
+            <div className="mc-mech-card">
+              <Download size={18} />
+              <h3>Printable worksheets</h3>
+              <p>Every night has a downloadable worksheet with the exact fields to fill in — no guessing what "homework" means.</p>
+            </div>
+            <div className="mc-mech-card">
+              <Award size={18} />
+              <h3>Certificate of Completion</h3>
+              <p>Finish all 10 nights and get a Certificate of Completion from FASS Technologies LLC, downloadable on the spot.</p>
+            </div>
           </div>
         </div>
       </section>

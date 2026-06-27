@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase'
 import {
   ArrowLeft, Sun, Moon, Lock, CheckCircle2, ChevronDown,
   ChevronUp, BookOpen, Target, ClipboardCheck, Star, Unlock, Rocket,
+  Download, Award,
 } from 'lucide-react'
 import { MASTERCLASS_NIGHTS } from '../data/masterclassNights'
 import './Classroom.css'
@@ -120,6 +121,83 @@ export default function Classroom() {
 
   const pct = Math.round((completedCount / MASTERCLASS_NIGHTS.length) * 100)
 
+  function printWorksheet(night) {
+    const items = night.worksheet || []
+    const w = window.open('', '_blank')
+    if (!w) return
+    w.document.write(`
+      <html>
+        <head>
+          <title>Night ${night.n} Worksheet — ${night.title}</title>
+          <style>
+            body { font-family: -apple-system, Helvetica, Arial, sans-serif; padding: 48px; color: #14242f; }
+            .eyebrow { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #2a9d8f; font-weight: 700; margin-bottom: 6px; }
+            h1 { font-size: 21px; margin: 0 0 4px; }
+            h2 { font-size: 14px; color: #5b6b75; margin: 0 0 28px; font-weight: 500; }
+            .meta { font-size: 12px; color: #5b6b75; margin-bottom: 32px; border-bottom: 1px solid #d8e2e6; padding-bottom: 16px; }
+            .meta span { margin-right: 28px; }
+            .field { margin: 24px 0; }
+            .field label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+            .field .line { border-bottom: 1px solid #9aa7ad; height: 30px; }
+            footer { margin-top: 48px; font-size: 11px; color: #9aa7ad; }
+            @media print { body { padding: 30px; } }
+          </style>
+        </head>
+        <body>
+          <div class="eyebrow">FASS Masterclass — Week ${night.week}</div>
+          <h1>Night ${night.n}: ${night.title}</h1>
+          <h2>${night.subtitle}</h2>
+          <div class="meta"><span>Name: ____________________________</span><span>Date: ______________</span></div>
+          ${items.map(i => `<div class="field"><label>${i}</label><div class="line"></div></div>`).join('')}
+          <footer>FASS Technologies LLC · 10-Night Government Contracting Masterclass</footer>
+        </body>
+      </html>
+    `)
+    w.document.close()
+    w.focus()
+    setTimeout(() => w.print(), 300)
+  }
+
+  function printCertificate() {
+    const name = session?.user?.user_metadata?.full_name || session?.user?.email || 'Student'
+    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+    const w = window.open('', '_blank')
+    if (!w) return
+    w.document.write(`
+      <html>
+        <head>
+          <title>Certificate of Completion</title>
+          <style>
+            body { font-family: Georgia, 'Times New Roman', serif; margin: 0; padding: 0; }
+            .cert { border: 10px solid #14242f; border-image: none; margin: 36px; padding: 70px 60px; text-align: center; min-height: 70vh; display: flex; flex-direction: column; justify-content: center; }
+            .cert .badge { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #2a9d8f; font-weight: 700; margin-bottom: 24px; }
+            .cert h1 { font-size: 28px; letter-spacing: 0.04em; text-transform: uppercase; color: #14242f; margin: 0 0 36px; }
+            .cert .lead { font-size: 15px; color: #5b6b75; }
+            .cert .name { font-size: 38px; font-weight: bold; margin: 18px 0 28px; color: #14242f; border-bottom: 2px solid #14242f; display: inline-block; padding-bottom: 10px; }
+            .cert .course { font-size: 17px; line-height: 1.6; margin: 8px 0 36px; color: #14242f; }
+            .cert .date { font-size: 13px; color: #5b6b75; margin-top: 8px; }
+            .cert .sig { margin-top: 56px; font-size: 14px; font-weight: 700; color: #14242f; }
+            .cert .sig span { display: block; font-size: 11px; font-weight: 400; color: #9aa7ad; margin-top: 4px; }
+          </style>
+        </head>
+        <body>
+          <div class="cert">
+            <div class="badge">Certificate of Completion</div>
+            <h1>FASS Government Contracting Masterclass</h1>
+            <div class="lead">This certifies that</div>
+            <div class="name">${name}</div>
+            <div class="course">has successfully completed all ten nights of training in<br/>opportunity scoring, compliance, capability statements, pricing, and proposal assembly.</div>
+            <div class="date">Awarded ${date}</div>
+            <div class="sig">FASS Technologies LLC<span>10-Night Government Contracting Masterclass</span></div>
+          </div>
+        </body>
+      </html>
+    `)
+    w.document.close()
+    w.focus()
+    setTimeout(() => w.print(), 300)
+  }
+
   return (
     <div className="cr">
       <header className="cr-header">
@@ -165,19 +243,22 @@ export default function Classroom() {
                 proposal assembly, all of it. WARDOG, R-E-A-D, Pipeline, and FASS FILL are the tools built to run
                 what you just learned, every day, on autopilot.
               </p>
-              {isActive ? (
-                <button className="cr-grad-cta" onClick={() => navigate('/wardog')}>
-                  Go to WARDOG <ArrowLeft size={15} style={{ transform: 'rotate(180deg)' }} />
+              <div className="cr-grad-actions">
+                <button className="cr-cert-btn" onClick={printCertificate}>
+                  <Award size={15} /> Download Certificate of Completion
                 </button>
-              ) : (
-                <>
+                {isActive ? (
+                  <button className="cr-grad-cta" onClick={() => navigate('/wardog')}>
+                    Go to WARDOG <ArrowLeft size={15} style={{ transform: 'rotate(180deg)' }} />
+                  </button>
+                ) : (
                   <button className="cr-grad-cta" disabled={checkingOut} onClick={() => startCheckout('starter')}>
                     {checkingOut ? 'Starting checkout…' : 'Upgrade to FASS Flow — $99/mo'}
                   </button>
-                  <p className="cr-grad-note">14-day free trial. Cancel anytime.</p>
-                  {checkoutError && <p className="cr-grad-error">{checkoutError}</p>}
-                </>
-              )}
+                )}
+              </div>
+              {!isActive && <p className="cr-grad-note">14-day free trial. Cancel anytime.</p>}
+              {checkoutError && <p className="cr-grad-error">{checkoutError}</p>}
             </div>
           ) : earlyUnlocked && !isActive && (
             <div className="cr-early-banner">
@@ -236,6 +317,11 @@ export default function Classroom() {
                         <div className="cr-block">
                           <h4><ClipboardCheck size={14} /> Homework</h4>
                           <p>{night.homework}</p>
+                          {night.worksheet && night.worksheet.length > 0 && (
+                            <button className="cr-worksheet-btn" onClick={() => printWorksheet(night)}>
+                              <Download size={14} /> Download Worksheet
+                            </button>
+                          )}
                         </div>
 
                         <div className="cr-block">
