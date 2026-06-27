@@ -1,0 +1,244 @@
+.nb {
+  min-height: 100vh;
+  background: var(--bg-base);
+  color: var(--text-primary);
+}
+
+.nb-header {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.nb-header-inner {
+  max-width: 920px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+}
+
+.nb-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.nb-back:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.nb-header-center {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+}
+
+.nb-logo-icon { color: var(--teal); font-size: 18px; }
+.nb-logo-text strong { color: var(--teal); }
+
+.nb-main { padding: 32px 24px 80px; }
+.nb-container { max-width: 920px; margin: 0 auto; }
+
+.nb-intro h1 {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0 0 6px;
+}
+
+.nb-intro p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 28px;
+  max-width: 640px;
+}
+
+.nb-rewards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.nb-reward-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.nb-reward-card svg { color: var(--teal); }
+
+.nb-reward-num {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.nb-reward-label {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.nb-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.nb-badge-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--light-teal);
+  border: 1px solid var(--teal);
+  color: var(--teal);
+  border-radius: 14px;
+  padding: 5px 11px;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.nb-synced {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 24px;
+  margin-bottom: 32px;
+}
+
+.nb-synced h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 800;
+  margin: 0 0 8px;
+}
+
+.nb-synced-note {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 14px;
+}
+
+.nb-niche-summary {
+  font-size: 14px;
+  font-style: italic;
+  color: var(--text-primary);
+  margin: 0 0 14px;
+}
+
+.nb-keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.nb-keyword-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.nb-keywords-empty {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.nb-entries h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0 0 16px;
+}
+
+.nb-loading, .nb-empty {
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+.nb-night-group {
+  margin-bottom: 24px;
+}
+
+.nb-night-group h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--teal);
+  margin: 0 0 10px;
+}
+
+.nb-night-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nb-entry {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.nb-entry-insight {
+  border-color: var(--teal);
+  background: var(--light-teal);
+}
+
+.nb-entry-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.nb-entry-insight .nb-entry-tag { color: var(--teal); }
+
+.nb-entry p {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+@media (max-width: 700px) {
+  .nb-rewards-grid { grid-template-columns: 1fr 1fr; }
+}

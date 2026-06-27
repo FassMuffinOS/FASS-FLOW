@@ -7,6 +7,7 @@ import {
   ShieldCheck, LogOut, GraduationCap, IdCard, DollarSign, Network, Mail,
   LifeBuoy, Handshake, Calculator, HardHat, Camera,
   Radar, Images, Trophy, Flame, Menu, X, Send, Lock, ChevronDown, Stamp, Wallet, Rocket, Crop, Megaphone, Gift, Landmark,
+  Sparkles,
 } from 'lucide-react'
 import AlertsBell from './AlertsBell'
 import './AppShell.css'
@@ -61,6 +62,7 @@ const NAV_GROUPS = [
     // straight from /masterclass to /classroom (App.jsx's MasterclassRoute),
     // so Classroom is the only Learn destination a logged-in user needs.
     { name: 'Classroom', icon: BookOpen, to: '/classroom', match: ['/classroom', '/masterclass'], tier: 'locked' },
+    { name: 'My Notebook', icon: Sparkles, to: '/notebook', match: ['/notebook'], tier: 'locked' },
     { name: 'Glossary', icon: GraduationCap, to: '/glossary', match: ['/glossary'], tier: 'free' },
   ] },
   { label: 'Account', items: [

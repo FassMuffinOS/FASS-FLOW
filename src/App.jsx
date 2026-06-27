@@ -19,6 +19,7 @@ import Pipeline from './pages/Pipeline'
 import Awarded from './pages/Awarded'
 import Fill from './pages/Fill'
 import Classroom from './pages/Classroom'
+import Notebook from './pages/Notebook'
 import Glossary from './pages/Glossary'
 import Passport from './pages/Passport'
 import ShowMeTheMoney from './pages/ShowMeTheMoney'
@@ -165,6 +166,9 @@ function AppRoutes() {
       } />
       <Route path="/classroom" element={
         <ProtectedRoute><Classroom /></ProtectedRoute>
+      } />
+      <Route path="/notebook" element={
+        <ProtectedRoute><Notebook /></ProtectedRoute>
       } />
       <Route path="/glossary" element={
         <ProtectedRoute><Glossary /></ProtectedRoute>

@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase'
 import {
   ArrowLeft, Sun, Moon, Lock, CheckCircle2, ChevronDown,
   ChevronUp, BookOpen, Target, ClipboardCheck, Star, Unlock, Rocket,
-  Download, Award,
+  Download, Award, Flame, Zap, Stamp, MessageCircle, Send, Sparkles, Notebook as NotebookIcon,
 } from 'lucide-react'
 import { MASTERCLASS_NIGHTS } from '../data/masterclassNights'
 import './Classroom.css'
@@ -29,7 +29,33 @@ export default function Classroom() {
   const [checkingOut, setCheckingOut] = useState(false)
   const [checkoutError, setCheckoutError] = useState('')
 
+  // Rewards (XP/level/streak/badges/stamps) — the "college class" gamified
+  // layer, computed server-side so the transcript is real, not cosmetic.
+  const [rewards, setRewards] = useState({ xp: 0, level: 1, streak_count: 0, badges: [], stamps: 0 })
+  const [xpToast, setXpToast] = useState(null)
+
+  // Notebook — per-night personalized insight after homework, and a
+  // NotebookLM-style chat scoped to that night's content + the student's
+  // own business profile.
+  const [insights, setInsights] = useState({})       // { [night]: { insight, niche_keywords_added } }
+  const [insightLoading, setInsightLoading] = useState(null)
+  const [chatOpenNight, setChatOpenNight] = useState(null)
+  const [chatMessages, setChatMessages] = useState({}) // { [night]: [{role, content}] }
+  const [chatInput, setChatInput] = useState('')
+  const [chatLoading, setChatLoading] = useState(false)
+
   useEffect(() => { loadProgress() }, [])
+
+  useEffect(() => {
+    const userId = session?.user?.id
+    if (!userId) return
+    let cancelled = false
+    fetch(`${API_BASE}/api/v1/notebook/rewards/mine?user_id=${userId}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (!cancelled && data) setRewards(data) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [session?.user?.id])
 
   useEffect(() => {
     const userId = session?.user?.id
@@ -105,6 +131,88 @@ export default function Classroom() {
       .upsert({ user_id: session.user.id, night: n, homework_notes: notes }, { onConflict: 'user_id,night' })
     await loadProgress()
     setSaving(false)
+
+    const userId = session.user.id
+    const night = MASTERCLASS_NIGHTS.find(nt => nt.n === n)
+
+    // Reward calc is server-side and authoritative — fire-and-forget from
+    // the UI's perspective, but surface a small toast if it actually leveled them up.
+    fetch(`${API_BASE}/api/v1/notebook/complete-night`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, night: n, has_notes: !!notes.trim() }),
+    })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (!data) return
+        setRewards(data)
+        setXpToast({ xp_gain: data.xp_gain, leveled_up: data.leveled_up })
+        setTimeout(() => setXpToast(null), 4000)
+      })
+      .catch(() => {})
+
+    // Personalized insight — only worth asking the AI for if there's
+    // something to react to.
+    if (notes.trim() && night) {
+      setInsightLoading(n)
+      fetch(`${API_BASE}/api/v1/notebook/insight`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId,
+          night: n,
+          night_title: night.title,
+          night_subtitle: night.subtitle,
+          homework_prompt: night.homework,
+          homework_notes: notes,
+        }),
+      })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => { if (data) setInsights(prev => ({ ...prev, [n]: data })) })
+        .catch(() => {})
+        .finally(() => setInsightLoading(null))
+    }
+  }
+
+  async function askNotebook(night) {
+    if (!chatInput.trim() || chatLoading) return
+    const userId = session.user.id
+    const message = chatInput.trim()
+    const history = chatMessages[night.n] || []
+    setChatMessages(prev => ({ ...prev, [night.n]: [...history, { role: 'user', content: message }] }))
+    setChatInput('')
+    setChatLoading(true)
+
+    const nightContext = [
+      `Objectives: ${night.objectives.join('; ')}`,
+      ...night.sections.map(s => `${s.heading}: ${s.body}`),
+      `Homework: ${night.homework}`,
+    ].join('\n')
+
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/notebook/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId,
+          night: night.n,
+          night_title: night.title,
+          night_context: nightContext,
+          message,
+          history,
+        }),
+      })
+      const data = res.ok ? await res.json() : null
+      const reply = data?.reply || "Couldn't reach the Notebook assistant just now — try again in a moment."
+      setChatMessages(prev => ({ ...prev, [night.n]: [...(prev[night.n] || []), { role: 'assistant', content: reply }] }))
+    } catch {
+      setChatMessages(prev => ({
+        ...prev,
+        [night.n]: [...(prev[night.n] || []), { role: 'assistant', content: "Couldn't reach the Notebook assistant just now — try again in a moment." }],
+      }))
+    } finally {
+      setChatLoading(false)
+    }
   }
 
   async function saveNotesOnly(n) {
@@ -234,6 +342,29 @@ export default function Classroom() {
             <span className="cr-progress-label">{completedCount} of {MASTERCLASS_NIGHTS.length} nights complete</span>
           </div>
 
+          <div className="cr-rewards-bar">
+            <div className="cr-reward-pill cr-reward-level">
+              <Zap size={14} /> Level {rewards.level} <span className="cr-reward-sub">{rewards.xp} XP</span>
+            </div>
+            <div className="cr-reward-pill">
+              <Flame size={14} /> {rewards.streak_count || 0}-night streak
+            </div>
+            <div className="cr-reward-pill">
+              <Stamp size={14} /> {rewards.stamps || 0}/{MASTERCLASS_NIGHTS.length} stamps
+            </div>
+            {(rewards.badges || []).length > 0 && (
+              <div className="cr-reward-badges">
+                {rewards.badges.map(b => <span key={b} className="cr-badge-chip">{b.replace(/-/g, ' ')}</span>)}
+              </div>
+            )}
+          </div>
+          {xpToast && (
+            <div className="cr-xp-toast">
+              {xpToast.leveled_up ? <Award size={14} /> : <Zap size={14} />}
+              +{xpToast.xp_gain} XP{xpToast.leveled_up ? ' — Level up!' : ''}
+            </div>
+          )}
+
           {graduated ? (
             <div className="cr-grad">
               <div className="cr-grad-icon"><Rocket size={28} /></div>
@@ -321,6 +452,69 @@ export default function Classroom() {
                             <button className="cr-worksheet-btn" onClick={() => printWorksheet(night)}>
                               <Download size={14} /> Download Worksheet
                             </button>
+                          )}
+                        </div>
+
+                        {insightLoading === night.n && (
+                          <div className="cr-insight cr-insight-loading">
+                            <Sparkles size={14} /> Your Notebook is reading your answer…
+                          </div>
+                        )}
+                        {insights[night.n] && (
+                          <div className="cr-insight">
+                            <h4><Sparkles size={14} /> Your Notebook insight</h4>
+                            <p>{insights[night.n].insight}</p>
+                            {insights[night.n].niche_keywords_added?.length > 0 && (
+                              <div className="cr-insight-keywords">
+                                <span>Saved to your business profile:</span>
+                                {insights[night.n].niche_keywords_added.map(k => (
+                                  <span key={k} className="cr-keyword-chip">{k}</span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="cr-block">
+                          <button
+                            className="cr-notebook-toggle"
+                            onClick={() => setChatOpenNight(chatOpenNight === night.n ? null : night.n)}
+                          >
+                            <MessageCircle size={14} />
+                            Ask the Notebook about Night {night.n}
+                            {chatOpenNight === night.n ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                          </button>
+                          {chatOpenNight === night.n && (
+                            <div className="cr-notebook-chat">
+                              <p className="cr-notebook-hint">
+                                <NotebookIcon size={12} /> Sources: Night {night.n} content + your business profile.
+                                Ask about this lesson, or ask it to apply tonight's lesson to your specific business.
+                              </p>
+                              <div className="cr-chat-log">
+                                {(chatMessages[night.n] || []).length === 0 && (
+                                  <p className="cr-chat-empty">No questions yet — try "How does this apply to my business?"</p>
+                                )}
+                                {(chatMessages[night.n] || []).map((m, i) => (
+                                  <div key={i} className={`cr-chat-msg cr-chat-${m.role}`}>{m.content}</div>
+                                ))}
+                                {chatLoading && chatOpenNight === night.n && (
+                                  <div className="cr-chat-msg cr-chat-assistant cr-chat-typing">Thinking…</div>
+                                )}
+                              </div>
+                              <div className="cr-chat-input-row">
+                                <input
+                                  type="text"
+                                  className="cr-chat-input"
+                                  placeholder="Ask the Notebook…"
+                                  value={chatInput}
+                                  onChange={e => setChatInput(e.target.value)}
+                                  onKeyDown={e => e.key === 'Enter' && askNotebook(night)}
+                                />
+                                <button className="cr-chat-send" onClick={() => askNotebook(night)} disabled={chatLoading}>
+                                  <Send size={14} />
+                                </button>
+                              </div>
+                            </div>
                           )}
                         </div>
 

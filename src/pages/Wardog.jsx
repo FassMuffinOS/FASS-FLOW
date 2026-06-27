@@ -388,6 +388,26 @@ export default function Wardog() {
     return () => { cancelled = true }
   }, [session?.user?.id])
 
+  // Light prefill from the Notebook: once the Masterclass AI assistant has
+  // learned a student's niche keywords from their homework, surface that
+  // here as a suggested search term — but only if the keyword field is
+  // still untouched, same non-overriding rule as the NAICS prefill above.
+  useEffect(() => {
+    if (!session?.user?.id) return
+    let cancelled = false
+    fetch(`${API_BASE}/api/v1/business-profile/mine?user_id=${session.user.id}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (cancelled || !data) return
+        const kws = data.notebook_keywords
+        if (Array.isArray(kws) && kws.length) {
+          setKeyword(prev => prev ? prev : kws[0])
+        }
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [session?.user?.id])
+
   function passesPostFilters(o) {
     if (setAsides.length && !setAsides.includes(o.typeOfSetAside)) return false
     if (procType && o.type !== procType) return false
