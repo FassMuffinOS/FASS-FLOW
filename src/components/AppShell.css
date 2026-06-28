@@ -255,4 +255,10 @@ a.shell-nav-item:hover {
     background: rgba(0,0,0,0.42);
   }
   .shell-email { display: block; }
+
+  /* Leave room for the fixed bottom nav (~58px + safe-area) so the last
+     bit of page content isn't hidden underneath it. */
+  .shell-content {
+    padding-bottom: calc(58px + env(safe-area-inset-bottom));
+  }
 }

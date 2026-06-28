@@ -46,6 +46,7 @@ import ClientProposals from './pages/ClientProposals'
 import PublicEstimate from './pages/PublicEstimate'
 import Capability from './pages/Capability'
 import Profile from './pages/Profile'
+import Activity from './pages/Activity'
 import Rewards from './pages/Rewards'
 import RewardsJoin from './pages/RewardsJoin'
 import WalletCampaigns from './pages/WalletCampaigns'
@@ -304,6 +305,11 @@ function AppRoutes() {
           people search, and Team Up cards. */}
       <Route path="/profile/:userId" element={
         <ProtectedRoute><Profile /></ProtectedRoute>
+      } />
+      {/* Activity tab — backs the persistent bottom nav's "Activity" item.
+          Renders the existing business_events stream chronologically. */}
+      <Route path="/activity" element={
+        <ProtectedRoute><Activity /></ProtectedRoute>
       } />
       <Route path="/comms" element={
         <ProtectedRoute><CommsHub /></ProtectedRoute>

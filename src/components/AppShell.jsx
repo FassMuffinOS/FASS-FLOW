@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import AlertsBell from './AlertsBell'
 import ChatDock from './ChatDock'
+import BottomNav from './BottomNav'
 import './AppShell.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -266,6 +267,10 @@ export default function AppShell({ children }) {
       {/* The full Messages page already has its own inline chat UI + realtime
           subscription, so the floating dock would just duplicate it there. */}
       {!location.pathname.startsWith('/messages') && <ChatDock userId={userId} />}
+      {/* Mobile-only (≤900px) persistent bottom bar — Home/Messages/Network/
+          Activity/Me, present on every authenticated page. Desktop keeps the
+          full sidebar as the only nav. */}
+      <BottomNav userId={userId} />
     </div>
   )
 }

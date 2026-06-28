@@ -1,0 +1,50 @@
+.act {
+  min-height: 100vh;
+  background: #f4f6f8;
+  padding: 32px 16px 60px;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #111827;
+}
+
+.act-wrap { max-width: 640px; margin: 0 auto; }
+
+.act-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 1.4rem; font-weight: 800; margin: 0 0 4px; letter-spacing: -0.02em;
+}
+.act-title svg { color: #581c87; }
+
+.act-sub { font-size: 0.88rem; color: #6b7280; margin: 0 0 22px; }
+
+.act-state {
+  min-height: 30vh; display: flex; align-items: center; justify-content: center; gap: 10px;
+  color: #6b7280; padding: 24px; text-align: center;
+}
+.act-spin { animation: act-spin 1s linear infinite; }
+@keyframes act-spin { to { transform: rotate(360deg); } }
+
+.act-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+
+.act-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+.act-row:last-child { border-bottom: none; }
+
+.act-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #1D9E75;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.act-body { flex: 1; min-width: 0; }
+.act-label { font-size: 0.9rem; font-weight: 600; margin: 0 0 2px; color: #111827; }
+.act-meta { font-size: 0.76rem; color: #9ca3af; margin: 0; text-transform: capitalize; }
+
+.act-points {
+  font-size: 0.78rem; font-weight: 800; color: #0f6e56;
+  background: #e6f5ef; border-radius: 999px; padding: 3px 9px;
+  flex-shrink: 0;
+}

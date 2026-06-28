@@ -58,7 +58,7 @@ export default function InstallExtension() {
         </li>
 
         <li>
-          <div className="ie-step-head"><Chrome size={16} /> Open Chrome's extensions page</div>
+          <div className="ie-step-head"><Globe size={16} /> Open Chrome's extensions page</div>
           <p>Click the address bar, type <code>chrome://extensions</code>, and press Enter. (It won't open as a normal link — you have to type it.)</p>
         </li>
 
