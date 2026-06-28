@@ -88,6 +88,102 @@
   flex: 1;
 }
 
+.ow-score {
+  margin: 12px 0 14px;
+  padding: 12px 14px;
+  background: var(--bg-subtle, #f8fafc);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 10px;
+}
+
+.ow-score-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-muted, #6b7280);
+}
+
+.ow-spin {
+  animation: ow-spin 1.4s linear infinite;
+}
+
+@keyframes ow-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ow-score-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.ow-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 70px;
+}
+
+.ow-stat-primary .ow-stat-value {
+  color: var(--dark-teal, #0f6e56);
+  font-size: 1.3rem;
+}
+
+.ow-stat-value {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text, #111827);
+}
+
+.ow-cap {
+  text-transform: capitalize;
+}
+
+.ow-stat-label {
+  font-size: 0.68rem;
+  color: var(--text-muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ow-score-summary {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  color: var(--text, #374151);
+  line-height: 1.45;
+}
+
+.ow-why {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 0.8rem;
+  color: var(--text-muted, #4b5563);
+  line-height: 1.5;
+}
+
+.ow-why li {
+  margin-bottom: 2px;
+}
+
+.ow-flag {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 0.78rem;
+  color: #92400e;
+}
+
+.ow-flag-warn {
+  color: #b42318;
+}
+
+.ow-score-error {
+  font-size: 0.78rem;
+  color: var(--text-muted, #6b7280);
+}
+
 /* The pinned header eats vertical space the embedded Read/Fill panels don't
    expect (they were each designed to own the full viewport height under
    their own header). On small screens, where space is already tight thanks

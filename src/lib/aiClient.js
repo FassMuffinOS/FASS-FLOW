@@ -88,6 +88,35 @@ export function costBreakdown({ scopeText, title, agency, awardAmount, userId })
   })
 }
 
+// The "first five seconds" triage score: real fit/probability/competition/
+// revenue read on a solicitation, grounded in its actual text plus what we
+// know about the business — shown the instant someone opens a found
+// opportunity, before they've touched the R-E-A-D worksheet. Returns
+// { fit_score, fit_label, win_probability, competition_level,
+//   competition_reason, estimated_revenue{low,high,basis},
+//   required_certifications[], cert_gaps[], ai_summary, why_bullets[],
+//   risk_flags[], provider, model }.
+export function scoreOpportunity({
+  solicitationText, title, agency, solicitationNaics, setAside, dueDate,
+  awardAmount, businessName, businessNaics, businessCertifications,
+  pastPerformance, userId,
+}) {
+  return post('/score-opportunity', {
+    solicitation_text: solicitationText || '',
+    title: title || '',
+    agency: agency || '',
+    solicitation_naics: solicitationNaics || '',
+    set_aside: setAside || '',
+    due_date: dueDate || '',
+    award_amount: awardAmount ?? null,
+    business_name: businessName || '',
+    business_naics: businessNaics || '',
+    business_certifications: businessCertifications || [],
+    past_performance: pastPerformance || [],
+    user_id: userId || null,
+  })
+}
+
 export async function extractFromImages(files) {
   const images = await Promise.all(
     Array.from(files).map(async file => ({
