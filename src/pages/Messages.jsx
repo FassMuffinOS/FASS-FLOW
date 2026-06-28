@@ -3,7 +3,8 @@ import { useLocation } from 'react-router-dom'
 import {
   MessageCircle, Search, Send, Loader, X, Plus, ArrowLeft, Paperclip,
   Smile, MoreHorizontal, Pencil, Trash2, Bell, BellOff, Check, CheckCheck,
-  ShieldCheck, Info, MapPin, Phone, Globe, ExternalLink,
+  ShieldCheck, Info, MapPin, Phone, Globe, ExternalLink, SlidersHorizontal,
+  Award,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -599,29 +600,64 @@ function isImageType(mime) {
   return Boolean(mime && mime.startsWith('image/'))
 }
 
+// Self-declared cert codes — kept in sync with Wallet.jsx's CERT_OPTIONS
+// (the place people actually set these on their business_profiles row).
+const CAPABILITY_CERTS = [
+  { id: 'sdvosb', label: 'SDVOSB' },
+  { id: 'vosb', label: 'VOSB' },
+  { id: 'wosb', label: 'WOSB' },
+  { id: 'edwosb', label: 'EDWOSB' },
+  { id: 'hubzone', label: 'HUBZone' },
+  { id: '8a', label: '8(a)' },
+]
+
 function PeopleSearch({ userId, onPick, onClose, error }) {
   const [q, setQ] = useState('')
   const [people, setPeople] = useState([])
   const [loading, setLoading] = useState(true)
   const debounceRef = useRef(null)
 
-  const search = useCallback((query) => {
+  // Capability filters — the "find subs/teammates by what they can
+  // actually do" ask (NAICS, set-aside certs, contracts won), additive to
+  // the name search above rather than a separate mode. Collapsed behind a
+  // toggle since most searches are still just "find this person by name."
+  const [showFilters, setShowFilters] = useState(false)
+  const [naics, setNaics] = useState('')
+  const [certs, setCerts] = useState([])
+  const [minContracts, setMinContracts] = useState('')
+
+  const search = useCallback((query, filters) => {
     if (!userId || !API_BASE) return
     setLoading(true)
-    fetch(`${API_BASE}/api/v1/chat/people/search?user_id=${userId}&q=${encodeURIComponent(query)}`)
+    const params = new URLSearchParams({ user_id: userId, q: query })
+    if (filters?.naics?.trim()) params.set('naics', filters.naics.trim())
+    if (filters?.certs?.length) params.set('certifications', filters.certs.join(','))
+    if (filters?.minContracts && Number(filters.minContracts) > 0) {
+      params.set('min_contracts_won', filters.minContracts)
+    }
+    fetch(`${API_BASE}/api/v1/chat/people/search?${params.toString()}`)
       .then(res => res.ok ? res.json() : { people: [] })
       .then(data => setPeople(data.people || []))
       .catch(() => setPeople([]))
       .finally(() => setLoading(false))
   }, [userId])
 
-  useEffect(() => { search('') }, [search])
+  const filters = { naics, certs, minContracts }
+  // Re-run whenever a filter changes too, not just the text query — these
+  // are meant to feel live, same as typing in the search box.
+  useEffect(() => { search(q, filters) }, [search, naics, certs, minContracts]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function onChange(value) {
     setQ(value)
     clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => search(value), 300)
+    debounceRef.current = setTimeout(() => search(value, filters), 300)
   }
+
+  function toggleCert(id) {
+    setCerts(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])
+  }
+
+  const activeFilterCount = (naics.trim() ? 1 : 0) + certs.length + (Number(minContracts) > 0 ? 1 : 0)
 
   return (
     <div className="msg-search-overlay" onClick={onClose}>
@@ -633,7 +669,46 @@ function PeopleSearch({ userId, onPick, onClose, error }) {
         <div className="msg-search-input-row">
           <Search size={15} />
           <input autoFocus value={q} onChange={e => onChange(e.target.value)} placeholder="Search people by name…" />
+          <button
+            type="button"
+            className={`msg-filter-toggle ${activeFilterCount > 0 ? 'active' : ''}`}
+            onClick={() => setShowFilters(v => !v)}
+            title="Filter by capability"
+          >
+            <SlidersHorizontal size={15} />
+            {activeFilterCount > 0 && <span className="msg-filter-count">{activeFilterCount}</span>}
+          </button>
         </div>
+        {showFilters && (
+          <div className="msg-capability-filters">
+            <label className="msg-capability-row">
+              <span><Award size={12} /> NAICS</span>
+              <input value={naics} onChange={e => setNaics(e.target.value)} placeholder="e.g. 541512" />
+            </label>
+            <div className="msg-capability-certs">
+              {CAPABILITY_CERTS.map(c => (
+                <button
+                  key={c.id}
+                  type="button"
+                  className={`msg-cert-chip ${certs.includes(c.id) ? 'active' : ''}`}
+                  onClick={() => toggleCert(c.id)}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+            <label className="msg-capability-row">
+              <span>Min. contracts won</span>
+              <input
+                type="number"
+                min="0"
+                value={minContracts}
+                onChange={e => setMinContracts(e.target.value)}
+                placeholder="0"
+              />
+            </label>
+          </div>
+        )}
         {error && <div className="msg-search-error">{error}</div>}
         <div className="msg-search-results">
           {loading ? (
@@ -646,7 +721,13 @@ function PeopleSearch({ userId, onPick, onClose, error }) {
                 <span className="msg-avatar">{initials(p.full_name || p.company_name)}</span>
                 <span className="msg-thread-info">
                   <span className="msg-thread-name">{p.full_name || 'FASS Flow member'}</span>
-                  {p.company_name && <span className="msg-thread-preview">{p.company_name}</span>}
+                  {(p.company_name || p.naics || (p.certifications && p.certifications.length > 0)) && (
+                    <span className="msg-thread-preview">
+                      {[p.company_name, p.naics ? `NAICS ${p.naics}` : null, ...(p.certifications || []).map(c => c.toUpperCase())]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </span>
+                  )}
                 </span>
               </button>
             ))

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Wallet as WalletIcon, Download, Lock, Palette, Image, Eye, EyeOff, Check, Search, MapPin } from 'lucide-react'
+import { Wallet as WalletIcon, Download, Lock, Palette, Image, Eye, EyeOff, Check, Search, MapPin, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { getBusinessProfile, saveBusinessProfile } from '../lib/businessProfile'
@@ -22,6 +22,21 @@ const CARD_STYLES = [
   { id: 'holographic', label: 'Holographic', hex: '#8ee6ff' },
   { id: 'carbon', label: 'Carbon', hex: '#1c1c1e' },
   { id: 'emerald', label: 'Emerald', hex: '#0f5132' },
+]
+
+// Self-declared set-aside/certification codes — backs capability-based
+// people search (chat.py's GET /chat/people/search?certifications=...)
+// so other members can find subs/teammates by what they actually qualify
+// for, not just by name. Stored on business_profiles.certifications
+// (text[]); no government verification layer yet, same trust level as the
+// naics field already on this page.
+const CERT_OPTIONS = [
+  { id: 'sdvosb', label: 'SDVOSB' },
+  { id: 'vosb', label: 'VOSB' },
+  { id: 'wosb', label: 'WOSB' },
+  { id: 'edwosb', label: 'EDWOSB' },
+  { id: 'hubzone', label: 'HUBZone' },
+  { id: '8a', label: '8(a)' },
 ]
 
 // Pulled out of Passport.jsx into its own page/tab — FASS Wallet had been
@@ -61,6 +76,10 @@ export default function Wallet() {
   const [cardSaving, setCardSaving] = useState(false)
   const [cardSaved, setCardSaved] = useState(false)
   const [loadingMine, setLoadingMine] = useState(true)
+
+  const [certifications, setCertifications] = useState([])
+  const [certSaving, setCertSaving] = useState(false)
+  const [certSaved, setCertSaved] = useState(false)
 
   useEffect(() => {
     if (!session?.user?.id || !API_BASE) { setLoadingMine(false); return }
@@ -110,6 +129,31 @@ export default function Wallet() {
     loadMine()
     return () => { cancelled = true }
   }, [session?.user?.id])
+
+  // Certifications live on business_profiles, not wallet_passes, so they're
+  // loaded separately rather than folded into loadMine above — a missing
+  // wallet card shouldn't block showing/editing capability data.
+  useEffect(() => {
+    if (!session?.user?.id) return
+    let cancelled = false
+    getBusinessProfile(session.user.id).then(profile => {
+      if (!cancelled && profile?.certifications) setCertifications(profile.certifications)
+    })
+    return () => { cancelled = true }
+  }, [session?.user?.id])
+
+  function toggleCert(id) {
+    setCertifications(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])
+    setCertSaved(false)
+  }
+
+  async function saveCertifications() {
+    if (!session?.user?.id) return
+    setCertSaving(true)
+    const ok = await saveBusinessProfile(session.user.id, { certifications })
+    setCertSaving(false)
+    if (ok) { setCertSaved(true); setTimeout(() => setCertSaved(false), 2500) }
+  }
 
   // Coming back from Stripe after an unlock.
   useEffect(() => {
@@ -367,6 +411,33 @@ export default function Wallet() {
             </div>
           )}
         </div>
+
+        {walletBusiness && (
+          <div className="pp-card">
+            <div className="pp-card-head">
+              <ShieldCheck size={16} /> <span>Certifications</span>
+            </div>
+            <p className="pp-note pp-note-block">Self-declared set-asides — helps other members find you in capability-based people search. Not government-verified.</p>
+            <div className="pp-customize-toggles">
+              {CERT_OPTIONS.map(c => (
+                <button
+                  key={c.id}
+                  type="button"
+                  className={`pp-chip ${certifications.includes(c.id) ? 'active' : ''}`}
+                  onClick={() => toggleCert(c.id)}
+                >
+                  {certifications.includes(c.id) ? <Check size={12} /> : null} {c.label}
+                </button>
+              ))}
+            </div>
+            <div className="pp-customize-save">
+              <button type="button" className="btn-outline" onClick={saveCertifications} disabled={certSaving}>
+                {certSaving ? 'Saving…' : 'Save certifications'}
+              </button>
+              {certSaved && <span className="pp-saved"><Check size={14} /> Saved</span>}
+            </div>
+          </div>
+        )}
 
         {walletBusiness && (
           <div className="pp-card">
