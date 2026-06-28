@@ -21,6 +21,18 @@
   color: var(--gray-400);
 }
 
+/* Personalized headline built from real match-score tallies instead of a
+   flat result count — "X worth reviewing, Y excellent fits" reframes the
+   list as the user's own pipeline rather than a generic search dump. */
+.wd-sub-narrative {
+  color: var(--gray-600);
+}
+
+.wd-sub-narrative strong {
+  color: var(--navy);
+  font-weight: 800;
+}
+
 .wd-refresh {
   display: flex;
   align-items: center;
@@ -212,7 +224,34 @@
   color: var(--navy);
   margin-bottom: 10px;
   line-height: 1.35;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
 }
+
+/* Match Score badge — a free, instant, deterministic signal (NAICS +
+   set-aside/certs + due-date feasibility), deliberately NOT styled or
+   labeled like the real AI score shown after opening a result. Tiered
+   color so a user can triage a whole page of cards at a glance instead
+   of reading each one to find the ones worth a click. */
+.wd-match-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.wd-match-high { background: var(--light-teal, #e6f6f3); color: var(--dark-teal, #0a5c4d); }
+.wd-match-mid { background: #eef6ff; color: #1d5fae; }
+.wd-match-low { background: #fff7e6; color: #9a6300; }
+.wd-match-poor { background: var(--gray-100, #f1f5f9); color: var(--gray-400, #6b7280); }
 
 .wd-card-details {
   display: flex;

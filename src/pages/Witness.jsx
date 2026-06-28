@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import JobCaptures from '../components/JobCaptures'
 import { supabase } from '../lib/supabase'
 import { logBusinessEvent } from '../lib/businessEvents'
+import { triggerGrowthCheck } from '../lib/growthChallenge'
 import {
   ShieldCheck, Trophy, Calendar, FileText, Users, Plus, Trash2,
   ExternalLink, Sparkles, Building2, Search, ShieldAlert, Landmark,
@@ -152,6 +153,7 @@ export default function Witness() {
     if (status === 'done') {
       const ms = milestones.find(m => m.id === id)
       logBusinessEvent(session.user.id, 'operations', 'milestone_done', 2, `Completed milestone "${ms?.title || ''}"`)
+      triggerGrowthCheck(session.user.id)
     }
   }
 
@@ -171,6 +173,7 @@ export default function Witness() {
     else {
       setDocuments(prev => [data, ...prev])
       logBusinessEvent(session.user.id, 'operations', 'document_uploaded', 2, `Uploaded "${docName.trim()}"`)
+      triggerGrowthCheck(session.user.id)
     }
     setDocName(''); setDocUrl('')
   }

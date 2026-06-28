@@ -64,6 +64,7 @@ import Wallet from './pages/Wallet'
 import StartBusiness from './pages/StartBusiness'
 import Payouts from './pages/Payouts'
 import Resize from './pages/Resize'
+import GrowthChallenge from './pages/GrowthChallenge'
 import AppShell from './components/AppShell'
 import SmoothScroll from './components/SmoothScroll'
 import './index.css'
@@ -363,6 +364,11 @@ function AppRoutes() {
           onboarding ended, so the page re-checks real status itself. */}
       <Route path="/payouts" element={
         <ProtectedRoute><Payouts /></ProtectedRoute>
+      } />
+      {/* 30-Day Growth Challenge — full mission/achievement list backing the
+          Dashboard's GrowthChallengeWidget summary card. See growth_challenge.py. */}
+      <Route path="/growth-challenge" element={
+        <ProtectedRoute><GrowthChallenge /></ProtectedRoute>
       } />
     </Routes>
   )

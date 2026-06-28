@@ -3,6 +3,7 @@ import { useLocation, useNavigate, Link } from 'react-router-dom'
 import { Handshake, Plus, Loader, MessageCircle, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { logBusinessEvent } from '../lib/businessEvents'
+import { triggerGrowthCheck } from '../lib/growthChallenge'
 import ShareToChatButton from '../components/ShareToChatButton'
 import './TeamUp.css'
 
@@ -88,6 +89,7 @@ export default function TeamUp() {
       })
       if (res.ok) {
         await logBusinessEvent(userId, 'customer_growth', 'partner_post_created', 5, title.trim())
+        triggerGrowthCheck(userId)
         setTitle(''); setBring(''); setNeed(''); setNaics('')
         setShowForm(false)
         loadBoard(); loadMine()

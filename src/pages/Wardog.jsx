@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Search, RefreshCw, ExternalLink, Calendar, Building2, Tag, ClipboardList, Bookmark, BookmarkCheck, Lock } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
@@ -206,6 +206,62 @@ function isUrlLike(str) {
   return typeof str === 'string' && /^https?:\/\//i.test(str.trim())
 }
 
+// ── Deterministic Match Score ────────────────────────────────────────
+// A full LLM read (like /ai/score-opportunity) isn't viable for every card
+// in a 20-100 result list — most SAM.gov search results don't even carry
+// resolved solicitation text yet, and an LLM call per card would be slow
+// and expensive just to render a list. So the WARDOG list gets an honest,
+// free, instant signal computed from data already on hand (NAICS,
+// certifications, due date, keyword) — deliberately labeled "Match," not
+// "AI win probability," so it never overclaims what it's basing a number
+// on. The real AI-grounded score (fit_score/win_probability from reading
+// the actual text) still only shows up after opening into R-E-A-D/the
+// Opportunity Workspace, same as before — this is the fast triage signal
+// that helps decide which cards are worth opening at all.
+function matchScore(opp, { naics, certifications, keyword }) {
+  let score = 0
+  const oppNaics = opp.naicsCode || ''
+  if (oppNaics && naics) {
+    if (oppNaics === naics) score += 40
+    else if (oppNaics.slice(0, 4) === naics.slice(0, 4)) score += 25
+  }
+
+  const setAside = opp.typeOfSetAside
+  if (!setAside) {
+    score += 15 // open to anyone — no eligibility bar to clear
+  } else {
+    const held = (certifications || []).map(c => CERT_TO_SET_ASIDE[c]).filter(Boolean)
+    if (held.includes(setAside)) score += 30
+  }
+
+  const days = daysUntil(opp.responseDeadLine)
+  if (days !== null) {
+    if (days >= 7) score += 20
+    else if (days >= 3) score += 10
+  }
+
+  if (keyword && keyword.trim()) {
+    const kw = keyword.trim().toLowerCase()
+    if ((opp.title || '').toLowerCase().includes(kw) || (opp.description || '').toLowerCase().includes(kw)) {
+      score += 10
+    }
+  }
+
+  score = Math.max(0, Math.min(100, score))
+  const label = score >= 70 ? 'strong match' : score >= 50 ? 'good match' : score >= 30 ? 'stretch' : 'low match'
+  return { score, label }
+}
+
+function MatchBadge({ opp, naics, certifications, keyword }) {
+  const { score, label } = matchScore(opp, { naics, certifications, keyword })
+  const tier = score >= 70 ? 'wd-match-high' : score >= 50 ? 'wd-match-mid' : score >= 30 ? 'wd-match-low' : 'wd-match-poor'
+  return (
+    <span className={`wd-match-badge ${tier}`} title={`Match score: ${label} — based on NAICS, set-aside/certs, and timing`}>
+      {score}% match
+    </span>
+  )
+}
+
 function DueChip({ date }) {
   const days = daysUntil(date)
   if (days === null) return null
@@ -258,6 +314,10 @@ export default function Wardog() {
   // the signal to re-run the search so it reflects the user's real NAICS
   // instead of leaving the generic default results on screen.
   const [naicsPrefilled, setNaicsPrefilled] = useState(false)
+  // Held certifications, kept around (not just consumed into the set-aside
+  // filter) so the Match Score badge can compare each result's set-aside
+  // against what the business actually qualifies for.
+  const [profileCerts, setProfileCerts] = useState([])
 
   // Lite plan ($9.99/mo) is read-only: matches show up here, but saving
   // interest, running R-E-A-D, sending to FASS FILL, and the advanced
@@ -420,6 +480,7 @@ export default function Wardog() {
         .single()
       if (cancelled) return
       if (data?.certifications?.length) {
+        setProfileCerts(data.certifications)
         const mapped = data.certifications
           .map(c => CERT_TO_SET_ASIDE[c])
           .filter(Boolean)
@@ -535,6 +596,20 @@ export default function Wardog() {
     fetchOpps({ append: true, offset: opps.length })
   }
 
+  // Drives the personalized headline below — "9 worth reviewing, 3
+  // excellent fits" instead of a bare result count. Same matchScore the
+  // badges use, just tallied once per render instead of read off the DOM.
+  const matchCounts = useMemo(() => {
+    if (isLite) return null
+    let strong = 0, good = 0
+    for (const opp of opps) {
+      const { score } = matchScore(opp, { naics, certifications: profileCerts, keyword })
+      if (score >= 70) strong++
+      else if (score >= 50) good++
+    }
+    return { strong, good, total: opps.length }
+  }, [opps, naics, profileCerts, keyword, isLite])
+
   useEffect(() => {
     fetchOpps()
   }, []) // eslint-disable-line
@@ -552,7 +627,16 @@ export default function Wardog() {
       <div className="wd-top">
         <div>
           <h1 className="wd-title">WARDOG</h1>
-          <p className="wd-sub">Live SAM.gov opportunities, plus federal/state/local source directory below · {lastFetch ? `Updated ${lastFetch.toLocaleTimeString()}` : 'Not yet fetched'}</p>
+          {matchCounts && matchCounts.total > 0 ? (
+            <p className="wd-sub wd-sub-narrative">
+              You have <strong>{matchCounts.total}</strong> open opportunit{matchCounts.total === 1 ? 'y' : 'ies'}
+              {matchCounts.good > 0 && <> · <strong>{matchCounts.good}</strong> worth reviewing</>}
+              {matchCounts.strong > 0 && <> · <strong>{matchCounts.strong}</strong> excellent {matchCounts.strong === 1 ? 'fit' : 'fits'}</>}
+              {' '}· {lastFetch ? `Updated ${lastFetch.toLocaleTimeString()}` : 'Not yet fetched'}
+            </p>
+          ) : (
+            <p className="wd-sub">Live SAM.gov opportunities, plus federal/state/local source directory below · {lastFetch ? `Updated ${lastFetch.toLocaleTimeString()}` : 'Not yet fetched'}</p>
+          )}
         </div>
         <button className="wd-refresh btn-outline" onClick={fetchOpps} disabled={loading}>
           <RefreshCw size={15} className={loading ? 'spin' : ''} />
@@ -697,7 +781,12 @@ export default function Wardog() {
                 </a>
               </div>
 
-              <h3 className="wd-card-title">{opp.title}</h3>
+              <h3 className="wd-card-title">
+                {opp.title}
+                {!isLite && (
+                  <MatchBadge opp={opp} naics={naics} certifications={profileCerts} keyword={keyword} />
+                )}
+              </h3>
 
               <div className="wd-card-details">
                 <span><Building2 size={13} /> {opp.fullParentPathName || opp.department || '—'}</span>

@@ -1,0 +1,137 @@
+.gcw-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 24px;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.gcw-card:hover {
+  border-color: var(--teal);
+}
+
+.gcw-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gray-600);
+  margin-bottom: 14px;
+}
+
+.gcw-head svg:first-child { color: var(--amber); }
+
+.gcw-head-chevron {
+  margin-left: auto;
+  color: var(--gray-400);
+}
+
+.gcw-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gcw-level {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.gcw-level-num {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--gray-900, var(--navy));
+}
+
+.gcw-level-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--amber);
+}
+
+.gcw-xp {
+  margin-left: auto;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gray-500, var(--gray-600));
+}
+
+.gcw-xp-bar {
+  height: 6px;
+  background: var(--gray-200);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.gcw-xp-bar-fill {
+  height: 100%;
+  background: var(--amber);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.gcw-progress-row {
+  font-size: 0.78rem;
+  color: var(--gray-600);
+  font-weight: 600;
+}
+
+.gcw-mission {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--light-teal);
+  border-radius: 10px;
+  margin-top: 4px;
+}
+
+.gcw-mission-day {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--teal);
+  background: var(--white);
+  border-radius: 6px;
+  padding: 3px 7px;
+}
+
+.gcw-mission-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.gcw-mission-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.gcw-mission-desc {
+  font-size: 0.78rem;
+  color: var(--gray-600);
+}
+
+.gcw-mission-done {
+  align-items: center;
+  color: var(--teal);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .gcw-xp {
+    margin-left: 0;
+  }
+}

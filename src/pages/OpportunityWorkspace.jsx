@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import {
-  ClipboardCheck, ClipboardList, Building2, Calendar, Hash,
+  ClipboardCheck, ClipboardList, Building2, Calendar, Hash, LayoutGrid,
   Sparkles, TrendingUp, Users, DollarSign, ShieldAlert, AlertTriangle,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase'
 import { aiEnabled, scoreOpportunity } from '../lib/aiClient'
 import Read from './Read'
 import Fill from './Fill'
+import OpportunityContext from '../components/OpportunityContext'
 import './OpportunityWorkspace.css'
 
 // The Opportunity Workspace replaces the old WARDOG -> R-E-A-D -> FASS FILL
@@ -28,7 +29,8 @@ export default function OpportunityWorkspace() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { user } = useAuth()
 
-  const panel = searchParams.get('panel') === 'draft' ? 'draft' : 'decide'
+  const panelParam = searchParams.get('panel')
+  const panel = panelParam === 'draft' ? 'draft' : panelParam === 'workspace' ? 'workspace' : 'decide'
 
   const title = searchParams.get('title') || 'Untitled Opportunity'
   const agency = searchParams.get('agency') || ''
@@ -149,6 +151,9 @@ export default function OpportunityWorkspace() {
           <button className={`ow-tab ${panel === 'draft' ? 'ow-tab-active' : ''}`} onClick={() => setPanel('draft')}>
             <ClipboardList size={15} /> Draft
           </button>
+          <button className={`ow-tab ${panel === 'workspace' ? 'ow-tab-active' : ''}`} onClick={() => setPanel('workspace')}>
+            <LayoutGrid size={15} /> Workspace
+          </button>
         </nav>
 
         {scoreLoading && (
@@ -220,7 +225,9 @@ export default function OpportunityWorkspace() {
       </header>
 
       <div className="ow-panel">
-        {panel === 'decide' ? <Read embedded /> : <Fill embedded />}
+        {panel === 'decide' && <Read embedded />}
+        {panel === 'draft' && <Fill embedded />}
+        {panel === 'workspace' && <OpportunityContext proposalId={proposalId} />}
       </div>
     </div>
   )

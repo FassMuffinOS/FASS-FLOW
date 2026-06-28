@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { supabase } from '../lib/supabase'
 import { logBusinessEvent } from '../lib/businessEvents'
+import { triggerGrowthCheck } from '../lib/growthChallenge'
 import JobCaptures from '../components/JobCaptures'
 import ShareToChatButton from '../components/ShareToChatButton'
 import {
@@ -679,6 +680,10 @@ export default function Pipeline() {
         }).catch(err => console.error('Pipeline: failed to auto-post contract award to feed', err))
       }
     }
+    // Growth Challenge: a stage move can complete "submit your first bid" /
+    // "win your first contract" missions plus the matching achievements —
+    // re-check now instead of waiting for the Dashboard widget's own load.
+    triggerGrowthCheck(session.user.id)
   }
 
   // Edit a tracked field (bid value or due date) with an audit trail.

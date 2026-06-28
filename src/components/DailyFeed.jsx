@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Sparkles, ArrowRight, CheckCircle2 } from 'lucide-react'
+import { Sparkles, ArrowRight, CheckCircle2, MessageCircleQuestion, Loader2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { fetchDailyFeed, fetchDailyBrief } from '../lib/dailyFeed'
+import { askChiefOfStaff } from '../lib/chiefOfStaff'
 import './DailyFeed.css'
+
+const PROMPT_CHIPS = ['I need money', 'What should I focus on today?', 'Help me grow']
 
 function greeting() {
   const h = new Date().getHours()
@@ -24,6 +27,15 @@ export default function DailyFeed() {
   const [loading, setLoading] = useState(true)
   const [brief, setBrief] = useState(null)
   const [briefLoading, setBriefLoading] = useState(false)
+
+  // AI Chief of Staff — the "I need money" goal-query box. Reuses the same
+  // feed items already loaded above as its business_context instead of
+  // re-fetching anything, so asking a question costs one LLM call, not a
+  // second round of Supabase reads.
+  const [question, setQuestion] = useState('')
+  const [asking, setAsking] = useState(false)
+  const [answer, setAnswer] = useState(null)
+  const [askError, setAskError] = useState('')
 
   const firstName = (session?.user?.user_metadata?.full_name || '').split(' ')[0] || ''
 
@@ -47,12 +59,37 @@ export default function DailyFeed() {
 
   if (loading) return null
 
+  // Urgency-tiered framing instead of a flat count — weight >= 80 covers
+  // overdue items and anything due inside ~2-3 days (see dailyFeed.js's
+  // weight math), so "X need attention now" surfaces the real triage
+  // signal instead of making every item look equally pressing.
+  const urgent = items.filter(i => i.weight >= 80).length
+
+  async function handleAsk(q) {
+    const text = (q ?? question).trim()
+    if (!text || !session?.user?.id) return
+    setQuestion(text)
+    setAsking(true)
+    setAskError('')
+    setAnswer(null)
+    try {
+      const result = await askChiefOfStaff(session.user.id, text, items.map(i => i.text))
+      setAnswer(result.answer)
+    } catch (e) {
+      setAskError(e.message || 'Could not get an answer right now')
+    } finally {
+      setAsking(false)
+    }
+  }
+
   return (
     <div className="df-card">
       <h2 className="df-greeting">
         {greeting()}{firstName ? `, ${firstName}` : ''}.{' '}
         {items.length > 0
-          ? `You have ${items.length} item${items.length === 1 ? '' : 's'} that can grow your business today.`
+          ? urgent > 0
+            ? `You have ${items.length} item${items.length === 1 ? '' : 's'} today — ${urgent} need${urgent === 1 ? 's' : ''} attention now.`
+            : `You have ${items.length} item${items.length === 1 ? '' : 's'} that can grow your business today.`
           : "You're all caught up — nothing urgent needs you right now."}
       </h2>
 
@@ -62,6 +99,42 @@ export default function DailyFeed() {
           <p>{briefLoading ? 'Thinking through today…' : brief}</p>
         </div>
       )}
+
+      <div className="df-ask">
+        <form
+          className="df-ask-form"
+          onSubmit={e => { e.preventDefault(); handleAsk() }}
+        >
+          <MessageCircleQuestion size={15} className="df-ask-icon" />
+          <input
+            type="text"
+            placeholder="Ask your business anything — e.g. &quot;I need money&quot;"
+            value={question}
+            onChange={e => setQuestion(e.target.value)}
+            disabled={asking}
+          />
+          <button type="submit" className="btn-primary df-ask-btn" disabled={asking || !question.trim()}>
+            {asking ? <Loader2 size={14} className="df-ask-spin" /> : 'Ask'}
+          </button>
+        </form>
+
+        <div className="df-ask-chips">
+          {PROMPT_CHIPS.map(chip => (
+            <button key={chip} type="button" className="df-ask-chip" onClick={() => handleAsk(chip)} disabled={asking}>
+              {chip}
+            </button>
+          ))}
+        </div>
+
+        {asking && <p className="df-ask-status">Thinking across your pipeline, deadlines, and offers…</p>}
+        {askError && <p className="df-ask-status df-ask-error">{askError}</p>}
+        {answer && !asking && (
+          <div className="df-ask-answer">
+            <Sparkles size={14} />
+            <p>{answer}</p>
+          </div>
+        )}
+      </div>
 
       {items.length === 0 ? (
         <div className="df-empty">

@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { supabase } from '../lib/supabase'
 import { logBusinessEvent } from '../lib/businessEvents'
+import { triggerGrowthCheck } from '../lib/growthChallenge'
 import { parseSolicitation, buildOutline } from '../lib/solicitationParser'
 import { aiEnabled, analyzeSolicitation, draftSection, extractFromImages } from '../lib/aiClient'
 import {
@@ -449,6 +450,7 @@ export default function Fill({ embedded = false } = {}) {
         proposalId = proposal.id
         setLinkedProposalId(proposal.id)
         logBusinessEvent(session.user.id, 'documentation', 'proposal_drafted', 3, `Drafted "${activeDoc.title}"`)
+        triggerGrowthCheck(session.user.id)
       }
     }
 
@@ -469,6 +471,7 @@ export default function Fill({ embedded = false } = {}) {
       if (data) {
         setActiveDoc(data)
         logBusinessEvent(session.user.id, 'documentation', 'fill_document_created', 5, `Built compliance matrix for "${activeDoc.title}"`)
+        triggerGrowthCheck(session.user.id)
       }
     }
     await loadDocs()

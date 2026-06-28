@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { MASTERCLASS_NIGHTS } from '../data/masterclassNights'
 import { logBusinessEvent } from '../lib/businessEvents'
+import { triggerGrowthCheck } from '../lib/growthChallenge'
 import './Classroom.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -159,6 +160,7 @@ export default function Classroom() {
     await loadProgress()
     setSaving(false)
     logBusinessEvent(session.user.id, 'government_readiness', 'mission_complete', 3, `Completed Mission ${n}`)
+    triggerGrowthCheck(session.user.id)
 
     // Auto-advance to the night that just unlocked — same "next lesson"
     // momentum a real course platform gives you instead of leaving the
