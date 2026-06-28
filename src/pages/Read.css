@@ -574,14 +574,53 @@
 }
 .rd-sub:last-child { border-bottom: none; padding-bottom: 0; }
 
+.rd-sub-main { flex: 1; min-width: 0; }
+
 .rd-sub-label {
   font-size: 0.9rem;
   color: var(--navy);
   line-height: 1.55;
-  flex: 1;
 }
 
 .rd-sub-options { display: flex; gap: 6px; flex-shrink: 0; }
+
+/* ── Auto-fill: pre-filled answer badges + review banner ── */
+.rd-prefill-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--light-teal);
+  border: 1px solid var(--teal);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  color: var(--dark-teal);
+}
+.rd-prefill-banner strong { display: block; font-size: 0.85rem; margin-bottom: 2px; }
+.rd-prefill-banner span { font-size: 0.78rem; line-height: 1.5; color: var(--navy); }
+
+.rd-prefill-badge {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 20px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.rd-prefill-data { background: var(--light-teal); color: var(--dark-teal); }
+.rd-prefill-ai { background: #FDF1D6; color: #8A5A00; }
+
+.rd-prefill-why {
+  font-size: 0.74rem;
+  color: var(--gray-400);
+  line-height: 1.45;
+  margin-top: 4px;
+}
+.rd-sub-prefilled { background: rgba(20, 160, 130, 0.04); border-radius: 8px; }
 
 /* Tooltip */
 .rd-tooltip-wrap { position: relative; display: inline-flex; }

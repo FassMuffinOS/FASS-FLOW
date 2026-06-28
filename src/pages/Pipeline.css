@@ -510,6 +510,124 @@
   margin-top: 8px;
 }
 
+/* ── Pursuing checklist ── */
+.kn-checklist {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+.kn-cl-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.kn-cl-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+.kn-cl-count {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--teal);
+}
+.kn-cl-bar {
+  height: 5px;
+  border-radius: 20px;
+  background: var(--border-subtle);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.kn-cl-bar-fill {
+  height: 100%;
+  border-radius: 20px;
+  background: var(--teal);
+  transition: width 0.3s ease;
+}
+.kn-cl-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.kn-cl-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.kn-cl-check {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  color: #fff;
+  background: var(--border);
+}
+.kn-cl-done .kn-cl-check { background: var(--teal); }
+.kn-cl-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+.kn-cl-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.kn-cl-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+.kn-cl-done .kn-cl-label {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+.kn-cl-hint {
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  line-height: 1.25;
+}
+.kn-cl-done .kn-cl-hint { display: none; }
+.kn-cl-cta {
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--teal);
+  text-decoration: none;
+  white-space: nowrap;
+  margin-top: 1px;
+}
+.kn-cl-cta:hover { color: var(--dark-teal); text-decoration: underline; }
+.kn-cl-foot {
+  margin: 10px 0 0;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+.kn-cl-foot-ready { color: var(--dark-teal); }
+.kn-cl-partner {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+.kn-cl-partner:hover { color: var(--teal); text-decoration: underline; }
+
 /* ══════════════════════════════════════════════════
    LIST VIEW
 ══════════════════════════════════════════════════ */

@@ -99,8 +99,75 @@ function describeEvent(ev) {
   }
 }
 
+// ── Pursuing checklist ────────────────────────────────────
+// Once a proposal is in "Pursuing", the work of actually building the bid
+// is three concrete things: write the response, price it, and prove you can
+// do it. Rather than show four equal-weight links and let the owner guess
+// the order, this renders them as an ordered checklist that reflects REAL
+// progress — each step checks itself off when the underlying record exists
+// (a FASS FILL doc, an estimated_value, a site_captures row), so the card
+// answers "what's left before I can submit?" at a glance.
+function PursuingChecklist({ record, hasDraft, hasEstimate, hasCaptures }) {
+  const steps = [
+    {
+      key: 'fill',
+      done: hasDraft,
+      label: 'Write the response',
+      hint: 'Fill out the solicitation forms',
+      href: `/fill?proposalId=${record.id}${hasDraft ? '' : `&new=1&title=${encodeURIComponent(record.title)}&agency=${encodeURIComponent(record.agency || '')}`}`,
+      cta: hasDraft ? 'Continue' : 'Start',
+    },
+    {
+      key: 'price',
+      done: hasEstimate,
+      label: 'Price the job',
+      hint: 'Build your cost estimate',
+      href: `/estimator?proposalId=${record.id}`,
+      cta: hasEstimate ? 'Review' : 'Start',
+    },
+    {
+      key: 'proof',
+      done: hasCaptures,
+      label: 'Capture your proof',
+      hint: 'Photos that show you can deliver',
+      href: `/camera?proposalId=${record.id}`,
+      cta: hasCaptures ? 'Add more' : 'Start',
+    },
+  ]
+  const doneCount = steps.filter(s => s.done).length
+  const pct = Math.round((doneCount / steps.length) * 100)
+  const allDone = doneCount === steps.length
+
+  return (
+    <div className="kn-checklist" onClick={e => e.stopPropagation()}>
+      <div className="kn-cl-head">
+        <span className="kn-cl-title">{allDone ? 'Ready to submit' : 'Build your bid'}</span>
+        <span className="kn-cl-count">{doneCount}/{steps.length}</span>
+      </div>
+      <div className="kn-cl-bar"><div className="kn-cl-bar-fill" style={{ width: `${pct}%` }} /></div>
+      <ul className="kn-cl-steps">
+        {steps.map(s => (
+          <li key={s.key} className={`kn-cl-step ${s.done ? 'kn-cl-done' : ''}`}>
+            <span className="kn-cl-check">{s.done ? <Check size={12} /> : <span className="kn-cl-dot" />}</span>
+            <span className="kn-cl-text">
+              <span className="kn-cl-label">{s.label}</span>
+              <span className="kn-cl-hint">{s.hint}</span>
+            </span>
+            <a className="kn-cl-cta" href={s.href}>{s.cta} →</a>
+          </li>
+        ))}
+      </ul>
+      {allDone ? (
+        <p className="kn-cl-foot kn-cl-foot-ready">All set — drag this to <strong>Submitted</strong> once your bid is in.</p>
+      ) : (
+        <a className="kn-cl-partner" href="/teamup">Can't do it all yourself? Find a partner →</a>
+      )}
+    </div>
+  )
+}
+
 // ── Kanban Card ───────────────────────────────────────────
-function KanbanCard({ record, hasDraft, onDragStart, onClick }) {
+function KanbanCard({ record, hasDraft, captureCount = 0, onDragStart, onClick }) {
   const days = daysLeft(record.due_date)
 
   return (
@@ -128,57 +195,64 @@ function KanbanCard({ record, hasDraft, onDragStart, onClick }) {
         {record.naics_code && <span className="kn-card-naics">NAICS {record.naics_code}</span>}
       </div>
       {hasDraft && <span className="kn-fill-badge">Draft in FASS FILL</span>}
-      <div className="kn-card-links">
-        {record.stage === 'flagged' && (
+      {record.stage === 'pursuing' ? (
+        <PursuingChecklist
+          record={record}
+          hasDraft={hasDraft}
+          hasEstimate={Number(record.estimated_value) > 0}
+          hasCaptures={captureCount > 0}
+        />
+      ) : (
+        <div className="kn-card-links">
+          {record.stage === 'flagged' && (
+            <a
+              className="kn-score-now"
+              onClick={e => e.stopPropagation()}
+              href={`/read?title=${encodeURIComponent(record.title)}&agency=${encodeURIComponent(record.agency || '')}&naics=${encodeURIComponent(record.naics_code || '')}&due=${encodeURIComponent(record.due_date || '')}&proposalId=${record.id}`}
+            >
+              Score with R-E-A-D →
+            </a>
+          )}
           <a
             className="kn-score-now"
             onClick={e => e.stopPropagation()}
-            href={`/read?title=${encodeURIComponent(record.title)}&agency=${encodeURIComponent(record.agency || '')}&naics=${encodeURIComponent(record.naics_code || '')}&due=${encodeURIComponent(record.due_date || '')}&proposalId=${record.id}`}
+            href={`/fill?proposalId=${record.id}${hasDraft ? '' : `&new=1&title=${encodeURIComponent(record.title)}&agency=${encodeURIComponent(record.agency || '')}`}`}
           >
-            Score with R-E-A-D →
+            {hasDraft ? 'Continue in FASS FILL →' : 'Open in FASS FILL →'}
           </a>
-        )}
-        <a
-          className="kn-score-now"
-          onClick={e => e.stopPropagation()}
-          href={`/fill?proposalId=${record.id}${hasDraft ? '' : `&new=1&title=${encodeURIComponent(record.title)}&agency=${encodeURIComponent(record.agency || '')}`}`}
-        >
-          {hasDraft ? 'Continue in FASS FILL →' : 'Open in FASS FILL →'}
-        </a>
-        {['pursuing', 'submitted', 'awarded'].includes(record.stage) && (
-          <a
-            className="kn-score-now"
-            onClick={e => e.stopPropagation()}
-            href={`/money?proposalId=${record.id}`}
-          >
-            Run the numbers →
-          </a>
-        )}
-        {['pursuing', 'submitted', 'awarded'].includes(record.stage) && (
-          <a
-            className="kn-score-now"
-            onClick={e => e.stopPropagation()}
-            href={`/estimator?proposalId=${record.id}`}
-          >
-            Build an estimate →
-          </a>
-        )}
-        {['pursuing', 'submitted', 'awarded'].includes(record.stage) && (
-          <a
-            className="kn-score-now"
-            onClick={e => e.stopPropagation()}
-            href={`/camera?proposalId=${record.id}`}
-          >
-            Walk the site →
-          </a>
-        )}
-      </div>
+          {['submitted', 'awarded'].includes(record.stage) && (
+            <>
+              <a
+                className="kn-score-now"
+                onClick={e => e.stopPropagation()}
+                href={`/money?proposalId=${record.id}`}
+              >
+                Run the numbers →
+              </a>
+              <a
+                className="kn-score-now"
+                onClick={e => e.stopPropagation()}
+                href={`/estimator?proposalId=${record.id}`}
+              >
+                Build an estimate →
+              </a>
+              <a
+                className="kn-score-now"
+                onClick={e => e.stopPropagation()}
+                href={`/camera?proposalId=${record.id}`}
+              >
+                Walk the site →
+              </a>
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 }
 
 // ── Kanban Column ─────────────────────────────────────────
-function KanbanColumn({ stage, records, fillDocByProposal, onDragStart, onDrop, onDragOver, onCardClick }) {
+function KanbanColumn({ stage, records, fillDocByProposal, captureCountByProposal, onDragStart, onDrop, onDragOver, onCardClick }) {
   const Icon = stage.icon
   return (
     <div
@@ -202,6 +276,7 @@ function KanbanColumn({ stage, records, fillDocByProposal, onDragStart, onDrop, 
             key={r.id}
             record={r}
             hasDraft={!!fillDocByProposal[r.id]}
+            captureCount={captureCountByProposal[r.id] || 0}
             onDragStart={onDragStart}
             onClick={onCardClick}
           />
@@ -468,6 +543,9 @@ export default function Pipeline() {
   // whether FASS FILL work already exists for that opportunity instead
   // of leaving the two tools' records invisible to each other.
   const [fillDocByProposal, setFillDocByProposal] = useState({})
+  // proposal_id -> number of site_captures, so the Pursuing checklist can
+  // check off "Capture your proof" from real data instead of a static link.
+  const [captureCountByProposal, setCaptureCountByProposal] = useState({})
   const [loading, setLoading] = useState(true)
   const [view, setView] = useState(() => localStorage.getItem('fass-pipeline-view') || 'kanban')
   const [search, setSearch] = useState('')
@@ -521,7 +599,7 @@ export default function Pipeline() {
 
   async function loadRecords() {
     setLoading(true)
-    const [{ data }, { data: fillDocs }] = await Promise.all([
+    const [{ data }, { data: fillDocs }, { data: captures }] = await Promise.all([
       supabase
         .from('proposals')
         .select('*')
@@ -532,9 +610,17 @@ export default function Pipeline() {
         .select('id, proposal_id')
         .eq('user_id', session.user.id)
         .not('proposal_id', 'is', null),
+      supabase
+        .from('site_captures')
+        .select('proposal_id')
+        .eq('user_id', session.user.id)
+        .not('proposal_id', 'is', null),
     ])
     setRecords(data || [])
     setFillDocByProposal(Object.fromEntries((fillDocs || []).map(d => [d.proposal_id, d.id])))
+    const capCounts = {}
+    for (const c of captures || []) capCounts[c.proposal_id] = (capCounts[c.proposal_id] || 0) + 1
+    setCaptureCountByProposal(capCounts)
     setLoading(false)
   }
 
@@ -729,6 +815,7 @@ export default function Pipeline() {
                 stage={stage}
                 records={byStage[stage.id] || []}
                 fillDocByProposal={fillDocByProposal}
+                captureCountByProposal={captureCountByProposal}
                 onDragStart={onDragStart}
                 onDrop={onDrop}
                 onDragOver={onDragOver}

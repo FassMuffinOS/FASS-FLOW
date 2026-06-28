@@ -380,10 +380,25 @@ function SectionInsight({ q, answers }) {
   )
 }
 
-function SubQuestion({ sub, value, onChange, ctx }) {
+function SubQuestion({ sub, value, prefill, onChange, ctx }) {
   return (
-    <div className="rd-sub">
-      <p className="rd-sub-label">{sub.label}</p>
+    <div className={`rd-sub ${prefill ? 'rd-sub-prefilled' : ''}`}>
+      <div className="rd-sub-main">
+        <p className="rd-sub-label">
+          {sub.label}
+          {prefill && (
+            <span
+              className={`rd-prefill-badge rd-prefill-${prefill.source}`}
+              title={prefill.rationale || ''}
+            >
+              {prefill.source === 'data'
+                ? '✓ From your data — confirm'
+                : `AI suggestion (${prefill.confidence}) — confirm`}
+            </span>
+          )}
+        </p>
+        {prefill?.rationale && <p className="rd-prefill-why">{prefill.rationale}</p>}
+      </div>
       <div className="rd-sub-options">
         {['yes', 'partial', 'no'].map(opt => (
           <Tooltip key={opt} text={tailoredTooltip(sub.id, opt, ctx)}>
@@ -404,7 +419,7 @@ function SubQuestion({ sub, value, onChange, ctx }) {
   )
 }
 
-function QuestionCard({ q, answers, notes, onAnswer, onNote, ctx, defaultOpen, bulkSignal, synthesis, synthesisLoading }) {
+function QuestionCard({ q, answers, prefill = {}, notes, onAnswer, onNote, ctx, defaultOpen, bulkSignal, synthesis, synthesisLoading }) {
   const [open, setOpen] = useState(defaultOpen)
 
   useEffect(() => {
@@ -462,7 +477,7 @@ function QuestionCard({ q, answers, notes, onAnswer, onNote, ctx, defaultOpen, b
           <p className="rd-guidance">{q.guidance}</p>
           <div className="rd-subs">
             {q.subs.map(sub => (
-              <SubQuestion key={sub.id} sub={sub} value={answers[sub.id]} onChange={onAnswer} ctx={ctx} />
+              <SubQuestion key={sub.id} sub={sub} value={answers[sub.id]} prefill={prefill[sub.id]} onChange={onAnswer} ctx={ctx} />
             ))}
           </div>
           <SectionInsight q={q} answers={answers} />
@@ -568,6 +583,51 @@ export default function Read() {
   const [synthesisLoading, setSynthesisLoading] = useState(false)
   const [synthesisError, setSynthesisError] = useState('')
 
+  // Auto-fill: the worksheet pre-answers what it can so the user reviews
+  // instead of filling 18 blanks. Two sources — (1) deterministic facts the
+  // app already knows (NAICS match, days-to-due), computed locally with zero
+  // AI; (2) AI suggestions returned alongside the synthesis. Every pre-filled
+  // answer is tagged in `prefill` so the UI can badge it and the owner knows
+  // to confirm it before saving.
+  const [profileNaics, setProfileNaics] = useState('')
+  const [businessName, setBusinessName] = useState('')
+  const [profileLoaded, setProfileLoaded] = useState(false)
+  const [suggestions, setSuggestions] = useState({})
+  const [prefill, setPrefill] = useState({}) // subId -> { source: 'data'|'ai', confidence, rationale }
+  const rtAppliedRef = useRef(false)
+  const nmAppliedRef = useRef(false)
+  const aiAppliedRef = useRef(false)
+
+  // Load the user's own business identity once, to (a) compute naics_match
+  // locally and (b) ground the AI's suggestions. Always flips profileLoaded
+  // (even when empty) so the synthesis call doesn't hang waiting on a profile.
+  useEffect(() => {
+    if (!session?.user?.id) { setProfileLoaded(true); return }
+    let cancelled = false
+    ;(async () => {
+      const { data: bp } = await supabase
+        .from('business_profiles')
+        .select('naics, business_name')
+        .eq('user_id', session.user.id)
+        .maybeSingle()
+      let naics = bp?.naics || ''
+      let name = bp?.business_name || ''
+      if (!naics || !name) {
+        const { data: wp } = await supabase
+          .from('wallet_passes')
+          .select('naics, business_name')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        naics = naics || wp?.naics || ''
+        name = name || wp?.business_name || ''
+      }
+      if (!cancelled) { setProfileNaics(naics); setBusinessName(name); setProfileLoaded(true) }
+    })()
+    return () => { cancelled = true }
+  }, [session?.user?.id])
+
   useEffect(() => {
     if (!savedProposalId) return
     let cancelled = false
@@ -583,7 +643,10 @@ export default function Read() {
   }, [savedProposalId])
 
   useEffect(() => {
-    if (!solicitationText.trim()) return
+    // Wait for the profile too, so the request can carry the business's NAICS
+    // and name — that's what lets the model ground its answer suggestions
+    // instead of guessing about the business.
+    if (!solicitationText.trim() || !profileLoaded) return
     let cancelled = false
     setSynthesisLoading(true)
     setSynthesisError('')
@@ -596,6 +659,8 @@ export default function Read() {
             solicitation_text: solicitationText,
             title: oppTitle,
             agency: oppAgency,
+            business_naics: profileNaics,
+            business_name: businessName,
             user_id: session?.user?.id || null,
           }),
         })
@@ -607,7 +672,10 @@ export default function Read() {
           throw new Error(`Synthesis request failed (${res.status})`)
         }
         const json = await res.json()
-        if (!cancelled) setSynthesisMap(json.synthesis || {})
+        if (!cancelled) {
+          setSynthesisMap(json.synthesis || {})
+          setSuggestions(json.suggestions || {})
+        }
       } catch (err) {
         if (!cancelled) setSynthesisError(err.message || 'Could not generate synthesis')
       } finally {
@@ -616,7 +684,64 @@ export default function Read() {
     })()
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [solicitationText])
+  }, [solicitationText, profileLoaded])
+
+  // ── Deterministic pre-fill: response_time from the due date ──
+  useEffect(() => {
+    if (rtAppliedRef.current || daysUntilDue == null) return
+    rtAppliedRef.current = true
+    let answer, why
+    if (daysUntilDue >= 14) { answer = 'yes'; why = `${daysUntilDue} days until the due date — enough runway to prepare a competitive response.` }
+    else if (daysUntilDue >= 5) { answer = 'partial'; why = `${daysUntilDue} days until the due date — tight but workable if you start now.` }
+    else { answer = 'no'; why = `Only ${daysUntilDue} day${daysUntilDue === 1 ? '' : 's'} until the due date — likely too little time for a quality bid.` }
+    setAnswers(prev => prev.response_time === undefined ? { ...prev, response_time: answer } : prev)
+    setPrefill(prev => prev.response_time ? prev : { ...prev, response_time: { source: 'data', confidence: 'high', rationale: why } })
+  }, [daysUntilDue])
+
+  // ── Deterministic pre-fill: naics_match by comparing the two codes ──
+  useEffect(() => {
+    if (nmAppliedRef.current || !oppNaics || !profileNaics) return
+    nmAppliedRef.current = true
+    const a = String(oppNaics).replace(/\D/g, '')
+    const b = String(profileNaics).replace(/\D/g, '')
+    if (!a || !b) return
+    let answer, why
+    if (a === b) { answer = 'yes'; why = `Your NAICS ${profileNaics} matches the solicitation's ${oppNaics} exactly.` }
+    else if (a.slice(0, 4) === b.slice(0, 4)) { answer = 'partial'; why = `Your NAICS ${profileNaics} is in the same family as the solicitation's ${oppNaics} (first 4 digits match) — you may need to justify the alignment.` }
+    else { answer = 'no'; why = `Your NAICS ${profileNaics} doesn't match the solicitation's ${oppNaics}.` }
+    setAnswers(prev => prev.naics_match === undefined ? { ...prev, naics_match: answer } : prev)
+    setPrefill(prev => prev.naics_match ? prev : { ...prev, naics_match: { source: 'data', confidence: 'high', rationale: why } })
+  }, [oppNaics, profileNaics])
+
+  // ── AI pre-fill: apply suggestions to anything still blank ──
+  // naics_match and response_time are deterministic-owned, so AI never
+  // touches them; everything else gets the model's best-supported guess,
+  // flagged so the user reviews rather than trusts it blindly.
+  useEffect(() => {
+    if (aiAppliedRef.current) return
+    const keys = Object.keys(suggestions).filter(
+      k => k !== 'naics_match' && k !== 'response_time' && answers[k] === undefined
+    )
+    if (Object.keys(suggestions).length === 0) return
+    aiAppliedRef.current = true
+    if (keys.length === 0) return
+    setAnswers(prev => {
+      const next = { ...prev }
+      for (const k of keys) if (next[k] === undefined) next[k] = suggestions[k].answer
+      return next
+    })
+    setPrefill(prev => {
+      const next = { ...prev }
+      for (const k of keys) next[k] = { source: 'ai', confidence: suggestions[k].confidence, rationale: suggestions[k].rationale }
+      return next
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [suggestions])
+
+  const prefillCounts = {
+    data: Object.values(prefill).filter(p => p.source === 'data').length,
+    ai: Object.values(prefill).filter(p => p.source === 'ai').length,
+  }
 
   function dismissHelp() {
     setShowHelp(false)
@@ -643,6 +768,14 @@ export default function Read() {
 
   function handleAnswer(subId, value) {
     setAnswers(prev => ({ ...prev, [subId]: value }))
+    // A manual answer is the user confirming/overriding — drop the pre-fill
+    // tag so the "review this" badge clears and it reads as their own answer.
+    setPrefill(prev => {
+      if (!prev[subId]) return prev
+      const next = { ...prev }
+      delete next[subId]
+      return next
+    })
     setSaved(false)
   }
 
@@ -807,6 +940,22 @@ export default function Read() {
             </div>
           </div>
 
+          {/* Pre-fill review banner */}
+          {(prefillCounts.data > 0 || prefillCounts.ai > 0) && (
+            <div className="rd-prefill-banner">
+              <Brain size={16} />
+              <div>
+                <strong>We pre-filled {prefillCounts.data + prefillCounts.ai} answer{prefillCounts.data + prefillCounts.ai === 1 ? '' : 's'} to save you time.</strong>
+                <span>
+                  {prefillCounts.data > 0 && `${prefillCounts.data} from your own data`}
+                  {prefillCounts.data > 0 && prefillCounts.ai > 0 && ', '}
+                  {prefillCounts.ai > 0 && `${prefillCounts.ai} suggested by AI`}
+                  {' '}— each is badged below. Review and adjust before saving; this is your decision, not ours.
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Questions */}
           <div className="rd-questions">
             {QUESTIONS.map(q => {
@@ -816,6 +965,7 @@ export default function Read() {
                   key={q.id}
                   q={q}
                   answers={answers}
+                  prefill={prefill}
                   notes={notes}
                   onAnswer={handleAnswer}
                   onNote={handleNote}
