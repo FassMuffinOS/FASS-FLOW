@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, Link } from 'react-router-dom'
 import { Handshake, Plus, Loader, MessageCircle, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { logBusinessEvent } from '../lib/businessEvents'
@@ -182,7 +182,7 @@ function BoardList({ posts, userId, onMessage }) {
           <p><strong>Brings:</strong> {p.what_i_bring}</p>
           <p><strong>Needs:</strong> {p.what_i_need}</p>
           <div className="teamup-card-foot">
-            <span className="teamup-author">{p.profiles?.full_name || 'FASS Flow member'}</span>
+            <Link to={`/profile/${p.user_id}`} className="teamup-author">{p.profiles?.full_name || 'FASS Flow member'}</Link>
             <div className="teamup-card-actions">
               <ShareToChatButton
                 objectType="partner_post"

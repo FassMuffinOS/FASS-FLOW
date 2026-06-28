@@ -124,6 +124,11 @@
 .teamup-author {
   font-size: 0.8rem;
   color: var(--gray-500);
+  text-decoration: none;
+}
+.teamup-author:hover {
+  color: var(--teal, #1D9E75);
+  text-decoration: underline;
 }
 
 .teamup-status {
