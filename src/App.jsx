@@ -9,6 +9,9 @@ import HowItWorks from './components/HowItWorks'
 import Pricing from './components/Pricing'
 import Footer from './components/Footer'
 import Careers from './pages/Careers'
+import About from './pages/About'
+import Press from './pages/Press'
+import Blog from './pages/Blog'
 import Masterclass from './pages/Masterclass'
 import Support from './pages/Support'
 import BDPartner from './pages/BDPartner'
@@ -210,6 +213,12 @@ function AppRoutes() {
           routed into /signin to create one. Plain Nav/Footer chrome, same as
           every other public marketing page. */}
       <Route path="/careers" element={<><Nav /><main><Careers /></main><Footer /></>} />
+
+      {/* Public marketing/company pages — same plain Nav/Footer chrome as
+          Careers, no account needed. */}
+      <Route path="/about" element={<><Nav /><main><About /></main><Footer /></>} />
+      <Route path="/press" element={<><Nav /><main><Press /></main><Footer /></>} />
+      <Route path="/blog" element={<><Nav /><main><Blog /></main><Footer /></>} />
 
       {/* Public affiliate pitch/join page — logged-out visitors see the
           pitch + a "sign in to get your link" CTA; logged-in visitors can

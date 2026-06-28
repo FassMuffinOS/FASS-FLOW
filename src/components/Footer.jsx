@@ -28,6 +28,7 @@ export default function Footer() {
               <li><a href="/masterclass">Masterclass</a></li>
               <li><a href="/bd-partner">BD Partner</a></li>
               <li><a href="/signin">Wardog</a></li>
+              <li><a href="/signin">Wallet</a></li>
               <li><a href="/signin">Procure</a></li>
               <li><a href="/signin">Fill</a></li>
               <li><a href="/signin">Witness</a></li>
@@ -36,10 +37,10 @@ export default function Footer() {
           <div className="footer-col">
             <h4>Company</h4>
             <ul>
-              <li><a href="#">About</a></li>
-              <li><a href="#">Blog</a></li>
+              <li><a href="/about">About</a></li>
+              <li><a href="/blog">Blog</a></li>
               <li><a href="/careers">Careers</a></li>
-              <li><a href="#">Press</a></li>
+              <li><a href="/press">Press</a></li>
               <li><a href="/support">Support FASS</a></li>
             </ul>
           </div>
