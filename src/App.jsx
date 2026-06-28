@@ -47,6 +47,7 @@ import PublicEstimate from './pages/PublicEstimate'
 import Capability from './pages/Capability'
 import Profile from './pages/Profile'
 import Activity from './pages/Activity'
+import Feed from './pages/Feed'
 import Rewards from './pages/Rewards'
 import RewardsJoin from './pages/RewardsJoin'
 import WalletCampaigns from './pages/WalletCampaigns'
@@ -310,6 +311,11 @@ function AppRoutes() {
           Renders the existing business_events stream chronologically. */}
       <Route path="/activity" element={
         <ProtectedRoute><Activity /></ProtectedRoute>
+      } />
+      {/* Global business feed — LinkedIn+Slack-style posts/likes/comments
+          across every member, manual + auto (milestone) posts. See feed.py. */}
+      <Route path="/feed" element={
+        <ProtectedRoute><Feed /></ProtectedRoute>
       } />
       <Route path="/comms" element={
         <ProtectedRoute><CommsHub /></ProtectedRoute>

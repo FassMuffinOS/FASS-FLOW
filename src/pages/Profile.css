@@ -95,3 +95,18 @@
 .prof-stat-label { font-size: 0.7rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.02em; margin-top: 2px; }
 
 .prof-foot { text-align: center; font-size: 0.78rem; color: #9ca3af; margin: 0; line-height: 1.5; }
+
+.prof-updates {
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 16px;
+  padding: 18px; margin-bottom: 18px;
+}
+.prof-updates-title {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.95rem; font-weight: 800; margin: 0 0 12px;
+}
+.prof-updates-title svg { color: #581c87; }
+.prof-updates-list { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; }
+.prof-update-row { padding: 10px 0; border-bottom: 1px solid #f1f3f5; }
+.prof-update-row:last-child { border-bottom: none; }
+.prof-update-body { font-size: 0.88rem; line-height: 1.4; margin: 0 0 4px; color: #111827; white-space: pre-wrap; }
+.prof-update-meta { font-size: 0.74rem; color: #9ca3af; }

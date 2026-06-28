@@ -15,6 +15,8 @@ import {
 } from 'lucide-react'
 import './Pipeline.css'
 
+const API_BASE = import.meta.env.VITE_API_URL || ''
+
 // ── Stage config ──────────────────────────────────────────
 const STAGES = [
   { id: 'flagged',   label: 'Flagged',   color: 'stage-flagged',   icon: Clock,        desc: 'From WARDOG, not yet scored' },
@@ -642,6 +644,24 @@ export default function Pipeline() {
     }
     if (stage === 'awarded') {
       logBusinessEvent(session.user.id, 'customer_growth', 'contract_awarded', 15, `Won "${record?.title || 'a contract'}"`)
+      // Also drop an auto post on the global Feed — "ABC Roofing — Won a
+      // $320,000 contract" is the exact shape from the original vision. Best
+      // effort: a failed post here shouldn't block the actual stage update,
+      // which already succeeded above.
+      const valueText = formatMoney(record?.estimated_value)
+      const postBody = `Won "${record?.title || 'a contract'}"${valueText ? ` — ${valueText}` : ''} 🎉`
+      if (API_BASE) {
+        fetch(`${API_BASE}/api/v1/feed/posts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: session.user.id,
+            body: postBody,
+            source: 'auto',
+            category: 'customer_growth',
+          }),
+        }).catch(err => console.error('Pipeline: failed to auto-post contract award to feed', err))
+      }
     }
   }
 

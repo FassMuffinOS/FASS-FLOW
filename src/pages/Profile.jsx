@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { ShieldCheck, MapPin, Phone, Globe, ExternalLink, Loader, ArrowLeft, Award, Handshake, Wallet as WalletIcon, FileText } from 'lucide-react'
+import { useParams, useNavigate, Link } from 'react-router-dom'
+import { ShieldCheck, MapPin, Phone, Globe, ExternalLink, Loader, ArrowLeft, Award, Handshake, Wallet as WalletIcon, FileText, Newspaper } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import './Profile.css'
 
@@ -22,6 +22,7 @@ export default function Profile() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [posts, setPosts] = useState([])
 
   useEffect(() => {
     if (!targetId || !API_BASE) { setNotFound(true); setLoading(false); return }
@@ -40,6 +41,20 @@ export default function Profile() {
       }
     }
     load()
+    return () => { cancelled = true }
+  }, [targetId])
+
+  // Recent feed posts for this business — backs the "Recent updates"
+  // section below. Separate effect/fetch from the main profile load since
+  // it hits a different router (feed.py) and shouldn't block the rest of
+  // the page if it's slow or empty.
+  useEffect(() => {
+    if (!targetId || !API_BASE) return
+    let cancelled = false
+    fetch(`${API_BASE}/api/v1/feed/user/${targetId}?limit=5`)
+      .then(res => res.ok ? res.json() : { posts: [] })
+      .then(json => { if (!cancelled) setPosts(json.posts || []) })
+      .catch(() => {})
     return () => { cancelled = true }
   }, [targetId])
 
@@ -100,6 +115,27 @@ export default function Profile() {
           {gamification && <StatTile icon={Award} label="Creator XP" value={gamification.xp} />}
         </div>
 
+        {posts.length > 0 && (
+          <div className="prof-updates">
+            <h2 className="prof-updates-title"><Newspaper size={16} /> Recent updates</h2>
+            <ul className="prof-updates-list">
+              {posts.map(p => (
+                <li key={p.id} className="prof-update-row">
+                  <p className="prof-update-body">{p.body}</p>
+                  <span className="prof-update-meta">
+                    {timeAgo(p.created_at)}
+                    {(p.like_count > 0 || p.comment_count > 0) && ' · '}
+                    {p.like_count > 0 && `${p.like_count} like${p.like_count === 1 ? '' : 's'}`}
+                    {p.like_count > 0 && p.comment_count > 0 && ' · '}
+                    {p.comment_count > 0 && `${p.comment_count} comment${p.comment_count === 1 ? '' : 's'}`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <Link to="/feed" className="prof-link">See the full feed <ExternalLink size={12} /></Link>
+          </div>
+        )}
+
         {isOwnProfile && (
           <p className="prof-foot">This is how other members see you. Fill out Passport / FASS Wallet and the affiliate program to fill in more of this page.</p>
         )}
@@ -124,6 +160,19 @@ function initials(name) {
   if (parts.length === 0) return '?'
   if (parts.length === 1) return parts[0][0].toUpperCase()
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
+
+function timeAgo(iso) {
+  if (!iso) return ''
+  const diffMs = Date.now() - new Date(iso).getTime()
+  const mins = Math.floor(diffMs / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  if (days < 30) return `${days}d ago`
+  return new Date(iso).toLocaleDateString()
 }
 
 function money(v) {

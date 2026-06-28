@@ -1,0 +1,90 @@
+.feed {
+  min-height: 100vh;
+  background: #f4f6f8;
+  padding: 32px 16px 60px;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #111827;
+}
+
+.feed-wrap { max-width: 640px; margin: 0 auto; }
+
+.feed-header { margin-bottom: 18px; }
+.feed-header h1 {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 1.4rem; font-weight: 800; margin: 0 0 4px; letter-spacing: -0.02em;
+}
+.feed-header h1 svg { color: #581c87; }
+.feed-header p { font-size: 0.88rem; color: #6b7280; margin: 0; }
+
+.feed-composer {
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 14px;
+  padding: 14px; margin-bottom: 20px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.feed-composer textarea {
+  border: none; resize: vertical; font-family: inherit; font-size: 0.92rem;
+  outline: none; min-height: 44px;
+}
+.feed-composer .btn-primary {
+  align-self: flex-end;
+  display: flex; align-items: center; gap: 6px;
+  background: #1D9E75; color: #fff; border: none; border-radius: 999px;
+  padding: 8px 16px; font-weight: 700; font-size: 0.85rem; cursor: pointer;
+}
+.feed-composer .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.feed-state {
+  min-height: 20vh; display: flex; align-items: center; justify-content: center; gap: 10px;
+  color: #6b7280; padding: 24px; text-align: center;
+}
+.spin { animation: feed-spin 1s linear infinite; }
+@keyframes feed-spin { to { transform: rotate(360deg); } }
+
+.feed-list { display: flex; flex-direction: column; gap: 14px; }
+
+.feed-card {
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 14px;
+}
+
+.feed-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.feed-author { font-weight: 700; font-size: 0.9rem; color: #111827; text-decoration: none; }
+.feed-author:hover { text-decoration: underline; }
+.feed-time { font-size: 0.76rem; color: #9ca3af; }
+.feed-auto-tag {
+  margin-left: auto;
+  font-size: 0.7rem; font-weight: 700; color: #0f6e56;
+  background: #e6f5ef; border-radius: 999px; padding: 2px 8px;
+}
+
+.feed-body { font-size: 0.92rem; line-height: 1.45; margin: 0 0 10px; white-space: pre-wrap; }
+
+.feed-card-actions { display: flex; align-items: center; gap: 14px; }
+.feed-action {
+  display: flex; align-items: center; gap: 5px;
+  background: none; border: none; color: #6b7280; font-size: 0.82rem; font-weight: 600;
+  cursor: pointer; padding: 4px 2px;
+}
+.feed-action.liked { color: #e11d48; }
+.feed-action-delete { margin-left: auto; color: #9ca3af; }
+.feed-action-delete:hover { color: #dc2626; }
+
+.feed-comments {
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid #f1f3f5;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.feed-comments-loading { color: #9ca3af; font-size: 0.8rem; }
+.feed-comment { font-size: 0.84rem; display: flex; gap: 6px; flex-wrap: wrap; }
+.feed-comment-author { font-weight: 700; color: #111827; text-decoration: none; }
+.feed-comment-body { color: #374151; }
+
+.feed-comment-form { display: flex; gap: 8px; margin-top: 4px; }
+.feed-comment-form input {
+  flex: 1; border: 1px solid #e5e7eb; border-radius: 999px; padding: 7px 12px;
+  font-size: 0.82rem; outline: none;
+}
+.feed-comment-form button {
+  border: none; background: #1D9E75; color: #fff; border-radius: 999px;
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+}
+.feed-comment-form button:disabled { opacity: 0.5; cursor: not-allowed; }
