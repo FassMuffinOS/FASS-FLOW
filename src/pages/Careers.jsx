@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   Check, Rocket, Target, Users, GraduationCap, Trophy,
   Code2, Palette, Sparkles, FileText, HeartHandshake, Briefcase, Megaphone,
-  Github, Figma, Globe, Workflow, Building2, Star, Send, Loader2,
+  Github, Layers, Globe, Workflow, Building2, Star, Send, Loader2,
 } from 'lucide-react'
 import Reveal from '../components/Reveal'
 import './Careers.css'
@@ -321,7 +321,7 @@ export default function Careers() {
             </p>
             <div className="careers-build-list">
               <span><Github size={15} /> A GitHub repository</span>
-              <span><Figma size={15} /> A Figma prototype</span>
+              <span><Layers size={15} /> A Figma prototype</span>
               <span><Globe size={15} /> A website</span>
               <span><Workflow size={15} /> An AI workflow</span>
               <span><Building2 size={15} /> A business you started</span>
