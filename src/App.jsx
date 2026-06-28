@@ -35,6 +35,7 @@ import JoinNetwork from './pages/JoinNetwork'
 import Network from './pages/Network'
 import Inbox from './pages/Inbox'
 import InstallExtension from './pages/InstallExtension'
+import ExtensionPrivacy from './pages/ExtensionPrivacy'
 import Witness from './pages/Witness'
 import Estimator from './pages/Estimator'
 import Foreman from './pages/Foreman'
@@ -192,6 +193,11 @@ function AppRoutes() {
           post-Stripe-Checkout success/cancelled redirect via query params. */}
       <Route path="/giftcards/buy/:businessUserId" element={<GiftCardPurchase />} />
       <Route path="/join-network" element={<><Nav /><main><JoinNetwork /></main><Footer /></>} />
+
+      {/* Public, no-login privacy policy for the capture Chrome extension —
+          this is the exact URL the Web Store listing's privacy policy field
+          points to, so it must be reachable without an account. */}
+      <Route path="/extension-privacy" element={<ExtensionPrivacy />} />
       <Route path="/pricing" element={<><Nav /><main><Pricing /></main><Footer /></>} />
 
       {/* Public affiliate pitch/join page — logged-out visitors see the

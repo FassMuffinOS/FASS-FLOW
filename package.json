@@ -4,9 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/build-extension-zip.mjs && vite",
-    "build": "node scripts/build-extension-zip.mjs && vite build",
-    "build:extension": "node scripts/build-extension-zip.mjs",
+    "dev": "node scripts/build-extension-icons.mjs && node scripts/build-extension-zip.mjs && vite",
+    "build": "node scripts/build-extension-icons.mjs && node scripts/build-extension-zip.mjs && vite build",
+    "build:extension": "node scripts/build-extension-icons.mjs && node scripts/build-extension-zip.mjs",
+    "build:extension-store": "node scripts/build-extension-icons.mjs && FLAT=1 node scripts/build-extension-zip.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },

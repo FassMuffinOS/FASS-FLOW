@@ -31,5 +31,7 @@ dist-ssr
 .vercel
 .env*
 
-# Generated at build time by scripts/build-extension-zip.mjs
+# Generated at build time by scripts/build-extension-zip.mjs / build-extension-icons.mjs
 public/fass-capture-extension.zip
+capture-extension/icons/
+dist-extension/
