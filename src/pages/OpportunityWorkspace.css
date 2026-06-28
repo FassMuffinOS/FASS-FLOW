@@ -2,6 +2,28 @@
   display: flex;
   flex-direction: column;
   min-height: 100%;
+  /* Lets WARDOG's "Run R-E-A-D" feel like a layer sliding into view rather
+     than a hard page load — Linear-style motion over pages. Short and
+     subtle on purpose: this plays once per mount, not on every tab swap
+     inside the Decide/Draft strip (those stay instant, no animation). */
+  animation: ow-slide-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes ow-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ow {
+    animation: none;
+  }
 }
 
 .ow-header {

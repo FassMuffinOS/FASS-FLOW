@@ -329,6 +329,38 @@
   background: var(--light-teal);
 }
 
+/* "Haptic" commitment moment — the instant Save Interest lands, the
+   button pulses a teal ring once so the click reads as physical, not just
+   a state flip. Self-removing: justSavedId clears ~900ms after save, and
+   the class only applies while it's set. */
+.wd-icon-btn-pulse {
+  animation: wd-save-pulse 0.6s ease-out;
+}
+
+@keyframes wd-save-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(29, 158, 117, 0.55);
+    transform: scale(1);
+  }
+  35% {
+    box-shadow: 0 0 0 6px rgba(29, 158, 117, 0.18);
+    transform: scale(1.07);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(29, 158, 117, 0);
+    transform: scale(1);
+  }
+}
+
+/* Run R-E-A-D's "opening" state — instant feedback the instant a user
+   clicks, instead of a frozen button while saveInterest's await resolves
+   in the background. Optimistic-feeling even though the destination is
+   still a real navigation. */
+.wd-cta-opening {
+  opacity: 0.85;
+  cursor: default;
+}
+
 /* ShareToChatButton ships its own .stc-trigger style — match it to the
    other secondary actions here instead of leaving it as a full button so
    the row reads as one quiet group, not three competing buttons. */

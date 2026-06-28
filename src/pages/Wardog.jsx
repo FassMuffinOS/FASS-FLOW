@@ -244,6 +244,15 @@ export default function Wardog() {
   // same opportunity.
   const [savedProposals, setSavedProposals] = useState({})
   const [savingId, setSavingId] = useState(null)
+  // Fires the moment a save lands — true for ~900ms so the button can play
+  // a one-shot pulse/checkmark animation (the "haptic" commitment moment),
+  // separate from savedProposals which is the permanent "Saved" state.
+  const [justSavedId, setJustSavedId] = useState(null)
+  // True while goToRead's await (saveInterest, if not already saved) is in
+  // flight, so the primary CTA gives instant feedback on click instead of
+  // sitting inert during the round trip — same idea as the save pulse, just
+  // for the button that's about to navigate away.
+  const [openingId, setOpeningId] = useState(null)
   // Flips true exactly once, the moment the profile prefill above changes
   // naics after the initial (default-NAICS) fetch already ran — that's
   // the signal to re-run the search so it reflects the user's real NAICS
@@ -356,7 +365,11 @@ export default function Wardog() {
       // prompt as if it were the solicitation's actual content).
       description: resolvedText || ((opp.description && !isUrlLike(opp.description)) ? opp.description : null),
     }).select().single()
-    if (!error && data) setSavedProposals(prev => ({ ...prev, [opp.noticeId]: data.id }))
+    if (!error && data) {
+      setSavedProposals(prev => ({ ...prev, [opp.noticeId]: data.id }))
+      setJustSavedId(opp.noticeId)
+      setTimeout(() => setJustSavedId(id => (id === opp.noticeId ? null : id)), 900)
+    }
     setSavingId(null)
     return data?.id || null
   }
@@ -367,6 +380,7 @@ export default function Wardog() {
   // read. This guarantees the row (and its description) exists first.
   async function goToRead(opp) {
     if (isLite) { navigate('/pricing'); return }
+    setOpeningId(opp.noticeId)
     let proposalId = savedProposals[opp.noticeId]
     if (!proposalId) {
       proposalId = await saveInterest(opp)
@@ -713,15 +727,18 @@ export default function Wardog() {
                         to weigh against the primary CTA. */}
                     <button
                       type="button"
-                      className="btn-primary wd-bid-btn wd-primary-cta"
+                      className={`btn-primary wd-bid-btn wd-primary-cta ${openingId === opp.noticeId ? 'wd-cta-opening' : ''}`}
                       onClick={() => goToRead(opp)}
+                      disabled={openingId === opp.noticeId}
                     >
-                      Run R-E-A-D → <span className="wd-primary-sub">decide if it's worth bidding</span>
+                      {openingId === opp.noticeId
+                        ? <>Opening… <span className="wd-primary-sub">pulling the AI read</span></>
+                        : <>Run R-E-A-D → <span className="wd-primary-sub">decide if it's worth bidding</span></>}
                     </button>
 
                     <div className="wd-card-secondary">
                       <button
-                        className={`wd-icon-btn ${savedProposals[opp.noticeId] ? 'wd-icon-btn-active' : ''}`}
+                        className={`wd-icon-btn ${savedProposals[opp.noticeId] ? 'wd-icon-btn-active' : ''} ${justSavedId === opp.noticeId ? 'wd-icon-btn-pulse' : ''}`}
                         onClick={() => saveInterest(opp)}
                         disabled={!!savedProposals[opp.noticeId] || savingId === opp.noticeId}
                         title="Save to Pipeline without scoring it yet"
