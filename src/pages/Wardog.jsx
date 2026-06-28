@@ -704,43 +704,54 @@ export default function Wardog() {
                   </Link>
                 ) : (
                   <>
-                    <button
-                      className={`wd-save-btn ${savedProposals[opp.noticeId] ? 'wd-save-btn-saved' : ''}`}
-                      onClick={() => saveInterest(opp)}
-                      disabled={!!savedProposals[opp.noticeId] || savingId === opp.noticeId}
-                      title="Save to Pipeline without scoring it yet"
-                    >
-                      {savedProposals[opp.noticeId]
-                        ? <><BookmarkCheck size={13} /> Saved</>
-                        : <><Bookmark size={13} /> {savingId === opp.noticeId ? 'Saving…' : 'Save interest'}</>}
-                    </button>
+                    {/* One clear next step per card: Run R-E-A-D is the
+                        decide-or-pass action every found opportunity needs
+                        first, so it's the only full-weight button. Save/
+                        Send/Share are real but secondary — they're real
+                        shortcuts for someone who already knows they want
+                        this one, not actions a first-time card-reader needs
+                        to weigh against the primary CTA. */}
                     <button
                       type="button"
-                      className="btn-primary wd-bid-btn"
+                      className="btn-primary wd-bid-btn wd-primary-cta"
                       onClick={() => goToRead(opp)}
                     >
-                      Run R-E-A-D →
+                      Run R-E-A-D → <span className="wd-primary-sub">decide if it's worth bidding</span>
                     </button>
-                    <Link
-                      to={savedProposals[opp.noticeId]
-                        ? `/opportunity/${savedProposals[opp.noticeId]}?panel=draft&new=1&title=${encodeURIComponent(opp.title)}&agency=${encodeURIComponent(opp.fullParentPathName || opp.department || '')}&solnum=${encodeURIComponent(opp.noticeId)}`
-                        : `/fill?new=1&title=${encodeURIComponent(opp.title)}&agency=${encodeURIComponent(opp.fullParentPathName || opp.department || '')}&solnum=${encodeURIComponent(opp.noticeId)}`}
-                      className="btn-outline wd-bid-btn"
-                    >
-                      <ClipboardList size={13} /> Send to FASS FILL
-                    </Link>
-                    <ShareToChatButton
-                      objectType="opportunity_live"
-                      objectId={opp.noticeId}
-                      snapshot={{
-                        title: opp.title,
-                        agency: opp.fullParentPathName || opp.department || null,
-                        naics_code: opp.naicsCode || naics || null,
-                        set_aside: opp.typeOfSetAside || null,
-                        response_date: opp.responseDeadLine || null,
-                      }}
-                      label="Share"
-                    />
+
+                    <div className="wd-card-secondary">
+                      <button
+                        className={`wd-icon-btn ${savedProposals[opp.noticeId] ? 'wd-icon-btn-active' : ''}`}
+                        onClick={() => saveInterest(opp)}
+                        disabled={!!savedProposals[opp.noticeId] || savingId === opp.noticeId}
+                        title="Save to Pipeline without scoring it yet"
+                      >
+                        {savedProposals[opp.noticeId]
+                          ? <><BookmarkCheck size={13} /> Saved</>
+                          : <><Bookmark size={13} /> {savingId === opp.noticeId ? 'Saving…' : 'Save'}</>}
+                      </button>
+                      <Link
+                        to={savedProposals[opp.noticeId]
+                          ? `/opportunity/${savedProposals[opp.noticeId]}?panel=draft&new=1&title=${encodeURIComponent(opp.title)}&agency=${encodeURIComponent(opp.fullParentPathName || opp.department || '')}&solnum=${encodeURIComponent(opp.noticeId)}`
+                          : `/fill?new=1&title=${encodeURIComponent(opp.title)}&agency=${encodeURIComponent(opp.fullParentPathName || opp.department || '')}&solnum=${encodeURIComponent(opp.noticeId)}`}
+                        className="wd-icon-btn"
+                        title="Skip straight to drafting the compliance matrix"
+                      >
+                        <ClipboardList size={13} /> FASS FILL
+                      </Link>
+                      <ShareToChatButton
+                        objectType="opportunity_live"
+                        objectId={opp.noticeId}
+                        snapshot={{
+                          title: opp.title,
+                          agency: opp.fullParentPathName || opp.department || null,
+                          naics_code: opp.naicsCode || naics || null,
+                          set_aside: opp.typeOfSetAside || null,
+                          response_date: opp.responseDeadLine || null,
+                        }}
+                        label="Share"
+                      />
+                    </div>
                   </>
                 )}
               </div>

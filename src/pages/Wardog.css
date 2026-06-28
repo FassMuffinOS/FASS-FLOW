@@ -238,8 +238,8 @@
 
 .wd-card-actions {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .wd-bid-btn {
@@ -276,6 +276,78 @@
 .wd-save-btn-saved {
   background: var(--light-teal);
   border-color: var(--teal);
+  color: var(--dark-teal);
+}
+
+/* Phase 2 card declutter: Run R-E-A-D is the one full-weight action every
+   found opportunity needs first; Save/FASS FILL/Share are real shortcuts
+   for someone who already knows they want this one, demoted to a quiet
+   secondary row instead of competing buttons of equal visual weight. */
+.wd-primary-cta {
+  width: 100%;
+  justify-content: center;
+  font-weight: 700;
+  padding: 11px 16px;
+}
+
+.wd-primary-sub {
+  font-weight: 400;
+  opacity: 0.85;
+  font-size: 0.78rem;
+}
+
+.wd-card-secondary {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.wd-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.wd-icon-btn:hover:not(:disabled) {
+  background: var(--gray-100, #f1f5f9);
+  color: var(--dark-teal);
+}
+
+.wd-icon-btn:disabled { cursor: default; opacity: 0.7; }
+
+.wd-icon-btn-active {
+  color: var(--dark-teal);
+  background: var(--light-teal);
+}
+
+/* ShareToChatButton ships its own .stc-trigger style — match it to the
+   other secondary actions here instead of leaving it as a full button so
+   the row reads as one quiet group, not three competing buttons. */
+.wd-card-secondary .stc-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  cursor: pointer;
+}
+
+.wd-card-secondary .stc-trigger:hover {
+  background: var(--gray-100, #f1f5f9);
   color: var(--dark-teal);
 }
 
