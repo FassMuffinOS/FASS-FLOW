@@ -27,10 +27,10 @@ export default function Footer() {
             <ul>
               <li><a href="/masterclass">Masterclass</a></li>
               <li><a href="/bd-partner">BD Partner</a></li>
-              <li><a href="#how-it-works">Wardog</a></li>
-              <li><a href="#how-it-works">Procure</a></li>
-              <li><a href="#how-it-works">Fill</a></li>
-              <li><a href="#how-it-works">Witness</a></li>
+              <li><a href="/signin">Wardog</a></li>
+              <li><a href="/signin">Procure</a></li>
+              <li><a href="/signin">Fill</a></li>
+              <li><a href="/signin">Witness</a></li>
             </ul>
           </div>
           <div className="footer-col">

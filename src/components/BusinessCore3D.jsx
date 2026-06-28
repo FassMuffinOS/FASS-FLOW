@@ -13,13 +13,17 @@ import './BusinessCore3D.css'
 //      across major versions — if any prop throws, check the installed
 //      drei version's docs for that component.
 
+// Each node is a real link, not decoration — same convention as Nav.jsx's
+// mega-menu (in-app features send a logged-out visitor to /signin since the
+// feature itself lives behind auth). Academy is the one exception: it has
+// its own public sales page already (/masterclass), so it goes straight there.
 const MODULES = [
-  { name: 'Wardog', color: '#5eead5' },
-  { name: 'Wallet', color: '#a78bfa' },
-  { name: 'Procure', color: '#60a5fa' },
-  { name: 'Fill', color: '#34d399' },
-  { name: 'Witness', color: '#fbbf24' },
-  { name: 'Academy', color: '#f472b6' },
+  { name: 'Wardog', color: '#5eead5', href: '/signin' },
+  { name: 'Wallet', color: '#a78bfa', href: '/signin' },
+  { name: 'Procure', color: '#60a5fa', href: '/signin' },
+  { name: 'Fill', color: '#34d399', href: '/signin' },
+  { name: 'Witness', color: '#fbbf24', href: '/signin' },
+  { name: 'Academy', color: '#f472b6', href: '/masterclass' },
 ]
 
 const RADIUS = 3.4
@@ -33,7 +37,7 @@ function nodePosition(index, total) {
   return [Math.cos(angle) * RADIUS, Math.sin(angle * 1.3) * 0.6, Math.sin(angle) * RADIUS]
 }
 
-function ModuleNode({ index, total, name, color }) {
+function ModuleNode({ index, total, name, color, href }) {
   const position = nodePosition(index, total)
   return (
     <Float speed={1.4} rotationIntensity={0.2} floatIntensity={0.6} position={position}>
@@ -41,8 +45,10 @@ function ModuleNode({ index, total, name, color }) {
         <icosahedronGeometry args={[0.22, 0]} />
         <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.6} roughness={0.3} metalness={0.2} />
       </mesh>
-      <Html center distanceFactor={9} style={{ pointerEvents: 'none' }}>
-        <span className="core-node-label">{name}</span>
+      {/* pointerEvents re-enabled (drei's <Html> defaults it off) so this
+          floating label is a real, clickable link, not just decoration. */}
+      <Html center distanceFactor={9} style={{ pointerEvents: 'auto' }}>
+        <a href={href} className="core-node-label" title={`Open ${name}`}>{name}</a>
       </Html>
     </Float>
   )
@@ -121,7 +127,7 @@ function Scene() {
         <Core />
         <Connections />
         {MODULES.map((m, i) => (
-          <ModuleNode key={m.name} index={i} total={MODULES.length} name={m.name} color={m.color} />
+          <ModuleNode key={m.name} index={i} total={MODULES.length} name={m.name} color={m.color} href={m.href} />
         ))}
       </PointerParallax>
     </>
