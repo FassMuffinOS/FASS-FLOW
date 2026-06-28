@@ -1,0 +1,74 @@
+.naics-combo {
+  position: relative;
+}
+
+.naics-combo-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-surface);
+  padding: 0 10px;
+}
+
+.naics-combo-icon { color: var(--text-muted); flex-shrink: 0; }
+
+.naics-combo-input-wrap input {
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 9px 0;
+  font-size: 0.85rem;
+  width: 100%;
+  min-width: 220px;
+}
+
+.naics-combo-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 40;
+  max-height: 280px;
+  overflow-y: auto;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+}
+
+.naics-combo-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+
+.naics-combo-item-active { background: var(--light-teal); }
+.naics-combo-item-selected .naics-combo-code { color: var(--dark-teal); }
+
+.naics-combo-code {
+  font-weight: 700;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.naics-combo-title {
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.naics-combo-empty {
+  padding: 10px 8px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}

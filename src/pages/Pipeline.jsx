@@ -641,6 +641,22 @@ export default function Pipeline() {
     logBusinessEvent(session.user.id, 'operations', 'stage_change', 1, `Moved "${record?.title || 'a bid'}" to ${STAGE_MAP[stage]?.label || stage}`)
     if (stage === 'submitted') {
       logBusinessEvent(session.user.id, 'documentation', 'bid_submitted', 5, `Submitted "${record?.title || 'a bid'}"`)
+      // Same auto-post pattern as the 'awarded' branch below — a submitted
+      // bid is real activity worth showing on the Feed too, not just a
+      // private Business Health point. Best-effort, doesn't block the
+      // stage update.
+      if (API_BASE) {
+        fetch(`${API_BASE}/api/v1/feed/posts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: session.user.id,
+            body: `Submitted a bid on "${record?.title || 'an opportunity'}" 📄`,
+            source: 'auto',
+            category: 'documentation',
+          }),
+        }).catch(err => console.error('Pipeline: failed to auto-post bid submission to feed', err))
+      }
     }
     if (stage === 'awarded') {
       logBusinessEvent(session.user.id, 'customer_growth', 'contract_awarded', 15, `Won "${record?.title || 'a contract'}"`)

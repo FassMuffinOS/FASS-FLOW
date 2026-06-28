@@ -266,6 +266,18 @@ function hasHardStop(answers, q) {
   return q.hardStopSubs.some(id => answers[id] === 'no')
 }
 
+// Reads a cached in-progress worksheet so a Decide<->Draft tab switch (which
+// unmounts/remounts this component) doesn't drop the user's answers.
+function loadDraft(key) {
+  if (!key) return null
+  try {
+    const raw = localStorage.getItem(key)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
 // ─────────────────────────────────────────────────────────────
 // AI SYNTHESIS — rule-based but reads like real analysis
 // ─────────────────────────────────────────────────────────────
@@ -565,8 +577,23 @@ export default function Read({ embedded = false } = {}) {
     daysUntilDue,
   }
 
-  const [answers, setAnswers] = useState({})
-  const [notes, setNotes] = useState({})
+  // The Decide/Draft tabs in OpportunityWorkspace swap panels by conditional
+  // render, not by route — switching to Draft fully unmounts this component,
+  // and a fresh mount means a fresh `answers = {}`. Without persistence, any
+  // in-progress worksheet (and the "your answers stay on screen" promise in
+  // the help banner above) was a lie: tab away and back and everything you'd
+  // filled in silently vanishes, the section that looked done now reads as
+  // blank, and "Save decision to pipeline" never unlocks because the app
+  // thinks fewer than 6 sections were ever answered. proposalId is the
+  // stable join key the workspace route guarantees is present on every
+  // panel, so it's the right cache key; falling back to title+naics covers
+  // the rare standalone /read visit that has no proposalId yet.
+  const draftKey = incomingProposalId
+    ? `fass_read_draft_${incomingProposalId}`
+    : (oppTitle !== 'Untitled Opportunity' && oppNaics ? `fass_read_draft_${oppNaics}_${oppTitle}` : null)
+
+  const [answers, setAnswers] = useState(() => loadDraft(draftKey)?.answers || {})
+  const [notes, setNotes] = useState(() => loadDraft(draftKey)?.notes || {})
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState('')
@@ -754,6 +781,20 @@ export default function Read({ embedded = false } = {}) {
     ai: Object.values(prefill).filter(p => p.source === 'ai').length,
   }
 
+  // Persist on every change so a tab switch to Draft (or an accidental
+  // refresh/navigation) restores exactly where the user left off instead of
+  // resetting to a blank worksheet.
+  useEffect(() => {
+    if (!draftKey) return
+    if (Object.keys(answers).length === 0 && Object.keys(notes).length === 0) return
+    try {
+      localStorage.setItem(draftKey, JSON.stringify({ answers, notes }))
+    } catch {
+      // localStorage full or unavailable — worksheet still works in-session,
+      // it just won't survive a tab switch. Not worth surfacing to the user.
+    }
+  }, [draftKey, answers, notes])
+
   function dismissHelp() {
     setShowHelp(false)
     localStorage.setItem('fass_read_help_dismissed', '1')
@@ -826,6 +867,26 @@ export default function Read({ embedded = false } = {}) {
       setSaved(true)
       if (data?.id) setSavedProposalId(data.id)
       localStorage.setItem('fass_read_completed_count', String(completedCount + 1))
+      // Now persisted server-side in proposals.read_worksheet — the local
+      // cache has done its job and would otherwise just be a stale copy.
+      if (draftKey) localStorage.removeItem(draftKey)
+
+      // A PURSUE call is a real decision, not busywork — same auto-post
+      // pattern as Pipeline.jsx's stage-change hooks (bid submitted,
+      // contract awarded). Best-effort, doesn't block the save that
+      // already succeeded above.
+      if (rec.label === 'PURSUE' && API_BASE) {
+        fetch(`${API_BASE}/api/v1/feed/posts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: session.user.id,
+            body: `Decided to pursue "${oppTitle}" (R-E-A-D score ${score.toFixed(1)}/6.0) 🎯`,
+            source: 'auto',
+            category: 'government_readiness',
+          }),
+        }).catch(err => console.error('Read: failed to auto-post pursue decision to feed', err))
+      }
     }
     setSaving(false)
   }

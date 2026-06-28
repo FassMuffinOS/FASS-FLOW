@@ -19,6 +19,14 @@ export default function Feed() {
   const [loading, setLoading] = useState(true)
   const [body, setBody] = useState('')
   const [posting, setPosting] = useState(false)
+  // Founder-only seed tool for the empty-feed state — not linked from nav,
+  // same "type the shared secret in by hand" model as Admin.jsx/AffiliateAdmin.jsx.
+  // Anyone can click "Seed starter content," but the backend rejects the
+  // request without the real ADMIN_SECRET, so this is safe to leave visible.
+  const [seedOpen, setSeedOpen] = useState(false)
+  const [seedSecret, setSeedSecret] = useState(sessionStorage.getItem('fass_admin_secret') || '')
+  const [seeding, setSeeding] = useState(false)
+  const [seedMsg, setSeedMsg] = useState('')
 
   const loadFeed = useCallback(async () => {
     if (!API_BASE) return
@@ -74,6 +82,28 @@ export default function Feed() {
     }
   }
 
+  async function seedFeed(e) {
+    e.preventDefault()
+    if (!seedSecret.trim() || seeding) return
+    setSeeding(true)
+    setSeedMsg('')
+    sessionStorage.setItem('fass_admin_secret', seedSecret)
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/feed/admin/seed`, {
+        method: 'POST',
+        headers: { 'X-Admin-Secret': seedSecret },
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.detail || `Request failed (${res.status})`)
+      setSeedMsg(`Added ${data.created} post${data.created === 1 ? '' : 's'}${data.skipped ? ` (${data.skipped} already there)` : ''}.`)
+      loadFeed()
+    } catch (err) {
+      setSeedMsg(err.message || 'Seed failed')
+    } finally {
+      setSeeding(false)
+    }
+  }
+
   async function deletePost(postId) {
     if (!userId) return
     await fetch(`${API_BASE}/api/v1/feed/posts/${postId}?user_id=${userId}`, { method: 'DELETE' })
@@ -103,7 +133,27 @@ export default function Feed() {
         {loading ? (
           <div className="feed-state"><Loader className="spin" size={18} /> Loading…</div>
         ) : posts.length === 0 ? (
-          <div className="feed-state">No posts yet — be the first to share an update.</div>
+          <div className="feed-state">
+            No posts yet — be the first to share an update.
+            {!seedOpen ? (
+              <button className="feed-seed-link" onClick={() => setSeedOpen(true)}>
+                Seed starter content
+              </button>
+            ) : (
+              <form className="feed-seed-form" onSubmit={seedFeed}>
+                <input
+                  type="password"
+                  value={seedSecret}
+                  onChange={e => setSeedSecret(e.target.value)}
+                  placeholder="Admin secret"
+                />
+                <button className="btn-primary" type="submit" disabled={seeding || !seedSecret.trim()}>
+                  {seeding ? <Loader size={14} className="spin" /> : 'Seed'}
+                </button>
+              </form>
+            )}
+            {seedMsg && <div className="feed-seed-msg">{seedMsg}</div>}
+          </div>
         ) : (
           <div className="feed-list">
             {posts.map(p => (

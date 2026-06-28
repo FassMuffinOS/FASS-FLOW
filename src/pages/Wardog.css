@@ -124,6 +124,12 @@
   margin-bottom: 20px;
 }
 
+.wd-load-more {
+  display: flex;
+  justify-content: center;
+  padding: 18px 0 6px;
+}
+
 /* Loading / empty */
 .wd-loading, .wd-empty {
   display: flex;

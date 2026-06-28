@@ -4,6 +4,7 @@ import { Search, RefreshCw, ExternalLink, Calendar, Building2, Tag, ClipboardLis
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import ShareToChatButton from '../components/ShareToChatButton'
+import NaicsCombobox from '../components/NaicsCombobox'
 import './Wardog.css'
 
 // Maps the certification labels captured in onboarding / FASS FILL's
@@ -84,17 +85,6 @@ const MOCK_OPPS = [
     responseDeadLine: new Date(Date.now() + 22 * 86400000).toISOString(),
     description: 'NIH seeks event support and logistics services for campus-wide events including setup/teardown, equipment transport, vendor coordination, and post-event cleanup. Bethesda, MD campus. Estimated 40 events annually.',
   },
-]
-
-const NAICS_OPTIONS = [
-  { code: '561720', label: '561720 — Janitorial Services' },
-  { code: '561210', label: '561210 — Facilities Support Services' },
-  { code: '561320', label: '561320 — Temporary Staffing Services' },
-  { code: '722310', label: '722310 — Food Service Contractors' },
-  { code: '484110', label: '484110 — General Freight Trucking, Local' },
-  { code: '561730', label: '561730 — Landscaping Services' },
-  { code: '561790', label: '561790 — Other Building Services' },
-  { code: '711310', label: '711310 — Event / Promoters Support' },
 ]
 
 const SET_ASIDE_LABELS = {
@@ -228,13 +218,19 @@ export default function Wardog() {
   const navigate = useNavigate()
   const [opps, setOpps] = useState([])
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState('')
   const [lastFetch, setLastFetch] = useState(null)
   const [isLive, setIsLive] = useState(false)
+  // Driven by the backend's offset/total/has_more (now that SAM.gov's real
+  // cap is 1000/request, not the 100 we used to impose) — lets "Load more"
+  // page through everything instead of silently stopping at one page.
+  const [hasMore, setHasMore] = useState(false)
+  const [totalRecords, setTotalRecords] = useState(0)
+  const PAGE_SIZE = 100
 
   // Filters
   const [naics, setNaics] = useState('561720')
-  const [naicsText, setNaicsText] = useState('')
   const [state, setState] = useState('MD')
   const [keyword, setKeyword] = useState('')
   const [setAsides, setSetAsides] = useState([])
@@ -249,16 +245,18 @@ export default function Wardog() {
   const [savedProposals, setSavedProposals] = useState({})
   const [savingId, setSavingId] = useState(null)
   // Flips true exactly once, the moment the profile prefill above changes
-  // naicsText after the initial (default-NAICS) fetch already ran — that's
+  // naics after the initial (default-NAICS) fetch already ran — that's
   // the signal to re-run the search so it reflects the user's real NAICS
   // instead of leaving the generic default results on screen.
   const [naicsPrefilled, setNaicsPrefilled] = useState(false)
 
   // Lite plan ($9.99/mo) is read-only: matches show up here, but saving
   // interest, running R-E-A-D, sending to FASS FILL, and the advanced
-  // filters (set-aside/proc-type/due-within/custom NAICS) are gated behind
-  // Core. Every other plan (starter/pro/team/promo) — and a profile fetch
-  // that hasn't resolved yet — is treated as unrestricted.
+  // filters (set-aside/proc-type/due-within) are gated behind Core. NAICS
+  // search itself is ungated for every tier — limiting which codes a free
+  // user can even search was costing real deals, not protecting revenue.
+  // Every other plan (starter/pro/team/promo) — and a profile fetch that
+  // hasn't resolved yet — is treated as unrestricted.
   const [plan, setPlan] = useState(null)
   const isLite = plan === 'lite'
 
@@ -311,6 +309,34 @@ export default function Wardog() {
       opportunityId = oppRow?.id || null
     }
 
+    // Resolve the real solicitation text server-side: SAM.gov's search
+    // results only give a "pulse" (a short blurb, or a URL to fetch
+    // separately), and the actual requirements usually live in attached
+    // PDFs (SOW/PWS/instructions), not the notice description. Only
+    // bother calling this for live SAM.gov data with something to resolve
+    // — mock/demo opportunities and bare-text descriptions skip the round
+    // trip. Best-effort: if it fails or times out, we fall back to the old
+    // plain-description behavior rather than blocking the save.
+    let resolvedText = null
+    if (isLive && (isUrlLike(opp.description) || (opp.resourceLinks && opp.resourceLinks.length))) {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/wardog/resolve-solicitation`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            description: opp.description || null,
+            resource_links: opp.resourceLinks || [],
+          }),
+        })
+        if (res.ok) {
+          const resolved = await res.json()
+          if (resolved?.solicitation_text) resolvedText = resolved.solicitation_text
+        }
+      } catch {
+        // Network/timeout — proceed with whatever we already have below.
+      }
+    }
+
     const { data, error } = await supabase.from('proposals').insert({
       user_id: uid,
       opportunity_id: opportunityId,
@@ -320,13 +346,15 @@ export default function Wardog() {
       agency: opp.fullParentPathName || opp.department || null,
       naics_code: opp.naicsCode || naics || null,
       due_date: opp.responseDeadLine || null,
-      // Carrying the actual solicitation description onto the proposal row
-      // is what lets R-E-A-D (and anything else reading this row) ground
-      // its analysis in the real requirements instead of just title/NAICS.
-      // Skip it when SAM.gov gave back a noticedesc URL instead of real
-      // text — that would otherwise get fed straight into the AI synthesis
-      // prompt as if it were the solicitation's actual content.
-      description: (opp.description && !isUrlLike(opp.description)) ? opp.description : null,
+      // Carrying the actual solicitation text onto the proposal row is what
+      // lets R-E-A-D (and anything else reading this row) ground its
+      // analysis in the real requirements instead of just title/NAICS.
+      // Prefer the server-resolved full text (notice body + parsed PDF
+      // attachments); fall back to the raw description only when it's
+      // plain text already (skip it entirely when it's an unresolved URL
+      // — that would otherwise get fed straight into the AI synthesis
+      // prompt as if it were the solicitation's actual content).
+      description: resolvedText || ((opp.description && !isUrlLike(opp.description)) ? opp.description : null),
     }).select().single()
     if (!error && data) setSavedProposals(prev => ({ ...prev, [opp.noticeId]: data.id }))
     setSavingId(null)
@@ -387,8 +415,8 @@ export default function Wardog() {
       // real NAICS code — search on that instead of the hardcoded default
       // (561720) so the very first WARDOG result actually matches them.
       if (data?.naics_codes?.length) {
-        setNaicsText(prev => {
-          if (prev) return prev
+        setNaics(prev => {
+          if (prev && prev !== '561720') return prev
           setNaicsPrefilled(true)
           return data.naics_codes[0]
         })
@@ -428,13 +456,16 @@ export default function Wardog() {
     return true
   }
 
-  const fetchOpps = useCallback(async () => {
-    setLoading(true)
+  const fetchOpps = useCallback(async (opts = {}) => {
+    const { append = false, offset = 0 } = opts
+    if (append) setLoadingMore(true)
+    else setLoading(true)
     setError('')
 
-    const effectiveNaics = naicsText.trim() || naics
+    const effectiveNaics = naics
 
     function useMockFallback() {
+      if (append) { setLoadingMore(false); return }
       const filtered = MOCK_OPPS.filter(o => {
         const matchNaics = !effectiveNaics || o.naicsCode === effectiveNaics
         const matchKeyword = !keyword.trim() || o.title.toLowerCase().includes(keyword.toLowerCase()) || o.description.toLowerCase().includes(keyword.toLowerCase())
@@ -442,12 +473,15 @@ export default function Wardog() {
       })
       setOpps(filtered)
       setIsLive(false)
+      setHasMore(false)
+      setTotalRecords(filtered.length)
       setLastFetch(new Date())
     }
 
     try {
       const params = new URLSearchParams({
-        limit: '50',
+        limit: String(PAGE_SIZE),
+        offset: String(offset),
         naics: effectiveNaics,
         state: state,
       })
@@ -465,8 +499,11 @@ export default function Wardog() {
       if (!res.ok) throw new Error(`WARDOG search error: ${res.status}`)
 
       const data = await res.json()
-      setOpps((data.opportunities || []).filter(passesPostFilters))
+      const page = (data.opportunities || []).filter(passesPostFilters)
+      setOpps(prev => append ? [...prev, ...page] : page)
       setIsLive(true)
+      setHasMore(Boolean(data.has_more))
+      setTotalRecords(data.total || 0)
       setLastFetch(new Date())
     } catch (err) {
       // Backend unreachable for some other reason — still fall back to
@@ -475,8 +512,14 @@ export default function Wardog() {
       useMockFallback()
     } finally {
       setLoading(false)
+      setLoadingMore(false)
     }
-  }, [naics, naicsText, state, keyword, setAsides, procType, dueWithin])
+  }, [naics, state, keyword, setAsides, procType, dueWithin])
+
+  function loadMore() {
+    if (loadingMore || !hasMore) return
+    fetchOpps({ append: true, offset: opps.length })
+  }
 
   useEffect(() => {
     fetchOpps()
@@ -507,24 +550,7 @@ export default function Wardog() {
       <div className="wd-filters">
         <div className="wd-filter-group">
           <label>NAICS Code</label>
-          <select value={naics} onChange={e => setNaics(e.target.value)}>
-            {NAICS_OPTIONS.map(n => (
-              <option key={n.code} value={n.code}>{n.label}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="wd-filter-group">
-          <label>NAICS (custom)</label>
-          <input
-            type="text"
-            placeholder={isLite ? 'Core feature' : 'e.g. 541512'}
-            value={naicsText}
-            onChange={e => setNaicsText(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && fetchOpps()}
-            disabled={isLite}
-            title={isLite ? 'Custom NAICS search is a Core feature' : undefined}
-          />
+          <NaicsCombobox value={naics} onChange={setNaics} onSubmit={fetchOpps} />
         </div>
 
         <div className="wd-filter-group">
@@ -720,6 +746,15 @@ export default function Wardog() {
               </div>
             </div>
           ))}
+
+          {isLive && hasMore && (
+            <div className="wd-load-more">
+              <button className="btn-outline" onClick={loadMore} disabled={loadingMore}>
+                <RefreshCw size={14} className={loadingMore ? 'spin' : ''} />
+                {loadingMore ? 'Loading…' : `Load more (${opps.length} of ${totalRecords})`}
+              </button>
+            </div>
+          )}
         </div>
       )}
 
