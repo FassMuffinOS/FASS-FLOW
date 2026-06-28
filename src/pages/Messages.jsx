@@ -4,7 +4,7 @@ import {
   MessageCircle, Search, Send, Loader, X, Plus, ArrowLeft, Paperclip,
   Smile, MoreHorizontal, Pencil, Trash2, Bell, BellOff, Check, CheckCheck,
   ShieldCheck, Info, MapPin, Phone, Globe, ExternalLink, SlidersHorizontal,
-  Award,
+  Award, Users, UserPlus,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -72,6 +72,11 @@ export default function Messages() {
   const [draft, setDraft] = useState('')
   const [sending, setSending] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
+  const [searchMode, setSearchMode] = useState('dm') // 'dm' | 'group' | 'add' — which PeopleSearch flow is open
+  const [activeIsGroup, setActiveIsGroup] = useState(false)
+  const [showMembers, setShowMembers] = useState(false)
+  const [membersData, setMembersData] = useState(null)
+  const [loadingMembers, setLoadingMembers] = useState(false)
   const [mobileShowThread, setMobileShowThread] = useState(Boolean(location.state?.openThreadId))
   const [editingId, setEditingId] = useState(null)
   const [editDraft, setEditDraft] = useState('')
@@ -153,6 +158,13 @@ export default function Messages() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages.length])
 
+  // Member-list panel is per-thread state, so it has to reset on activeId
+  // (not activeOtherId, which stays null across every group thread).
+  useEffect(() => {
+    setShowMembers(false)
+    setMembersData(null)
+  }, [activeId])
+
   // One realtime channel for the page's lifetime. INSERT events append new
   // messages / refresh previews; UPDATE events cover both "Seen" (read_by
   // changed) and edit/delete (body/edited_at/deleted_at changed) — all three
@@ -189,8 +201,9 @@ export default function Messages() {
 
   function openThread(t) {
     setActiveId(t.id)
-    setActiveName(t.other_participants?.map(p => p.full_name || 'Member').join(', ') || 'Conversation')
-    setActiveOtherId(t.other_participants?.[0]?.user_id || null)
+    setActiveName(t.title || t.other_participants?.map(p => p.full_name || 'Member').join(', ') || 'Conversation')
+    setActiveIsGroup(Boolean(t.is_group))
+    setActiveOtherId(t.is_group ? null : (t.other_participants?.[0]?.user_id || null))
     setMobileShowThread(true)
   }
 
@@ -211,12 +224,97 @@ export default function Messages() {
       setShowSearch(false)
       setActiveId(data.thread_id)
       setActiveName(person.full_name || person.company_name || 'Conversation')
+      setActiveIsGroup(false)
       setActiveOtherId(person.id)
       setMobileShowThread(true)
       loadThreads()
     } catch {
       setStartError('Network error — could not reach the server.')
     }
+  }
+
+  // Group/teaming threads (#257): same /threads/start endpoint, but with
+  // other_user_ids (2+ people) instead of a single other_user_id, plus an
+  // optional title. Reuses an existing thread if one already has this exact
+  // participant set, same as the 1:1 path.
+  async function startGroupThread(people, title) {
+    setStartError(null)
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/chat/threads/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId,
+          other_user_ids: people.map(p => p.id),
+          post_id: null,
+          title: title?.trim() || null,
+        }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        setStartError(err.detail || `Couldn't start that group (${res.status}).`)
+        return
+      }
+      const data = await res.json()
+      setShowSearch(false)
+      setActiveId(data.thread_id)
+      setActiveName(title?.trim() || people.map(p => p.full_name || p.company_name || 'Member').join(', '))
+      setActiveIsGroup(true)
+      setActiveOtherId(null)
+      setMobileShowThread(true)
+      loadThreads()
+    } catch {
+      setStartError('Network error — could not reach the server.')
+    }
+  }
+
+  // Invite one more person into the currently open thread. The first add to
+  // a 1:1 thread is what turns it into a group — switches activeIsGroup so
+  // the member-list UI takes over from the single-profile panel.
+  async function addParticipant(person) {
+    if (!activeId) return
+    setStartError(null)
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/chat/threads/${activeId}/participants`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, new_user_id: person.id }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        setStartError(err.detail || `Couldn't add that person (${res.status}).`)
+        return
+      }
+      setShowSearch(false)
+      setActiveIsGroup(true)
+      setActiveOtherId(null)
+      loadThreads()
+      loadMessages(activeId)
+      if (showMembers) loadMembers(activeId)
+    } catch {
+      setStartError('Network error — could not reach the server.')
+    }
+  }
+
+  const loadMembers = useCallback(async (threadId) => {
+    if (!userId || !API_BASE || !threadId) return
+    setLoadingMembers(true)
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/chat/threads/${threadId}/participants?user_id=${userId}`)
+      if (res.ok) setMembersData((await res.json()).participants || [])
+    } catch {
+      // leave membersData as-is; panel shows a loading/empty state either way
+    } finally {
+      setLoadingMembers(false)
+    }
+  }, [userId])
+
+  function toggleMembers() {
+    setShowMembers(v => {
+      const next = !v
+      if (next) loadMembers(activeId)
+      return next
+    })
   }
 
   async function send() {
@@ -327,7 +425,20 @@ export default function Messages() {
               </button>
             )}
             {pushPermission === 'granted' && <Bell size={15} className="msg-bell-on" title="Notifications on" />}
-            <button className="msg-new-btn" onClick={() => setShowSearch(true)} aria-label="New message">
+            <button
+              className="msg-new-btn"
+              onClick={() => { setSearchMode('group'); setShowSearch(true) }}
+              aria-label="New group"
+              title="New group"
+            >
+              <Users size={15} />
+            </button>
+            <button
+              className="msg-new-btn"
+              onClick={() => { setSearchMode('dm'); setShowSearch(true) }}
+              aria-label="New message"
+              title="New message"
+            >
               <Plus size={16} />
             </button>
           </div>
@@ -337,13 +448,13 @@ export default function Messages() {
         ) : threads.length === 0 ? (
           <div className="msg-empty">
             No conversations yet.
-            <button className="btn-outline msg-empty-cta" onClick={() => setShowSearch(true)}>Find someone to message</button>
+            <button className="btn-outline msg-empty-cta" onClick={() => { setSearchMode('dm'); setShowSearch(true) }}>Find someone to message</button>
           </div>
         ) : (
           <div className="msg-thread-list">
             {threads.map(t => {
-              const name = t.other_participants?.map(p => p.full_name || 'Member').join(', ') || 'Conversation'
-              const otherId = t.other_participants?.[0]?.user_id
+              const name = t.title || t.other_participants?.map(p => p.full_name || 'Member').join(', ') || 'Conversation'
+              const otherId = t.is_group ? null : t.other_participants?.[0]?.user_id
               return (
                 <button
                   key={t.id}
@@ -351,7 +462,7 @@ export default function Messages() {
                   onClick={() => openThread(t)}
                 >
                   <span className="msg-avatar-wrap">
-                    <span className="msg-avatar">{initials(name)}</span>
+                    <span className="msg-avatar">{t.is_group ? <Users size={14} /> : initials(name)}</span>
                     {otherId && onlineIds.has(otherId) && <span className="msg-online-dot" />}
                   </span>
                   <span className="msg-thread-info">
@@ -388,7 +499,16 @@ export default function Messages() {
                   <span className="msg-presence-label">{onlineIds.has(activeOtherId) ? 'Online' : ''}</span>
                 )}
               </span>
-              {activeOtherId && (
+              {activeIsGroup ? (
+                <button
+                  type="button"
+                  className={`msg-profile-toggle ${showMembers ? 'msg-profile-toggle-active' : ''}`}
+                  onClick={toggleMembers}
+                  title="View members"
+                >
+                  <Users size={16} />
+                </button>
+              ) : activeOtherId && (
                 <button
                   type="button"
                   className={`msg-profile-toggle ${showProfile ? 'msg-profile-toggle-active' : ''}`}
@@ -398,7 +518,33 @@ export default function Messages() {
                   <Info size={16} />
                 </button>
               )}
+              {activeId && (
+                <button
+                  type="button"
+                  className="msg-profile-toggle"
+                  onClick={() => { setSearchMode('add'); setShowSearch(true) }}
+                  title="Add people"
+                >
+                  <UserPlus size={16} />
+                </button>
+              )}
             </div>
+            {showMembers && activeIsGroup && (
+              <div className="msg-profile-panel">
+                {loadingMembers ? (
+                  <div className="msg-profile-loading"><Loader size={14} className="spin" /> Loading members…</div>
+                ) : !membersData || membersData.length === 0 ? (
+                  <div className="msg-profile-empty">Couldn't load members.</div>
+                ) : (
+                  membersData.map(m => (
+                    <div key={m.user_id} className="msg-profile-row-top">
+                      <span className="msg-profile-name">{m.full_name || 'Member'}{m.user_id === userId ? ' (you)' : ''}</span>
+                      {m.company_name && <span className="msg-profile-company">{m.company_name}</span>}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
             {showProfile && activeOtherId && (
               <div className="msg-profile-panel">
                 {loadingProfile ? (
@@ -587,7 +733,9 @@ export default function Messages() {
       {showSearch && (
         <PeopleSearch
           userId={userId}
-          onPick={startThreadWith}
+          mode={searchMode}
+          onPick={searchMode === 'add' ? addParticipant : startThreadWith}
+          onPickGroup={startGroupThread}
           onClose={() => { setShowSearch(false); setStartError(null) }}
           error={startError}
         />
@@ -611,11 +759,24 @@ const CAPABILITY_CERTS = [
   { id: '8a', label: '8(a)' },
 ]
 
-function PeopleSearch({ userId, onPick, onClose, error }) {
+function PeopleSearch({ userId, mode = 'dm', onPick, onPickGroup, onClose, error }) {
   const [q, setQ] = useState('')
   const [people, setPeople] = useState([])
   const [loading, setLoading] = useState(true)
   const debounceRef = useRef(null)
+
+  // Group mode (#257): clicking a result toggles it into this selection
+  // instead of starting a thread immediately. 'add' mode (inviting someone
+  // into an already-open thread) still picks immediately, same as 'dm'.
+  const isGroupMode = mode === 'group'
+  const [selected, setSelected] = useState([])
+  const [groupTitle, setGroupTitle] = useState('')
+
+  function toggleSelected(person) {
+    setSelected(prev =>
+      prev.some(p => p.id === person.id) ? prev.filter(p => p.id !== person.id) : [...prev, person]
+    )
+  }
 
   // Capability filters — the "find subs/teammates by what they can
   // actually do" ask (NAICS, set-aside certs, contracts won), additive to
@@ -663,9 +824,27 @@ function PeopleSearch({ userId, onPick, onClose, error }) {
     <div className="msg-search-overlay" onClick={onClose}>
       <div className="msg-search-panel" onClick={e => e.stopPropagation()}>
         <div className="msg-search-head">
-          <h3>New message</h3>
+          <h3>{isGroupMode ? 'New group' : mode === 'add' ? 'Add people' : 'New message'}</h3>
           <button onClick={onClose} aria-label="Close"><X size={16} /></button>
         </div>
+        {isGroupMode && selected.length > 0 && (
+          <div className="msg-capability-certs" style={{ padding: '0 16px' }}>
+            {selected.map(p => (
+              <button key={p.id} type="button" className="msg-cert-chip active" onClick={() => toggleSelected(p)}>
+                {p.full_name || p.company_name} <X size={11} />
+              </button>
+            ))}
+          </div>
+        )}
+        {isGroupMode && (
+          <div className="msg-search-input-row">
+            <input
+              value={groupTitle}
+              onChange={e => setGroupTitle(e.target.value)}
+              placeholder="Group name (optional)"
+            />
+          </div>
+        )}
         <div className="msg-search-input-row">
           <Search size={15} />
           <input autoFocus value={q} onChange={e => onChange(e.target.value)} placeholder="Search people by name…" />
@@ -716,23 +895,43 @@ function PeopleSearch({ userId, onPick, onClose, error }) {
           ) : people.length === 0 ? (
             <div className="msg-empty-thread">No one found.</div>
           ) : (
-            people.map(p => (
-              <button key={p.id} className="msg-search-result" onClick={() => onPick(p)}>
-                <span className="msg-avatar">{initials(p.full_name || p.company_name)}</span>
-                <span className="msg-thread-info">
-                  <span className="msg-thread-name">{p.full_name || 'FASS Flow member'}</span>
-                  {(p.company_name || p.naics || (p.certifications && p.certifications.length > 0)) && (
-                    <span className="msg-thread-preview">
-                      {[p.company_name, p.naics ? `NAICS ${p.naics}` : null, ...(p.certifications || []).map(c => c.toUpperCase())]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </span>
-                  )}
-                </span>
-              </button>
-            ))
+            people.map(p => {
+              const checked = isGroupMode && selected.some(s => s.id === p.id)
+              return (
+                <button
+                  key={p.id}
+                  className={`msg-search-result ${checked ? 'msg-thread-row-active' : ''}`}
+                  onClick={() => (isGroupMode ? toggleSelected(p) : onPick(p))}
+                >
+                  <span className="msg-avatar">{initials(p.full_name || p.company_name)}</span>
+                  <span className="msg-thread-info">
+                    <span className="msg-thread-name">{p.full_name || 'FASS Flow member'}</span>
+                    {(p.company_name || p.naics || (p.certifications && p.certifications.length > 0)) && (
+                      <span className="msg-thread-preview">
+                        {[p.company_name, p.naics ? `NAICS ${p.naics}` : null, ...(p.certifications || []).map(c => c.toUpperCase())]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </span>
+                    )}
+                  </span>
+                  {isGroupMode && checked && <Check size={15} />}
+                </button>
+              )
+            })
           )}
         </div>
+        {isGroupMode && (
+          <div className="msg-input-row">
+            <button
+              className="btn-outline"
+              disabled={selected.length < 2}
+              onClick={() => onPickGroup(selected, groupTitle)}
+              style={{ width: '100%' }}
+            >
+              Start group{selected.length > 0 ? ` (${selected.length + 1})` : ''}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
