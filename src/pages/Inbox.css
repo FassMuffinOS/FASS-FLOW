@@ -39,6 +39,79 @@
   max-width: 760px;
 }
 
+/* ── Capture-extension card ── */
+.ibx-capture-card {
+  background: var(--light-teal);
+  border: 1px solid var(--dark-teal);
+  border-radius: 16px;
+  padding: 20px 22px;
+  margin-bottom: 24px;
+  max-width: 760px;
+}
+.ibx-capture-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: var(--dark-teal);
+  margin-bottom: 6px;
+}
+.ibx-capture-sub {
+  font-size: 0.82rem;
+  color: var(--navy);
+  line-height: 1.55;
+  margin: 0 0 14px;
+}
+.ibx-key-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.ibx-key {
+  flex: 1;
+  min-width: 0;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+  color: var(--navy);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+.ibx-key-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--dark-teal);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.ibx-key-copy:disabled { opacity: 0.5; cursor: default; }
+.ibx-capture-note {
+  font-size: 0.72rem;
+  color: var(--gray-600);
+  line-height: 1.5;
+  margin: 12px 0 0;
+}
+.ibx-capture-note code {
+  background: rgba(15, 30, 53, 0.06);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+}
+
 .ibx-paste-header {
   display: flex;
   align-items: center;

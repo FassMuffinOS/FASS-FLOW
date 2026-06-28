@@ -5,9 +5,11 @@ import { supabase } from '../lib/supabase'
 import { parseEmailInvite } from '../lib/solicitationParser'
 import {
   Mail, Inbox as InboxIcon, Link as LinkIcon, Calendar, Hash, Tag,
-  ArrowRight, Users, PauseCircle, CheckCircle2, Sparkles,
+  ArrowRight, Users, PauseCircle, CheckCircle2, Sparkles, Copy, KeyRound, Check,
 } from 'lucide-react'
 import './Inbox.css'
+
+const API_BASE = import.meta.env.VITE_API_URL || ''
 
 // State/local e-procurement portals (eMMA and similarly-shaped marketplaces)
 // email a fixed "you're invited to respond" notice instead of posting to a
@@ -45,8 +47,27 @@ export default function Inbox() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [busyId, setBusyId] = useState(null)
+  const [captureKey, setCaptureKey] = useState('')
+  const [keyCopied, setKeyCopied] = useState(false)
 
   useEffect(() => { loadItems() }, [])
+
+  // Fetch (or create) this user's capture key for the Chrome extension.
+  useEffect(() => {
+    if (!session?.user?.id) return
+    fetch(`${API_BASE}/api/v1/ingest/key?user_id=${session.user.id}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (d?.key) setCaptureKey(d.key) })
+      .catch(() => {})
+  }, [session?.user?.id])
+
+  function copyKey() {
+    if (!captureKey) return
+    navigator.clipboard?.writeText(captureKey).then(() => {
+      setKeyCopied(true)
+      setTimeout(() => setKeyCopied(false), 1800)
+    })
+  }
 
   async function loadItems() {
     setLoading(true)
@@ -209,6 +230,28 @@ export default function Inbox() {
         >
           {saving ? 'Adding…' : 'Add to inbox'}
         </button>
+      </div>
+
+      <div className="ibx-capture-card">
+        <div className="ibx-capture-head">
+          <KeyRound size={16} />
+          <span>Auto-capture from your portal</span>
+        </div>
+        <p className="ibx-capture-sub">
+          Install the FASS Flow Chrome extension, paste this key into its settings once, then click
+          “Capture this page” on any open solicitation. It pulls the real document into your pipeline —
+          matched by BPM ID — so R-E-A-D and FASS FILL work from the actual bid, not just the email.
+        </p>
+        <div className="ibx-key-row">
+          <code className="ibx-key">{captureKey || 'Generating your key…'}</code>
+          <button type="button" className="ibx-key-copy" onClick={copyKey} disabled={!captureKey}>
+            {keyCopied ? <><Check size={13} /> Copied</> : <><Copy size={13} /> Copy</>}
+          </button>
+        </div>
+        <p className="ibx-capture-note">
+          The extension lives in the <code>capture-extension/</code> folder — load it unpacked via
+          chrome://extensions → Developer mode → Load unpacked. Keep this key private; it writes to your account.
+        </p>
       </div>
 
       <div className="ibx-filters">

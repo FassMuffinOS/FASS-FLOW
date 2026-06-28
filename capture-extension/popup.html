@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    :root { --teal: #14A082; --dark: #0F1E35; --border: #E2E8F0; --muted: #64748B; }
+    * { box-sizing: border-box; font-family: -apple-system, Segoe UI, Roboto, sans-serif; }
+    body { width: 320px; margin: 0; padding: 16px; color: var(--dark); }
+    h1 { font-size: 14px; margin: 0 0 2px; }
+    p.sub { font-size: 11px; color: var(--muted); margin: 0 0 14px; line-height: 1.4; }
+    label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); display: block; margin: 12px 0 4px; }
+    input { width: 100%; padding: 8px 10px; font-size: 12px; border: 1px solid var(--border); border-radius: 8px; }
+    button { width: 100%; padding: 10px; font-size: 13px; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; margin-top: 12px; }
+    .primary { background: var(--teal); color: #fff; }
+    .ghost { background: #fff; color: var(--dark); border: 1px solid var(--border); }
+    .primary:disabled { opacity: 0.5; cursor: default; }
+    #status { font-size: 12px; line-height: 1.45; margin-top: 12px; padding: 10px; border-radius: 8px; display: none; }
+    #status.ok { display: block; background: #E7F6F1; color: #0a5f4b; }
+    #status.err { display: block; background: #FDECEC; color: #9b1c1c; }
+    .row { display: flex; gap: 8px; }
+    .row button { margin-top: 0; }
+    details { margin-top: 14px; }
+    summary { font-size: 11px; color: var(--muted); cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Capture to FASS Flow</h1>
+  <p class="sub">Open the solicitation in your portal, then click Capture. The page text and document links are sent to your pipeline, matched by BPM ID.</p>
+
+  <button id="capture" class="primary">Capture this page</button>
+  <div id="status"></div>
+
+  <details id="settings">
+    <summary>Settings</summary>
+    <label for="key">Capture key</label>
+    <input id="key" type="password" placeholder="fci_…" />
+    <label for="backend">Backend URL</label>
+    <input id="backend" type="text" placeholder="https://…railway.app" />
+    <button id="save" class="ghost">Save settings</button>
+  </details>
+
+  <script src="popup.js"></script>
+</body>
+</html>

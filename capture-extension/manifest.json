@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "FASS Flow — Solicitation Capture",
+  "version": "1.0.0",
+  "description": "Capture the solicitation you're viewing on a procurement portal and send it to FASS Flow, mapped to your pipeline by BPM ID.",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": [
+    "https://web-production-1af97.up.railway.app/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Capture to FASS Flow"
+  }
+}
