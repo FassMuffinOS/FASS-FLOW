@@ -116,7 +116,7 @@ function PursuingChecklist({ record, hasDraft, hasEstimate, hasCaptures }) {
       done: hasDraft,
       label: 'Write the response',
       hint: 'Fill out the solicitation forms',
-      href: `/fill?proposalId=${record.id}${hasDraft ? '' : `&new=1&title=${encodeURIComponent(record.title)}&agency=${encodeURIComponent(record.agency || '')}`}`,
+      href: `/opportunity/${record.id}?panel=draft${hasDraft ? '' : `&new=1&title=${encodeURIComponent(record.title)}&agency=${encodeURIComponent(record.agency || '')}`}`,
       cta: hasDraft ? 'Continue' : 'Start',
     },
     {
@@ -210,7 +210,7 @@ function KanbanCard({ record, hasDraft, captureCount = 0, onDragStart, onClick }
             <a
               className="kn-score-now"
               onClick={e => e.stopPropagation()}
-              href={`/read?title=${encodeURIComponent(record.title)}&agency=${encodeURIComponent(record.agency || '')}&naics=${encodeURIComponent(record.naics_code || '')}&due=${encodeURIComponent(record.due_date || '')}&proposalId=${record.id}`}
+              href={`/opportunity/${record.id}?panel=decide&title=${encodeURIComponent(record.title)}&agency=${encodeURIComponent(record.agency || '')}&naics=${encodeURIComponent(record.naics_code || '')}&due=${encodeURIComponent(record.due_date || '')}`}
             >
               Score with R-E-A-D →
             </a>
@@ -218,7 +218,7 @@ function KanbanCard({ record, hasDraft, captureCount = 0, onDragStart, onClick }
           <a
             className="kn-score-now"
             onClick={e => e.stopPropagation()}
-            href={`/fill?proposalId=${record.id}${hasDraft ? '' : `&new=1&title=${encodeURIComponent(record.title)}&agency=${encodeURIComponent(record.agency || '')}`}`}
+            href={`/opportunity/${record.id}?panel=draft${hasDraft ? '' : `&new=1&title=${encodeURIComponent(record.title)}&agency=${encodeURIComponent(record.agency || '')}`}`}
           >
             {hasDraft ? 'Continue in FASS FILL →' : 'Open in FASS FILL →'}
           </a>

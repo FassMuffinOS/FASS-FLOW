@@ -55,6 +55,18 @@
   padding: 8px 12px 3px;
 }
 
+/* Inside the Opportunity Workspace, non-active journeys fade back so the
+   sidebar reads as "you're mid-flow on one record" rather than 18 equally
+   weighted destinations. Still fully clickable — this is a visual cue,
+   not a lock. */
+.shell-navgroup-dimmed {
+  opacity: 0.45;
+  transition: opacity 0.15s ease;
+}
+.shell-navgroup-dimmed:hover {
+  opacity: 0.85;
+}
+
 /* mobile-only chrome — hidden on desktop */
 .shell-mobilebar { display: none; }
 .shell-closemenu { display: none; }

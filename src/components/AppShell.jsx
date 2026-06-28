@@ -100,6 +100,14 @@ export default function AppShell({ children }) {
   // Close the mobile drawer whenever the route changes.
   useEffect(() => { setMenuOpen(false) }, [location.pathname])
 
+  // Inside the Opportunity Workspace (WARDOG -> R-E-A-D -> FASS FILL, now
+  // one continuous shell), dim everything in the sidebar except the
+  // journey that's actually in play — Find work / Bid — so the sidebar
+  // itself signals "you're mid-flow on one record" instead of presenting
+  // 18 equally-weighted destinations.
+  const inWorkspace = location.pathname.startsWith('/opportunity')
+  const FOCUSED_GROUP_LABELS = ['Find work', 'Bid']
+
   const email = session?.user?.email ?? ''
   const userId = session?.user?.id
 
@@ -176,8 +184,9 @@ export default function AppShell({ children }) {
               ? group.items.filter(item => item.tier !== 'locked')
               : group.items
             if (!visibleItems.length) return null
+            const dimmed = inWorkspace && !FOCUSED_GROUP_LABELS.includes(group.label)
             return (
-              <div className="shell-navgroup" key={gi}>
+              <div className={`shell-navgroup ${dimmed ? 'shell-navgroup-dimmed' : ''}`} key={gi}>
                 {group.label && <span className="shell-navgroup-label">{group.label}</span>}
                 {visibleItems.map(item => {
                   const active = item.match.some(p => location.pathname.startsWith(p))

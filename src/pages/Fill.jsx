@@ -222,7 +222,7 @@ function DocCard({ doc, onOpen, onDelete }) {
 }
 
 // ══════════════════════════════════════════════════════════
-export default function Fill() {
+export default function Fill({ embedded = false } = {}) {
   const { session, signOut } = useAuth()
   const { theme, toggle: toggleTheme } = useTheme()
   const navigate = useNavigate()
@@ -259,6 +259,16 @@ export default function Fill() {
   // attaches this doc to that existing proposal row instead of leaving
   // FASS FILL as a disconnected, second copy of the same opportunity.
   const [linkedProposalId, setLinkedProposalId] = useState(searchParams.get('proposalId') || null)
+
+  // Old direct links into /fill?proposalId=... (bookmarks, in-flight emails,
+  // any caller not yet updated) now belong inside the Opportunity Workspace.
+  // Redirect rather than break them.
+  useEffect(() => {
+    const pid = searchParams.get('proposalId')
+    if (!embedded && pid) {
+      navigate(`/opportunity/${pid}?panel=draft&${searchParams.toString()}`, { replace: true })
+    }
+  }, [embedded])
 
   // Continuity from WARDOG: a SAM.gov card or an Other Sources link can
   // hand off straight into a new solicitation here, with whatever it
@@ -525,26 +535,32 @@ export default function Fill() {
 
   return (
     <div className="fl">
-      {/* Header */}
-      <header className="fl-header">
-        <div className="fl-header-inner">
-          <button className="fl-back" onClick={() => navigate('/dashboard')}>
-            <ArrowLeft size={15} /> Dashboard
-          </button>
-          <div className="fl-header-center">
-            <span className="fl-logo-icon">⬡</span>
-            <span className="fl-logo-text">FASS <strong>FILL</strong></span>
-          </div>
-          <div className="fl-header-right">
-            <button className="fl-theme-btn" onClick={toggleTheme} title={isDark ? 'Light mode' : 'Dark mode'}>
-              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+      {/* Header — hidden when embedded inside OpportunityWorkspace, which
+          renders its own pinned header so the two don't stack. */}
+      {!embedded && (
+        <header className="fl-header">
+          <div className="fl-header-inner">
+            <button className="fl-back" onClick={() => navigate('/dashboard')}>
+              <ArrowLeft size={15} /> Dashboard
             </button>
-            <button className="fl-signout" onClick={() => { signOut(); navigate('/') }}>Sign out</button>
+            <div className="fl-header-center">
+              <span className="fl-logo-icon">⬡</span>
+              <span className="fl-logo-text">FASS <strong>FILL</strong></span>
+            </div>
+            <div className="fl-header-right">
+              <button className="fl-theme-btn" onClick={toggleTheme} title={isDark ? 'Light mode' : 'Dark mode'}>
+                {isDark ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
+              <button className="fl-signout" onClick={() => { signOut(); navigate('/') }}>Sign out</button>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
-      {/* Top tabs */}
+      {/* Top tabs — Capability Statement isn't opportunity-bound, so it's
+          left out of the embedded workspace view entirely (standalone
+          /fill is still the place for it). */}
+      {!embedded && (
       <div className="fl-toptabs-wrap">
         <div className="fl-toptabs">
           <button className={`fl-toptab ${topTab === 'matrix' ? 'active' : ''}`} onClick={() => setTopTab('matrix')}>
@@ -555,6 +571,7 @@ export default function Fill() {
           </button>
         </div>
       </div>
+      )}
 
       <main className="fl-content">
         {/* ══════════ COMPLIANCE & OUTLINE TAB ══════════ */}

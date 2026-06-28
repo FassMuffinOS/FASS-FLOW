@@ -528,7 +528,7 @@ function AIAnalysis({ answers, score, ctx }) {
 // ─────────────────────────────────────────────────────────────
 // MAIN PAGE
 // ─────────────────────────────────────────────────────────────
-export default function Read() {
+export default function Read({ embedded = false } = {}) {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { session } = useAuth()
@@ -543,6 +543,17 @@ export default function Read() {
   // UPDATEs that existing row instead of inserting a second one — this is
   // what keeps one opportunity as one Pipeline card across tools.
   const incomingProposalId = searchParams.get('proposalId') || null
+
+  // Old direct links into /read?proposalId=... (bookmarks, in-flight emails,
+  // any caller not yet updated) now belong inside the Opportunity Workspace.
+  // Redirect rather than break them — the workspace re-reads the same query
+  // params, so nothing about the worksheet itself needs to change.
+  useEffect(() => {
+    if (!embedded && incomingProposalId) {
+      navigate(`/opportunity/${incomingProposalId}?panel=decide&${searchParams.toString()}`, { replace: true })
+    }
+  }, [embedded, incomingProposalId])
+
   const daysUntilDue = oppDue
     ? Math.ceil((new Date(oppDue).getTime() - Date.now()) / 86400000)
     : null
@@ -823,29 +834,33 @@ export default function Read() {
 
   return (
     <div className="rd">
-      {/* Header */}
-      <header className="rd-header">
-        <div className="rd-header-inner">
-          <button className="rd-back" onClick={() => navigate('/dashboard')}>
-            <ArrowLeft size={16} /> Dashboard
-          </button>
-          <div className="rd-header-meta">
-            <span className="rd-tool-label">R-E-A-D Worksheet</span>
-            <span className="rd-header-title">{oppTitle}</span>
-            {(oppAgency || oppNaics || daysUntilDue != null) && (
-              <span className="rd-header-sub">
-                {[oppAgency, oppNaics && `NAICS ${oppNaics}`, daysUntilDue != null && `Due in ${daysUntilDue}d`].filter(Boolean).join(' · ')}
-              </span>
+      {/* Header — hidden when embedded inside OpportunityWorkspace, which
+          renders its own pinned header with the same identity info so the
+          two don't stack. */}
+      {!embedded && (
+        <header className="rd-header">
+          <div className="rd-header-inner">
+            <button className="rd-back" onClick={() => navigate('/dashboard')}>
+              <ArrowLeft size={16} /> Dashboard
+            </button>
+            <div className="rd-header-meta">
+              <span className="rd-tool-label">R-E-A-D Worksheet</span>
+              <span className="rd-header-title">{oppTitle}</span>
+              {(oppAgency || oppNaics || daysUntilDue != null) && (
+                <span className="rd-header-sub">
+                  {[oppAgency, oppNaics && `NAICS ${oppNaics}`, daysUntilDue != null && `Due in ${daysUntilDue}d`].filter(Boolean).join(' · ')}
+                </span>
+              )}
+            </div>
+            <span className="rd-progress">{answeredCount} / {QUESTIONS.length} complete</span>
+            {!showHelp && (
+              <button className="rd-help-reopen" onClick={() => setShowHelp(true)} aria-label="How this works">
+                <HelpCircle size={16} />
+              </button>
             )}
           </div>
-          <span className="rd-progress">{answeredCount} / {QUESTIONS.length} complete</span>
-          {!showHelp && (
-            <button className="rd-help-reopen" onClick={() => setShowHelp(true)} aria-label="How this works">
-              <HelpCircle size={16} />
-            </button>
-          )}
-        </div>
-      </header>
+        </header>
+      )}
 
       {showHelp && (
         <div className="rd-help-banner">
@@ -1009,7 +1024,9 @@ export default function Read() {
                 <div className="rd-next-steps">
                   <span className="rd-next-label">What's next:</span>
                   <Link
-                    to={`/fill?new=1&proposalId=${savedProposalId || ''}&title=${encodeURIComponent(oppTitle)}&agency=${encodeURIComponent(oppAgency)}`}
+                    to={savedProposalId
+                      ? `/opportunity/${savedProposalId}?panel=draft&new=1&title=${encodeURIComponent(oppTitle)}&agency=${encodeURIComponent(oppAgency)}`
+                      : `/fill?new=1&title=${encodeURIComponent(oppTitle)}&agency=${encodeURIComponent(oppAgency)}`}
                     className="rd-next-link"
                   >
                     Continue to FASS FILL →

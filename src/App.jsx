@@ -18,6 +18,7 @@ import AuthCallback from './pages/AuthCallback'
 import Dashboard from './pages/Dashboard'
 import Wardog from './pages/Wardog'
 import Read from './pages/Read'
+import OpportunityWorkspace from './pages/OpportunityWorkspace'
 import Pipeline from './pages/Pipeline'
 import Awarded from './pages/Awarded'
 import Fill from './pages/Fill'
@@ -233,6 +234,9 @@ function AppRoutes() {
       } />
       <Route path="/read" element={
         <ProtectedRoute><Read /></ProtectedRoute>
+      } />
+      <Route path="/opportunity/:proposalId" element={
+        <ProtectedRoute><OpportunityWorkspace /></ProtectedRoute>
       } />
       <Route path="/pipeline" element={
         <ProtectedRoute><Pipeline /></ProtectedRoute>

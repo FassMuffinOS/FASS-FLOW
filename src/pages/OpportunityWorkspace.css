@@ -1,0 +1,98 @@
+.ow {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.ow-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--bg-surface, #fff);
+  border-bottom: 1px solid var(--border, #e5e7eb);
+  padding: 12px 20px 0;
+}
+
+.ow-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ow-eyebrow {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted, #6b7280);
+}
+
+.ow-header-main {
+  margin-top: 4px;
+}
+
+.ow-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text, #111827);
+  line-height: 1.3;
+}
+
+.ow-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.ow-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: var(--text-muted, #6b7280);
+}
+
+.ow-meta-urgent {
+  color: #b42318;
+  font-weight: 700;
+}
+
+.ow-tabs {
+  display: flex;
+  gap: 4px;
+  margin-top: 12px;
+}
+
+.ow-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted, #6b7280);
+  cursor: pointer;
+}
+
+.ow-tab-active {
+  color: var(--dark-teal, #0f6e56);
+  border-bottom-color: var(--teal, #0f6e56);
+}
+
+.ow-panel {
+  flex: 1;
+}
+
+/* The pinned header eats vertical space the embedded Read/Fill panels don't
+   expect (they were each designed to own the full viewport height under
+   their own header). On small screens, where space is already tight thanks
+   to BottomNav, drop the eyebrow label to claw a little of it back. */
+@media (max-width: 600px) {
+  .ow-eyebrow { display: none; }
+  .ow-header { padding: 8px 12px 0; }
+}

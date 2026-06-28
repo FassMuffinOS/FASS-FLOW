@@ -351,7 +351,16 @@ export default function Wardog() {
       due: opp.responseDeadLine || '',
     })
     if (proposalId) params.set('proposalId', proposalId)
-    navigate(`/read?${params.toString()}`)
+    // Once a proposal row exists, send the user into the persistent
+    // Opportunity Workspace shell instead of the standalone /read page —
+    // R-E-A-D and FASS FILL now live as Decide/Draft tabs of the same
+    // record rather than separate hard navigations.
+    if (proposalId) {
+      params.set('panel', 'decide')
+      navigate(`/opportunity/${proposalId}?${params.toString()}`)
+    } else {
+      navigate(`/read?${params.toString()}`)
+    }
   }
 
   // Pre-fill the set-aside filter from the user's saved certifications
@@ -687,7 +696,9 @@ export default function Wardog() {
                       Run R-E-A-D →
                     </button>
                     <Link
-                      to={`/fill?new=1&title=${encodeURIComponent(opp.title)}&agency=${encodeURIComponent(opp.fullParentPathName || opp.department || '')}&solnum=${encodeURIComponent(opp.noticeId)}${savedProposals[opp.noticeId] ? `&proposalId=${savedProposals[opp.noticeId]}` : ''}`}
+                      to={savedProposals[opp.noticeId]
+                        ? `/opportunity/${savedProposals[opp.noticeId]}?panel=draft&new=1&title=${encodeURIComponent(opp.title)}&agency=${encodeURIComponent(opp.fullParentPathName || opp.department || '')}&solnum=${encodeURIComponent(opp.noticeId)}`
+                        : `/fill?new=1&title=${encodeURIComponent(opp.title)}&agency=${encodeURIComponent(opp.fullParentPathName || opp.department || '')}&solnum=${encodeURIComponent(opp.noticeId)}`}
                       className="btn-outline wd-bid-btn"
                     >
                       <ClipboardList size={13} /> Send to FASS FILL
