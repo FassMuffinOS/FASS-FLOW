@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { EXTENSION_ZIP_URL } from '../lib/captureExtensionZip'
-import { Download, Copy, Check, Chrome, Puzzle, KeyRound, MousePointerClick } from 'lucide-react'
+import { Download, Copy, Check, Globe, Puzzle, KeyRound, MousePointerClick } from 'lucide-react'
 import './InstallExtension.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
