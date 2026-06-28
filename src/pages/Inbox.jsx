@@ -118,8 +118,13 @@ export default function Inbox() {
         user_id: session.user.id,
         title: item.rfx_name,
         agency: item.requester || item.source_portal,
-        stage: 'pursuing',
-        status: 'pursuing',
+        // Enter the Pipeline at the same stage WARDOG uses ('flagged' =
+        // "not yet scored") rather than jumping to 'pursuing'. This is what
+        // makes the R-E-A-D button appear on the card so the solicitation can
+        // actually be scored/processed, instead of skipping straight to
+        // "building the proposal" with no on-ramp. Mirrors Wardog.jsx exactly.
+        stage: 'flagged',
+        status: 'draft',
         due_date: item.end_date,
         description: item.raw_snippet || null,
       })
