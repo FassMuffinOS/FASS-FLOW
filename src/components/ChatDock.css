@@ -407,6 +407,15 @@
   .dock-popup, .dock-bar { width: calc(100vw - 16px); max-width: 300px; }
 }
 
+/* Below 900px the persistent BottomNav (z-index 65) takes over the bottom
+   edge of the screen, so lift the dock above it instead of sitting flush
+   with bottom:0 where it would cover the nav bar. */
+@media (max-width: 900px) {
+  .dock-root {
+    bottom: calc(56px + env(safe-area-inset-bottom));
+  }
+}
+
 /* v2: presence, reactions, edit/delete, attachments, seen ----------------- */
 
 .dock-avatar-wrap {
