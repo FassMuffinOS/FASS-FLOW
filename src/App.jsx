@@ -34,6 +34,7 @@ import AffiliateAdmin from './pages/AffiliateAdmin'
 import JoinNetwork from './pages/JoinNetwork'
 import Network from './pages/Network'
 import Inbox from './pages/Inbox'
+import InstallExtension from './pages/InstallExtension'
 import Witness from './pages/Witness'
 import Estimator from './pages/Estimator'
 import Foreman from './pages/Foreman'
@@ -254,6 +255,9 @@ function AppRoutes() {
       } />
       <Route path="/inbox" element={
         <ProtectedRoute><Inbox /></ProtectedRoute>
+      } />
+      <Route path="/install-extension" element={
+        <ProtectedRoute><InstallExtension /></ProtectedRoute>
       } />
       <Route path="/witness" element={
         <ProtectedRoute><Witness /></ProtectedRoute>

@@ -1,0 +1,139 @@
+.ie {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 24px 60px;
+}
+.ie-head h1 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.5rem;
+  color: var(--navy);
+  margin: 0 0 8px;
+}
+.ie-head p {
+  font-size: 0.9rem;
+  color: var(--gray-600);
+  line-height: 1.6;
+  margin: 0 0 28px;
+}
+
+.ie-steps {
+  list-style: none;
+  counter-reset: ie;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.ie-steps li {
+  counter-increment: ie;
+  position: relative;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  padding: 18px 20px 18px 56px;
+}
+.ie-steps li::before {
+  content: counter(ie);
+  position: absolute;
+  left: 16px;
+  top: 18px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--dark-teal);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ie-step-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--navy);
+  margin-bottom: 6px;
+}
+.ie-steps p {
+  font-size: 0.84rem;
+  color: var(--gray-600);
+  line-height: 1.55;
+  margin: 0 0 4px;
+}
+.ie-steps code {
+  background: rgba(15, 30, 53, 0.07);
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+}
+.ie-warn { color: #9b6b00 !important; font-size: 0.76rem !important; margin-top: 6px !important; }
+
+.ie-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  background: var(--dark-teal);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  padding: 10px 16px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ie-key-row {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 2px;
+}
+.ie-key {
+  flex: 1;
+  min-width: 0;
+  background: var(--gray-50, #f8fafc);
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+  color: var(--navy);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+.ie-key-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--dark-teal);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.ie-key-copy:disabled { opacity: 0.5; cursor: default; }
+
+.ie-note {
+  margin-top: 24px;
+  background: var(--light-teal);
+  border: 1px solid var(--dark-teal);
+  border-radius: 12px;
+  padding: 16px 18px;
+  font-size: 0.82rem;
+  color: var(--navy);
+  line-height: 1.55;
+}
+.ie-note strong { color: var(--dark-teal); }

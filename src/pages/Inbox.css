@@ -111,6 +111,17 @@
   border-radius: 4px;
   font-size: 0.7rem;
 }
+.ibx-install-link {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-right: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--dark-teal);
+  cursor: pointer;
+}
+.ibx-install-link:hover { text-decoration: underline; }
 
 .ibx-paste-header {
   display: flex;

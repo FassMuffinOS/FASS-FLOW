@@ -249,8 +249,10 @@ export default function Inbox() {
           </button>
         </div>
         <p className="ibx-capture-note">
-          The extension lives in the <code>capture-extension/</code> folder — load it unpacked via
-          chrome://extensions → Developer mode → Load unpacked. Keep this key private; it writes to your account.
+          <button type="button" className="ibx-install-link" onClick={() => navigate('/install-extension')}>
+            Download &amp; install the extension →
+          </button>
+          Keep this key private; it writes to your account.
         </p>
       </div>
 

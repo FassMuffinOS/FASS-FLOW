@@ -30,3 +30,6 @@ dist-ssr
 *.sw?
 .vercel
 .env*
+
+# Generated at build time by scripts/build-extension-zip.mjs
+public/fass-capture-extension.zip
