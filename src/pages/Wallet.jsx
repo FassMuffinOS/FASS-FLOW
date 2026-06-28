@@ -4,6 +4,7 @@ import { Wallet as WalletIcon, Download, Lock, Palette, Image, Eye, EyeOff, Chec
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { getBusinessProfile, saveBusinessProfile } from '../lib/businessProfile'
+import ShareToChatButton from '../components/ShareToChatButton'
 import './Passport.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -466,6 +467,12 @@ export default function Wallet() {
                     <a className="btn-primary" href={`${API_BASE}/api/v1/wallet/pass?slug=${walletSlug}`}>
                       <Download size={14} /> Add to Apple Wallet
                     </a>
+                    <ShareToChatButton
+                      objectType="passport"
+                      objectId={walletSlug}
+                      snapshot={{ business_name: walletBusiness.name, naics: walletBusiness.naics_guess, website: walletBusiness.website, phone: walletBusiness.phone, slug: walletSlug }}
+                      label="Share"
+                    />
                   </>
                 ) : walletSlug ? (
                   <div className="pp-wallet-actions">
@@ -476,6 +483,12 @@ export default function Wallet() {
                     <button type="button" className="btn-outline" onClick={unlockWallet} disabled={walletCheckingOut}>
                       <Lock size={14} /> {walletCheckingOut ? 'Starting checkout…' : 'Upgrade — remove watermark'}
                     </button>
+                    <ShareToChatButton
+                      objectType="passport"
+                      objectId={walletSlug}
+                      snapshot={{ business_name: walletBusiness.name, naics: walletBusiness.naics_guess, website: walletBusiness.website, phone: walletBusiness.phone, slug: walletSlug }}
+                      label="Share"
+                    />
                     {walletError && <p className="pp-note pp-biz-error">{walletError}</p>}
                   </div>
                 ) : (

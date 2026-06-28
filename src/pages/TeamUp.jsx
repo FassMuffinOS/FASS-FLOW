@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { Handshake, Plus, Loader, MessageCircle, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { logBusinessEvent } from '../lib/businessEvents'
+import ShareToChatButton from '../components/ShareToChatButton'
 import './TeamUp.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -182,11 +183,19 @@ function BoardList({ posts, userId, onMessage }) {
           <p><strong>Needs:</strong> {p.what_i_need}</p>
           <div className="teamup-card-foot">
             <span className="teamup-author">{p.profiles?.full_name || 'FASS Flow member'}</span>
-            {p.user_id !== userId && (
-              <button className="btn-outline" onClick={() => onMessage(p)}>
-                <MessageCircle size={14} /> Message
-              </button>
-            )}
+            <div className="teamup-card-actions">
+              <ShareToChatButton
+                objectType="partner_post"
+                objectId={p.id}
+                snapshot={{ title: p.title, what_i_bring: p.what_i_bring, what_i_need: p.what_i_need, naics_code: p.naics_code }}
+                label="Share"
+              />
+              {p.user_id !== userId && (
+                <button className="btn-outline" onClick={() => onMessage(p)}>
+                  <MessageCircle size={14} /> Message
+                </button>
+              )}
+            </div>
           </div>
         </div>
       ))}
@@ -208,11 +217,17 @@ function MyPosts({ posts, onClose }) {
           </div>
           <p><strong>Brings:</strong> {p.what_i_bring}</p>
           <p><strong>Needs:</strong> {p.what_i_need}</p>
-          {p.status === 'open' && (
-            <div className="teamup-card-foot">
+          <div className="teamup-card-foot">
+            <ShareToChatButton
+              objectType="partner_post"
+              objectId={p.id}
+              snapshot={{ title: p.title, what_i_bring: p.what_i_bring, what_i_need: p.what_i_need, naics_code: p.naics_code }}
+              label="Share"
+            />
+            {p.status === 'open' && (
               <button className="btn-outline" onClick={() => onClose(p.id)}>Mark filled / close</button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       ))}
     </div>

@@ -191,6 +191,70 @@
   opacity: 1;
 }
 
+.dock-profile-toggle-active {
+  opacity: 1 !important;
+  color: var(--teal) !important;
+}
+
+.dock-profile-panel {
+  padding: 10px 12px;
+  background: var(--bg-base, #f7faf9);
+  border-bottom: 1px solid var(--gray-200);
+  font-size: 0.78rem;
+}
+
+.dock-profile-loading, .dock-profile-empty {
+  color: var(--gray-500);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.dock-profile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #0f6e56;
+  background: #e6f5ef;
+  padding: 2px 7px;
+  border-radius: 999px;
+  margin-bottom: 5px;
+}
+
+.dock-profile-biz {
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 2px;
+}
+
+.dock-profile-line {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--gray-600);
+  margin-bottom: 2px;
+}
+.dock-profile-line a { color: var(--gray-700); }
+
+.dock-profile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--teal);
+}
+.dock-profile-link:hover { text-decoration: underline; }
+
 .dock-popup-body {
   flex: 1;
   overflow-y: auto;

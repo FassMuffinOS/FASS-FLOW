@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Search, RefreshCw, ExternalLink, Calendar, Building2, Tag, ClipboardList, Bookmark, BookmarkCheck, Lock } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import ShareToChatButton from '../components/ShareToChatButton'
 import './Wardog.css'
 
 // Maps the certification labels captured in onboarding / FASS FILL's
@@ -691,6 +692,18 @@ export default function Wardog() {
                     >
                       <ClipboardList size={13} /> Send to FASS FILL
                     </Link>
+                    <ShareToChatButton
+                      objectType="opportunity_live"
+                      objectId={opp.noticeId}
+                      snapshot={{
+                        title: opp.title,
+                        agency: opp.fullParentPathName || opp.department || null,
+                        naics_code: opp.naicsCode || naics || null,
+                        set_aside: opp.typeOfSetAside || null,
+                        response_date: opp.responseDeadLine || null,
+                      }}
+                      label="Share"
+                    />
                   </>
                 )}
               </div>

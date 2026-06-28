@@ -3,12 +3,14 @@ import { useLocation } from 'react-router-dom'
 import {
   MessageCircle, Search, Send, Loader, X, Plus, ArrowLeft, Paperclip,
   Smile, MoreHorizontal, Pencil, Trash2, Bell, BellOff, Check, CheckCheck,
+  ShieldCheck, Info, MapPin, Phone, Globe, ExternalLink,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { usePresence } from '../hooks/usePresence'
 import { useTyping } from '../hooks/useTyping'
 import { usePushNotifications } from '../hooks/usePushNotifications'
+import SharedObjectCard from '../components/SharedObjectCard'
 import './Messages.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -30,6 +32,16 @@ function renderMessageBody(text) {
     )
     return <span key={i} style={{ display: 'block' }}>{isBullet ? '• ' : ''}{parts}</span>
   })
+}
+
+// share_object (chat.py) always appends "Shared: {title}" as the last line
+// of body, after an optional sender note. Strip that line off here since
+// SharedObjectCard already shows the title — whatever's left is the note.
+function noteFromSharedBody(body) {
+  if (!body) return ''
+  const idx = body.lastIndexOf('\nShared: ')
+  if (idx !== -1) return body.slice(0, idx)
+  return body.startsWith('Shared: ') ? '' : body
 }
 
 // Platform-wide Messenger — replaces the old "Messages" tab buried inside
@@ -67,6 +79,9 @@ export default function Messages() {
   const [openPickerId, setOpenPickerId] = useState(null)
   const [uploading, setUploading] = useState(false)
   const [startError, setStartError] = useState(null)
+  const [showProfile, setShowProfile] = useState(false)
+  const [profileData, setProfileData] = useState(null)
+  const [loadingProfile, setLoadingProfile] = useState(false)
   const bottomRef = useRef(null)
   const fileInputRef = useRef(null)
 
@@ -114,6 +129,24 @@ export default function Messages() {
   useEffect(() => {
     if (activeId) loadMessages(activeId)
   }, [activeId, loadMessages])
+
+  // Verified profile panel — fetched whenever the open thread's other
+  // participant changes, so toggling the panel open is instant rather than
+  // waiting on a network round trip. Closed by default; reset on thread
+  // switch so a stale panel never lingers under the wrong name.
+  useEffect(() => {
+    setShowProfile(false)
+    setProfileData(null)
+    if (!activeOtherId || !API_BASE) return
+    let cancelled = false
+    setLoadingProfile(true)
+    fetch(`${API_BASE}/api/v1/chat/profile/${activeOtherId}`)
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => { if (!cancelled) setProfileData(data) })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoadingProfile(false) })
+    return () => { cancelled = true }
+  }, [activeOtherId])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -348,13 +381,69 @@ export default function Messages() {
                 <span className="msg-avatar">{initials(activeName)}</span>
                 {activeOtherId && onlineIds.has(activeOtherId) && <span className="msg-online-dot" />}
               </span>
-              <span>
+              <span className="msg-thread-head-name">
                 {activeName}
                 {activeOtherId && (
                   <span className="msg-presence-label">{onlineIds.has(activeOtherId) ? 'Online' : ''}</span>
                 )}
               </span>
+              {activeOtherId && (
+                <button
+                  type="button"
+                  className={`msg-profile-toggle ${showProfile ? 'msg-profile-toggle-active' : ''}`}
+                  onClick={() => setShowProfile(v => !v)}
+                  title="View profile"
+                >
+                  <Info size={16} />
+                </button>
+              )}
             </div>
+            {showProfile && activeOtherId && (
+              <div className="msg-profile-panel">
+                {loadingProfile ? (
+                  <div className="msg-profile-loading"><Loader size={14} className="spin" /> Loading profile…</div>
+                ) : !profileData ? (
+                  <div className="msg-profile-empty">Couldn't load this profile.</div>
+                ) : (
+                  <>
+                    <div className="msg-profile-row-top">
+                      <span className="msg-profile-name">{profileData.full_name || activeName}</span>
+                      {profileData.company_name && <span className="msg-profile-company">{profileData.company_name}</span>}
+                    </div>
+                    {profileData.has_card ? (
+                      <>
+                        <div className="msg-profile-badge"><ShieldCheck size={13} /> Verified via FASS Wallet</div>
+                        {profileData.card?.business_name && (
+                          <div className="msg-profile-biz">{profileData.card.business_name}</div>
+                        )}
+                        {profileData.card?.naics && <div className="msg-profile-line">NAICS {profileData.card.naics}</div>}
+                        {profileData.card?.address && (
+                          <div className="msg-profile-line"><MapPin size={13} /> {profileData.card.address}</div>
+                        )}
+                        {profileData.card?.phone && (
+                          <div className="msg-profile-line"><Phone size={13} /> <a href={`tel:${profileData.card.phone}`}>{profileData.card.phone}</a></div>
+                        )}
+                        {profileData.card?.website && (
+                          <div className="msg-profile-line">
+                            <Globe size={13} />
+                            <a href={profileData.card.website.startsWith('http') ? profileData.card.website : `https://${profileData.card.website}`} target="_blank" rel="noreferrer">
+                              {profileData.card.website}
+                            </a>
+                          </div>
+                        )}
+                        {profileData.card?.slug && (
+                          <button type="button" className="msg-profile-link" onClick={() => window.open(`/c/${profileData.card.slug}`, '_blank')}>
+                            Open full capability statement <ExternalLink size={12} />
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      <div className="msg-profile-empty">No capability statement on file yet — this person hasn't set up FASS Wallet.</div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
             <div className="msg-body">
               {loadingMessages ? (
                 <div className="msg-loading"><Loader size={18} className="spin" /></div>
@@ -393,7 +482,14 @@ export default function Messages() {
                                 </a>
                               )
                             )}
-                            {m.body && <span>{renderMessageBody(m.body)}</span>}
+                            {m.shared_object_type ? (
+                              <>
+                                {noteFromSharedBody(m.body) && <span>{renderMessageBody(noteFromSharedBody(m.body))}</span>}
+                                <SharedObjectCard type={m.shared_object_type} snapshot={m.shared_object_snapshot} />
+                              </>
+                            ) : (
+                              m.body && <span>{renderMessageBody(m.body)}</span>
+                            )}
                             {m.edited_at && <span className="msg-edited-tag"> (edited)</span>}
                           </>
                         )}

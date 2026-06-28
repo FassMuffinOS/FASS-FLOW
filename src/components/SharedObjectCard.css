@@ -1,0 +1,43 @@
+.soc-card {
+  margin-top: 6px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--bg-base, #f7faf9);
+  border: 1px solid var(--border, #e5e7eb);
+  border-left: 3px solid var(--teal, #1D9E75);
+  max-width: 280px;
+}
+
+.soc-accent-opp { border-left-color: #2563eb; }
+.soc-accent-proposal { border-left-color: #7c3aed; }
+.soc-accent-partner { border-left-color: #d97706; }
+.soc-accent-passport { border-left-color: #0f6e56; }
+
+.soc-card-head {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--text-muted, #6b7280);
+  margin-bottom: 4px;
+}
+
+.soc-card-title {
+  font-size: 0.86rem; font-weight: 700;
+  color: var(--text-primary, #111827);
+  margin-bottom: 2px;
+}
+
+.soc-card-line {
+  font-size: 0.78rem;
+  color: var(--text-muted, #6b7280);
+  margin-bottom: 1px;
+}
+
+.soc-card-link {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 6px;
+  background: none; border: none; cursor: pointer; padding: 0;
+  font-size: 0.78rem; font-weight: 700;
+  color: var(--teal, #1D9E75);
+}
+.soc-card-link:hover { text-decoration: underline; }

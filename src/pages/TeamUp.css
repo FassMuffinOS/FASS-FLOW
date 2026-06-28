@@ -115,6 +115,12 @@
   margin-top: 10px;
 }
 
+.teamup-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .teamup-author {
   font-size: 0.8rem;
   color: var(--gray-500);

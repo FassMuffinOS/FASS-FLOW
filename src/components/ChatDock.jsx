@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import {
   MessageCircle, X, Minus, Send, Loader, Search, Plus, Paperclip,
   Smile, MoreHorizontal, Pencil, Trash2, Check, CheckCheck,
+  ShieldCheck, Info, MapPin, Phone, Globe, ExternalLink,
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { usePresence } from '../hooks/usePresence'
+import SharedObjectCard from './SharedObjectCard'
 import './ChatDock.css'
 
 const REACTION_EMOJI = ['👍', '❤️', '😂', '😮', '😢', '🙏']
@@ -27,6 +29,16 @@ function renderMessageBody(text) {
     )
     return <span key={i} style={{ display: 'block' }}>{isBullet ? '• ' : ''}{parts}</span>
   })
+}
+
+// Same logic as Messages.jsx — share_object's body always ends with
+// "Shared: {title}"; strip it since SharedObjectCard already shows the
+// title, leaving just the sender's optional note.
+function noteFromSharedBody(body) {
+  if (!body) return ''
+  const idx = body.lastIndexOf('\nShared: ')
+  if (idx !== -1) return body.slice(0, idx)
+  return body.startsWith('Shared: ') ? '' : body
 }
 
 // Persistent, old-Facebook-style chat dock — fixed to the bottom-right of
@@ -129,6 +141,7 @@ export default function ChatDock({ userId }) {
           userId={userId}
           threadId={p.id}
           name={p.name}
+          otherId={p.otherId}
           minimized={p.minimized}
           online={p.otherId ? onlineIds.has(p.otherId) : false}
           onClose={() => closePopup(p.id)}
@@ -191,7 +204,7 @@ export default function ChatDock({ userId }) {
   )
 }
 
-function ChatPopup({ userId, threadId, name, minimized, online, onClose, onToggleMinimize, onMessageSent }) {
+function ChatPopup({ userId, threadId, name, otherId, minimized, online, onClose, onToggleMinimize, onMessageSent }) {
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(true)
   const [draft, setDraft] = useState('')
@@ -202,6 +215,9 @@ function ChatPopup({ userId, threadId, name, minimized, online, onClose, onToggl
   const [editingId, setEditingId] = useState(null)
   const [editDraft, setEditDraft] = useState('')
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const [showProfile, setShowProfile] = useState(false)
+  const [profileData, setProfileData] = useState(null)
+  const [loadingProfile, setLoadingProfile] = useState(false)
   const bottomRef = useRef(null)
   const fileInputRef = useRef(null)
 
@@ -228,6 +244,21 @@ function ChatPopup({ userId, threadId, name, minimized, online, onClose, onToggl
   useEffect(() => {
     if (!minimized) bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages.length, minimized])
+
+  // Same verified-profile lookup as Messages.jsx, scoped to this one popup's
+  // other participant — fetched once on mount rather than re-fetching every
+  // time the panel is toggled open/closed.
+  useEffect(() => {
+    if (!otherId || !API_BASE) return
+    let cancelled = false
+    setLoadingProfile(true)
+    fetch(`${API_BASE}/api/v1/chat/profile/${otherId}`)
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => { if (!cancelled) setProfileData(data) })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoadingProfile(false) })
+    return () => { cancelled = true }
+  }, [otherId])
 
   // Filtered to this thread only, so opening several popups at once doesn't
   // mean each one re-renders on every message sent platform-wide. UPDATE
@@ -345,12 +376,53 @@ function ChatPopup({ userId, threadId, name, minimized, online, onClose, onToggl
         </span>
         <span className="dock-popup-name">{name}</span>
         <div className="dock-popup-actions">
+          {otherId && (
+            <button
+              className={showProfile ? 'dock-profile-toggle-active' : ''}
+              onClick={e => { e.stopPropagation(); setShowProfile(v => !v) }}
+              aria-label="View profile"
+            >
+              <Info size={13} />
+            </button>
+          )}
           <button onClick={e => { e.stopPropagation(); onToggleMinimize() }} aria-label="Minimize"><Minus size={13} /></button>
           <button onClick={e => { e.stopPropagation(); onClose() }} aria-label="Close"><X size={13} /></button>
         </div>
       </div>
       {!minimized && (
         <>
+          {showProfile && (
+            <div className="dock-profile-panel">
+              {loadingProfile ? (
+                <div className="dock-profile-loading"><Loader size={12} className="spin" /> Loading…</div>
+              ) : !profileData ? (
+                <div className="dock-profile-empty">Couldn't load this profile.</div>
+              ) : profileData.has_card ? (
+                <>
+                  <div className="dock-profile-badge"><ShieldCheck size={11} /> Verified via FASS Wallet</div>
+                  {profileData.card?.business_name && <div className="dock-profile-biz">{profileData.card.business_name}</div>}
+                  {profileData.card?.naics && <div className="dock-profile-line">NAICS {profileData.card.naics}</div>}
+                  {profileData.card?.address && <div className="dock-profile-line"><MapPin size={11} /> {profileData.card.address}</div>}
+                  {profileData.card?.phone && <div className="dock-profile-line"><Phone size={11} /> <a href={`tel:${profileData.card.phone}`}>{profileData.card.phone}</a></div>}
+                  {profileData.card?.website && (
+                    <div className="dock-profile-line">
+                      <Globe size={11} />
+                      <a href={profileData.card.website.startsWith('http') ? profileData.card.website : `https://${profileData.card.website}`} target="_blank" rel="noreferrer">
+                        {profileData.card.website}
+                      </a>
+                    </div>
+                  )}
+                  {profileData.card?.slug && (
+                    <button type="button" className="dock-profile-link" onClick={() => window.open(`/c/${profileData.card.slug}`, '_blank')}>
+                      Open capability statement <ExternalLink size={11} />
+                    </button>
+                  )}
+                </>
+              ) : (
+                <div className="dock-profile-empty">No capability statement on file yet.</div>
+              )}
+            </div>
+          )}
           <div className="dock-popup-body">
             {loading ? (
               <div className="dock-loading"><Loader size={14} className="spin" /></div>
@@ -388,7 +460,14 @@ function ChatPopup({ userId, threadId, name, minimized, online, onClose, onToggl
                               </a>
                             )
                           )}
-                          {m.body && <span>{renderMessageBody(m.body)}</span>}
+                          {m.shared_object_type ? (
+                            <>
+                              {noteFromSharedBody(m.body) && <span>{renderMessageBody(noteFromSharedBody(m.body))}</span>}
+                              <SharedObjectCard type={m.shared_object_type} snapshot={m.shared_object_snapshot} />
+                            </>
+                          ) : (
+                            m.body && <span>{renderMessageBody(m.body)}</span>
+                          )}
                           {m.edited_at && <span className="dock-edited-tag"> (edited)</span>}
                         </>
                       )}

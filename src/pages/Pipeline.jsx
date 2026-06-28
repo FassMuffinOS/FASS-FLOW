@@ -5,6 +5,7 @@ import { useTheme } from '../context/ThemeContext'
 import { supabase } from '../lib/supabase'
 import { logBusinessEvent } from '../lib/businessEvents'
 import JobCaptures from '../components/JobCaptures'
+import ShareToChatButton from '../components/ShareToChatButton'
 import {
   LayoutGrid, List, Sun, Moon, ArrowLeft,
   ChevronUp, ChevronDown, ExternalLink,
@@ -386,6 +387,12 @@ function RecordModal({ record, onClose, onStageChange, events, loadingEvents, on
           <button className="btn-outline modal-partner-btn" onClick={findAPartner}>
             <Users size={14} /> Find a Partner
           </button>
+          <ShareToChatButton
+            objectType="proposal"
+            objectId={record.id}
+            snapshot={{ title: record.title, status: record.stage }}
+            label="Share"
+          />
         </div>
 
         <div className="modal-stage-change">
