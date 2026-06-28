@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { consumePostAuthRedirect } from '../lib/postAuthRedirect'
@@ -40,7 +40,18 @@ function LinkedInIcon() {
 export default function SignIn() {
   const { signIn, signInWithProvider } = useAuth()
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
+  const [searchParams] = useSearchParams()
+
+  // Careers page hand-off: after submitting an application, Careers.jsx
+  // redirects here with ?applied=1&email=... so the applicant is prompted
+  // to create a real account right away instead of just getting a "thanks,
+  // we'll email you" dead end. There's no separate email/password signup
+  // form in this app — Google/Microsoft/LinkedIn OAuth auto-creates the
+  // account on first use (see AuthContext's signInWithProvider comment) —
+  // so the banner below points them at those buttons, and the email field
+  // is prefilled in case they came in to reset/sign in instead.
+  const appliedFromCareers = searchParams.get('applied') === '1'
+  const [email, setEmail] = useState(searchParams.get('email') || '')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -100,8 +111,18 @@ export default function SignIn() {
           <span>FASS <strong>Flow</strong></span>
         </a>
 
-        <h1 className="signin-title">Welcome back</h1>
-        <p className="signin-sub">Sign in to pick up where you left off — WARDOG opportunities, your pipeline, and the Masterclass are all waiting.</p>
+        <h1 className="signin-title">{appliedFromCareers ? 'Thanks for applying' : 'Welcome back'}</h1>
+        <p className="signin-sub">
+          {appliedFromCareers
+            ? "We got what you sent — create your account below so we know where to reach you, and you'll be set up the moment we're ready to talk."
+            : 'Sign in to pick up where you left off — WARDOG opportunities, your pipeline, and the Masterclass are all waiting.'}
+        </p>
+
+        {appliedFromCareers && (
+          <p className="signin-sub" style={{ marginTop: -8, fontWeight: 600 }}>
+            Create your account with one click below ↓
+          </p>
+        )}
 
         <div className="signin-oauth">
           <button type="button" className="signin-oauth-btn" onClick={() => handleOAuth('google')} disabled={!!oauthLoading}>

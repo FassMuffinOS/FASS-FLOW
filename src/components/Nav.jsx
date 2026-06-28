@@ -93,6 +93,7 @@ export default function Nav() {
           <li><a href="/pricing">Pricing</a></li>
           <li><a href="/masterclass">Masterclass</a></li>
           <li><a href="/bd-partner">BD Partner</a></li>
+          <li><a href="/careers">Careers</a></li>
         </ul>
 
         <div className="nav-cta">
@@ -124,6 +125,7 @@ export default function Nav() {
           <a href="/pricing" onClick={() => setOpen(false)}>Pricing</a>
           <a href="/masterclass" onClick={() => setOpen(false)}>Masterclass</a>
           <a href="/bd-partner" onClick={() => setOpen(false)}>BD Partner</a>
+          <a href="/careers" onClick={() => setOpen(false)}>Careers</a>
           {session ? (
             <a href="/dashboard" className="btn-primary" style={{ marginTop: 8 }}>Dashboard</a>
           ) : (

@@ -1,9 +1,11 @@
 .admin-page {
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 24px;
+  justify-content: flex-start;
+  gap: 24px;
+  padding: 40px 24px;
   background: var(--gray-50, #f7f8fa);
 }
 
@@ -14,6 +16,10 @@
   border-radius: 16px;
   padding: 28px;
   box-shadow: 0 2px 24px rgba(0, 0, 0, 0.08);
+}
+
+.admin-card-wide {
+  max-width: 680px;
 }
 
 .admin-header {
@@ -122,4 +128,97 @@
   background: var(--gray-50, #f3f4f6);
   padding: 1px 5px;
   border-radius: 4px;
+}
+
+/* Careers applicants list */
+.admin-applicants-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.admin-applicant-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--gray-200, #e5e7eb);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.admin-applicant-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-applicant-name {
+  font-weight: 700;
+  color: var(--navy, #0f2940);
+  font-size: 0.92rem;
+}
+
+.admin-applicant-email {
+  font-weight: 400;
+  color: var(--gray-400, #6b7280);
+  font-size: 0.82rem;
+  margin-left: 6px;
+}
+
+.admin-applicant-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 0.76rem;
+  color: var(--gray-400, #6b7280);
+  margin: 4px 0;
+}
+
+.admin-applicant-status {
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: var(--gray-100, #f1f5f9);
+}
+
+.admin-applicant-status-invited {
+  background: var(--light-teal, #e6f6f3);
+  color: var(--dark-teal, #0a5c4d);
+}
+
+.admin-applicant-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: var(--teal, #1d9e75);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.admin-applicant-link:hover { opacity: 0.75; }
+
+.admin-applicant-note {
+  font-size: 0.8rem;
+  color: var(--gray-600, #4b5563);
+  margin: 6px 0 0;
+  line-height: 1.4;
+}
+
+.admin-applicant-result {
+  font-size: 0.78rem;
+  color: var(--dark-teal, #0a5c4d);
+  margin: 6px 0 0;
+}
+
+.admin-applicant-invite {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  padding: 7px 12px;
+  flex-shrink: 0;
 }

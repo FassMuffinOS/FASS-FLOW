@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Loader2, Send, UserPlus, KeyRound, CheckCircle2 } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { Loader2, Send, UserPlus, KeyRound, CheckCircle2, Users, ExternalLink } from 'lucide-react'
 import './Admin.css'
 
 // Manual onboarding tool — for students who pay you directly (Cash App,
@@ -27,6 +27,63 @@ export default function Admin() {
   function rememberSecret(v) {
     setSecret(v)
     sessionStorage.setItem('fass_admin_secret', v)
+  }
+
+  // Applicants — Careers page submissions (job_applicants table, public
+  // /careers/apply). Lets the founder review who applied and, for anyone
+  // worth bringing on, seed them a real platform account in one click via
+  // /careers/applicants/{id}/invite — same invite-by-email mechanism as the
+  // student-onboarding form above, just keyed off an applicant row instead
+  // of a hand-typed email.
+  const [applicants, setApplicants] = useState([])
+  const [applicantsLoading, setApplicantsLoading] = useState(false)
+  const [applicantsError, setApplicantsError] = useState('')
+  const [invitingId, setInvitingId] = useState(null)
+  const [inviteNotes, setInviteNotes] = useState({}) // applicant id -> result message
+
+  const loadApplicants = useCallback(async () => {
+    if (!secret) return
+    setApplicantsLoading(true)
+    setApplicantsError('')
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/careers/applicants`, {
+        headers: { 'X-Admin-Secret': secret },
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.detail || `Request failed (${res.status})`)
+      setApplicants(data.applicants || [])
+    } catch (err) {
+      setApplicantsError(err.message || 'Could not load applicants')
+    } finally {
+      setApplicantsLoading(false)
+    }
+  }, [secret])
+
+  useEffect(() => {
+    if (secret) loadApplicants()
+  }, [secret, loadApplicants])
+
+  async function handleInviteApplicant(applicant) {
+    setInvitingId(applicant.id)
+    setInviteNotes(n => ({ ...n, [applicant.id]: '' }))
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/careers/applicants/${applicant.id}/invite`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Secret': secret,
+        },
+        body: JSON.stringify({ plan: 'starter' }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.detail || `Request failed (${res.status})`)
+      setInviteNotes(n => ({ ...n, [applicant.id]: 'Invited — magic-link email sent.' }))
+      loadApplicants()
+    } catch (err) {
+      setInviteNotes(n => ({ ...n, [applicant.id]: err.message || 'Could not invite this applicant' }))
+    } finally {
+      setInvitingId(null)
+    }
   }
 
   async function handleInvite(e) {
@@ -144,6 +201,61 @@ export default function Admin() {
           Use the backend's <code>/admin/grant-access</code> endpoint with their user_id instead —
           ask me to add a quick form for that too if you need it often.
         </p>
+      </div>
+
+      <div className="admin-card admin-card-wide">
+        <div className="admin-header">
+          <Users size={18} />
+          <h1>Careers Applicants</h1>
+        </div>
+        <p className="admin-sub">
+          Everyone who submitted through the public Careers page. Seed a real account for anyone worth bringing
+          on — same invite-by-email flow as above, no password ever touches this screen.
+        </p>
+
+        {!secret && <p className="admin-hint">Paste your admin secret above to load applicants.</p>}
+
+        {secret && applicantsLoading && <p className="admin-hint"><Loader2 size={14} className="spin" /> Loading…</p>}
+        {secret && applicantsError && <p className="admin-error">{applicantsError}</p>}
+
+        {secret && !applicantsLoading && !applicantsError && applicants.length === 0 && (
+          <p className="admin-hint">No applicants yet.</p>
+        )}
+
+        {secret && applicants.length > 0 && (
+          <div className="admin-applicants-list">
+            {applicants.map(a => (
+              <div className="admin-applicant-row" key={a.id}>
+                <div className="admin-applicant-info">
+                  <div className="admin-applicant-name">
+                    {a.name} <span className="admin-applicant-email">{a.email}</span>
+                  </div>
+                  <div className="admin-applicant-meta">
+                    {a.role_interest && <span>{a.role_interest}</span>}
+                    <span className={`admin-applicant-status admin-applicant-status-${a.status}`}>{a.status}</span>
+                    {a.created_at && <span>{new Date(a.created_at).toLocaleDateString()}</span>}
+                  </div>
+                  {a.portfolio_url && (
+                    <a href={a.portfolio_url} target="_blank" rel="noreferrer" className="admin-applicant-link">
+                      <ExternalLink size={12} /> {a.portfolio_url}
+                    </a>
+                  )}
+                  {a.note && <p className="admin-applicant-note">{a.note}</p>}
+                  {inviteNotes[a.id] && <p className="admin-applicant-result">{inviteNotes[a.id]}</p>}
+                </div>
+                <button
+                  type="button"
+                  className="btn-outline admin-applicant-invite"
+                  disabled={invitingId === a.id || a.status === 'invited' || !!a.user_id}
+                  onClick={() => handleInviteApplicant(a)}
+                >
+                  {invitingId === a.id ? <Loader2 size={14} className="spin" /> : <UserPlus size={14} />}
+                  {a.status === 'invited' || a.user_id ? 'Invited' : invitingId === a.id ? 'Inviting…' : 'Seed account'}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

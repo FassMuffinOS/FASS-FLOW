@@ -8,6 +8,7 @@ import AffiliateBand from './components/AffiliateBand'
 import HowItWorks from './components/HowItWorks'
 import Pricing from './components/Pricing'
 import Footer from './components/Footer'
+import Careers from './pages/Careers'
 import Masterclass from './pages/Masterclass'
 import Support from './pages/Support'
 import BDPartner from './pages/BDPartner'
@@ -202,6 +203,12 @@ function AppRoutes() {
           points to, so it must be reachable without an account. */}
       <Route path="/extension-privacy" element={<ExtensionPrivacy />} />
       <Route path="/pricing" element={<><Nav /><main><Pricing /></main><Footer /></>} />
+
+      {/* Public Careers page — applicants can submit without an account
+          (job_applicants table, careers.py /careers/apply); on submit they're
+          routed into /signin to create one. Plain Nav/Footer chrome, same as
+          every other public marketing page. */}
+      <Route path="/careers" element={<><Nav /><main><Careers /></main><Footer /></>} />
 
       {/* Public affiliate pitch/join page — logged-out visitors see the
           pitch + a "sign in to get your link" CTA; logged-in visitors can

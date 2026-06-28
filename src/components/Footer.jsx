@@ -38,7 +38,7 @@ export default function Footer() {
             <ul>
               <li><a href="#">About</a></li>
               <li><a href="#">Blog</a></li>
-              <li><a href="#">Careers</a></li>
+              <li><a href="/careers">Careers</a></li>
               <li><a href="#">Press</a></li>
               <li><a href="/support">Support FASS</a></li>
             </ul>
