@@ -11,6 +11,10 @@
  *       |                               newsletter — DRAFTS ONLY, nothing
  *       |                               here ever logs into or posts to a
  *       |                               platform)
+ *       +-- discord-publish.mjs     -> actually posts to Discord via webhook
+ *       |                              (no login/session involved, see that
+ *       |                               file's header — no-op until a
+ *       |                               webhook env var is configured)
  *       +-- generate-rss.mjs        -> public/rss.xml
  *       +-- bump-sitemap-lastmod.mjs -> public/sitemap.xml (lastmod only)
  *
@@ -34,6 +38,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const steps = [
   ['Generating social drafts', 'generate-drafts.mjs'],
+  ['Posting to Discord (no-op if no webhook configured)', 'discord-publish.mjs'],
   ['Generating RSS feed', 'generate-rss.mjs'],
   ['Bumping sitemap lastmod', 'bump-sitemap-lastmod.mjs'],
 ];
