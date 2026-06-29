@@ -66,6 +66,47 @@
   opacity: 1; transform: translateX(0); color: var(--accent);
 }
 
+/* Locked card — visible but clearly inert. Muted icon chip, no hover lift,
+   the description is replaced by the unlock hint in the JSX. */
+.gsh-card.gsh-locked { background: var(--bg-base); }
+.gsh-card.gsh-locked .fx-icon { background: var(--gray-100); color: var(--gray-400); }
+.gsh-card.gsh-locked .gsh-card-title { color: var(--text-secondary); }
+.gsh-card.gsh-locked:hover { border-color: var(--border); box-shadow: var(--shadow-sm); transform: none; }
+.gsh-card-locklist { opacity: 1; transform: none; color: var(--text-muted); }
+
+/* First-run path strip — the "you only need 3 things today" guide. */
+.gsh-path {
+  margin: var(--space-8) 0 var(--space-4);
+  padding: 22px 24px;
+  background: var(--accent-tint);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-lg);
+}
+.gsh-path-head h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: var(--text-xl); font-weight: 800; color: var(--ink);
+  margin-top: 4px; letter-spacing: -0.02em;
+}
+.gsh-path-head p { margin-top: 4px; font-size: var(--text-sm); color: var(--text-secondary); }
+.gsh-path-steps {
+  list-style: none; display: flex; flex-wrap: wrap; gap: 10px;
+  margin-top: 16px; padding: 0;
+}
+.gsh-path-steps li {
+  display: inline-flex; align-items: center; gap: 9px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 8px 16px 8px 8px;
+  font-size: var(--text-sm); font-weight: 600; color: var(--ink);
+}
+.gsh-path-num {
+  display: grid; place-items: center;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  font-size: 0.72rem; font-weight: 800;
+}
+
 .gsh-empty {
   margin-top: var(--space-10);
   color: var(--text-muted);
