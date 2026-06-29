@@ -1,12 +1,14 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Highlight from '@tiptap/extension-highlight'
 import {
   ListTree, Check, MessageSquare, Download, Type, Ruler, FileText, AlertTriangle,
-  ShieldCheck, CheckCircle2, Circle,
+  ShieldCheck, CheckCircle2, Circle, Building2, ChevronDown,
 } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
+import { getBusinessProfile } from '../lib/businessProfile'
 import { parseSolicitation, buildOutline } from '../lib/solicitationParser'
 import { assembleProposal, assembledToHtml } from '../lib/assembleProposal'
 import { buildComplianceMatrix } from '../lib/complianceMatrix'
@@ -32,6 +34,7 @@ Technical Approach 40%, Past Performance 30%, Price 20%, Management Approach 10%
 export default function ProposalEditor() {
   useSeo({ title: 'Proposal Editor', description: 'Review and finalize your generated proposal.', path: '/proposal-editor' })
   const location = useLocation()
+  const { session } = useAuth()
 
   // Assemble once: real parsed solicitation if passed in, else the sample.
   const { doc, parsed } = useMemo(() => {
@@ -47,6 +50,33 @@ export default function ProposalEditor() {
   const [comments, setComments] = useState({}) // sectionId -> [text]
   const [commentDraft, setCommentDraft] = useState('')
   const [railTab, setRailTab] = useState('review') // 'review' | 'compliance'
+  const [profile, setProfile] = useState(null)
+  const [insertOpen, setInsertOpen] = useState(false)
+
+  // Pull the shared business profile so the user can drop their own
+  // UEI / CAGE / set-aside / signer info into the draft instead of retyping.
+  useEffect(() => {
+    if (!session?.user?.id) return
+    let cancelled = false
+    getBusinessProfile(session.user.id).then(p => { if (!cancelled) setProfile(p) })
+    return () => { cancelled = true }
+  }, [session?.user?.id])
+
+  // Only offer fields that actually have a value.
+  const insertFields = useMemo(() => {
+    if (!profile) return []
+    const f = []
+    const push = (label, value) => { if (value && String(value).trim()) f.push({ label, value: String(value).trim() }) }
+    push('Company name', profile.company_name)
+    push('UEI (SAM.gov)', profile.sam_uei)
+    push('CAGE code', profile.cage_code)
+    push('NAICS codes', (profile.naics_codes || []).join(', '))
+    push('Set-aside status', (profile.certifications || []).join(', '))
+    push('Authorized signer', [profile.signer_name, profile.signer_title].filter(Boolean).join(', '))
+    push('Signer email', profile.signer_email)
+    push('Signer phone', profile.signer_phone)
+    return f
+  }, [profile])
 
   // Live compliance matrix — recomputes when a section is approved.
   const matrix = useMemo(
@@ -82,6 +112,11 @@ export default function ProposalEditor() {
     if (status === 'addressed') return <CheckCircle2 size={15} />
     if (status === 'missing' || status === 'over') return <AlertTriangle size={15} />
     return <Circle size={15} />
+  }
+
+  function insertValue(value) {
+    editor?.chain().focus().insertContent(value).run()
+    setInsertOpen(false)
   }
 
   function toggleApprove(id) {
@@ -131,6 +166,26 @@ export default function ProposalEditor() {
             <span className="pe-progress-track"><span className="pe-progress-fill" style={{ width: `${pct}%` }} /></span>
             {reviewedCount}/{total} reviewed
           </span>
+
+          {/* Insert business info — drop your own UEI/CAGE/signer at the cursor */}
+          <div className="pe-insert">
+            <button className="fx-btn fx-btn-ghost" onClick={() => setInsertOpen(o => !o)} aria-expanded={insertOpen}>
+              <Building2 size={15} /> Insert business info <ChevronDown size={13} />
+            </button>
+            {insertOpen && (
+              <div className="pe-insert-menu" onMouseLeave={() => setInsertOpen(false)}>
+                {insertFields.length === 0 ? (
+                  <Link to="/passport" className="pe-insert-empty">Set up your Passport to insert UEI, CAGE, signer…</Link>
+                ) : insertFields.map(f => (
+                  <button key={f.label} className="pe-insert-item" onClick={() => insertValue(f.value)}>
+                    <span className="pe-insert-label">{f.label}</span>
+                    <span className="pe-insert-val">{f.value}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <button className="fx-btn fx-btn-ghost" disabled title="Compliant .docx export — Phase 3">
             <Download size={15} /> Export .docx
           </button>
