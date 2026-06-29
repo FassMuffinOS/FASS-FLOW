@@ -37,6 +37,7 @@ import Glossary from './pages/Glossary'
 import Passport from './pages/Passport'
 import ShowMeTheMoney from './pages/ShowMeTheMoney'
 import Admin from './pages/Admin'
+import SecurityDashboard from './pages/SecurityDashboard'
 import BDPartnerAdmin from './pages/BDPartnerAdmin'
 import AffiliateProgram from './pages/AffiliateProgram'
 import AffiliateDashboard from './pages/AffiliateDashboard'
@@ -263,6 +264,9 @@ function AppRoutes() {
       {/* Founder-side affiliate payout console — same admin-secret gate,
           not linked in nav. */}
       <Route path="/admin/affiliates" element={<AffiliateAdmin />} />
+      {/* Founder-side Security Dashboard — runs scripts/security_scan.py via
+          GET /admin/security-scan, same admin-secret gate, not linked in nav. */}
+      <Route path="/admin/security" element={<SecurityDashboard />} />
 
       {/* Protected routes — no Nav/Footer (dashboard has its own header) */}
       <Route path="/dashboard" element={

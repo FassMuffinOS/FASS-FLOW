@@ -1,0 +1,123 @@
+.sec-rerun {
+  width: auto;
+  padding: 9px 16px;
+  margin: 4px 0 18px;
+}
+
+.sec-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 4px 0 14px;
+}
+
+.sec-summary-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--gray-200, #e5e7eb);
+  background: #fff;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  color: var(--gray-400, #6b7280);
+}
+
+.sec-summary-pill strong {
+  font-weight: 800;
+}
+
+.sec-pill-active {
+  border-color: currentColor;
+}
+
+.sec-summary-total {
+  font-size: 0.78rem;
+  color: var(--gray-400, #6b7280);
+  margin-left: 4px;
+}
+
+.sec-high { color: #b91c1c; }
+.sec-medium { color: #b45309; }
+.sec-low { color: #1d4ed8; }
+.sec-info { color: #6b7280; }
+
+.sec-clean {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--light-teal, #e6f6f3);
+  color: var(--dark-teal, #0a5c4d);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.sec-findings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 560px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+}
+
+.sec-finding {
+  border: 1px solid var(--gray-200, #e5e7eb);
+  border-left-width: 4px;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.sec-finding-high { border-left-color: #b91c1c; }
+.sec-finding-medium { border-left-color: #b45309; }
+.sec-finding-low { border-left-color: #1d4ed8; }
+.sec-finding-info { border-left-color: #6b7280; }
+
+.sec-finding-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.sec-badge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: var(--gray-100, #f1f5f9);
+}
+
+.sec-finding-loc {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.76rem;
+  color: var(--navy, #0f2940);
+}
+
+.sec-finding-cat {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gray-400, #6b7280);
+  margin-left: auto;
+}
+
+.sec-finding-msg {
+  font-size: 0.84rem;
+  color: var(--gray-600, #4b5563);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.sec-legend {
+  border-top: 1px solid var(--gray-200, #e5e7eb);
+  padding-top: 12px;
+  margin-top: 14px;
+}
