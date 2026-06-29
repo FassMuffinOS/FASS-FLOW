@@ -8,10 +8,12 @@ import {
   LifeBuoy, Handshake, Calculator, HardHat, Camera,
   Radar, Images, Trophy, Flame, Menu, X, Send, Lock, ChevronDown, Stamp, Wallet, Rocket, Crop, Megaphone, Gift, Landmark,
   Sparkles, Users, Award, MessageCircle, Newspaper, LayoutGrid, PenSquare,
+  PanelLeft, Plus, Pencil, Check, Trash2,
 } from 'lucide-react'
 import AlertsBell from './AlertsBell'
 import ChatDock from './ChatDock'
 import BottomNav from './BottomNav'
+import { loadSidebarConfig, saveSidebarConfig, newViewId, MAX_TOOLS_PER_VIEW } from '../lib/sidebarViews'
 import './AppShell.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -66,10 +68,6 @@ const NAV_GROUPS = [
     { name: 'Gift Cards', icon: Gift, to: '/giftcards', match: ['/giftcards'], tier: 'free' },
   ] },
   { label: 'Learn', items: [
-    // "Masterclass" used to be its own nav item pointing at /masterclass —
-    // the pre-purchase sales page. Signed-in users now get redirected
-    // straight from /masterclass to /classroom (App.jsx's MasterclassRoute),
-    // so Classroom is the only Learn destination a logged-in user needs.
     { name: 'Classroom', icon: BookOpen, to: '/classroom', match: ['/classroom', '/masterclass'], tier: 'locked' },
     { name: 'My Notebook', icon: Sparkles, to: '/notebook', match: ['/notebook'], tier: 'locked' },
     { name: 'Glossary', icon: GraduationCap, to: '/glossary', match: ['/glossary'], tier: 'free' },
@@ -82,10 +80,13 @@ const NAV_GROUPS = [
   ] },
 ]
 
+// Flat lookup so a view's stored tool-names resolve back to renderable items.
+const ALL_ITEMS = NAV_GROUPS.flatMap(g => g.items)
+const ITEM_BY_NAME = Object.fromEntries(ALL_ITEMS.map(i => [i.name, i]))
+
 const PLAN_LABELS = {
   lite: 'Lite',
-  starter: 'Core', // backend/Stripe key stays "starter" — display renamed
-  // to "Core" once the cheaper "Lite" tier was added below it.
+  starter: 'Core',
   pro: 'Pro',
   team: 'Team',
   promo: 'Promo Access',
@@ -100,14 +101,15 @@ export default function AppShell({ children }) {
   const [hasReadPass, setHasReadPass] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
 
+  // Sidebar custom views (localStorage). editingView holds a view id while
+  // its add/remove/rename editor is open.
+  const [cfg, setCfg] = useState(() => loadSidebarConfig())
+  const [editingView, setEditingView] = useState(null)
+  useEffect(() => { saveSidebarConfig(cfg) }, [cfg])
+
   // Close the mobile drawer whenever the route changes.
   useEffect(() => { setMenuOpen(false) }, [location.pathname])
 
-  // Inside the Opportunity Workspace (WARDOG -> R-E-A-D -> FASS FILL, now
-  // one continuous shell), dim everything in the sidebar except the
-  // journey that's actually in play — Find work / Bid — so the sidebar
-  // itself signals "you're mid-flow on one record" instead of presenting
-  // 18 equally-weighted destinations.
   const inWorkspace = location.pathname.startsWith('/opportunity')
   const FOCUSED_GROUP_LABELS = ['Find work', 'Bid']
 
@@ -124,10 +126,6 @@ export default function AppShell({ children }) {
     return () => { cancelled = true }
   }, [userId])
 
-  // Free-tier nav locking needs to know whether the user has cleared the
-  // "see real value before paying" bar — defined as at least one completed
-  // R-E-A-D score. Once that happens, Pipeline/FASS FILL unlock even
-  // without a paid plan yet; everything else still waits for an upgrade.
   useEffect(() => {
     if (!userId) return
     let cancelled = false
@@ -148,9 +146,78 @@ export default function AppShell({ children }) {
   const plan = profile?.plan
   const status = profile?.subscription_status
   const isActive = status === 'active'
-  // No active paid plan yet = free tier, slice the nav down to the core
-  // Find -> Qualify -> Respond path per V2MOM's "win the one workflow" rule.
   const isFreeTier = !isActive
+
+  // ── view config helpers ──
+  const compact = cfg.compact && !menuOpen   // compact only on the docked desktop rail
+  const activeView = cfg.views.find(v => v.id === cfg.activeView) || null
+  const setActiveView = id => setCfg(c => ({ ...c, activeView: id }))
+  const toggleCompact = () => setCfg(c => ({ ...c, compact: !c.compact }))
+
+  function renameView(id, name) {
+    setCfg(c => ({ ...c, views: c.views.map(v => v.id === id ? { ...v, name } : v) }))
+  }
+  function toggleToolInView(id, toolName) {
+    setCfg(c => ({
+      ...c,
+      views: c.views.map(v => {
+        if (v.id !== id) return v
+        const has = v.tools.includes(toolName)
+        if (has) return { ...v, tools: v.tools.filter(t => t !== toolName) }
+        if (v.tools.length >= MAX_TOOLS_PER_VIEW) return v // cap at 7
+        return { ...v, tools: [...v.tools, toolName] }
+      }),
+    }))
+  }
+  function createView() {
+    const id = newViewId()
+    setCfg(c => ({ ...c, views: [...c.views, { id, name: 'New view', tools: [] }], activeView: id }))
+    setEditingView(id)
+  }
+  function deleteView(id) {
+    setCfg(c => ({
+      ...c,
+      views: c.views.filter(v => v.id !== id),
+      activeView: c.activeView === id ? 'all' : c.activeView,
+    }))
+    setEditingView(null)
+  }
+
+  // Shared item renderer — used by both the grouped "All" nav and a custom
+  // view's flat list, so lock behavior and active state stay identical.
+  function renderItem(item) {
+    const active = item.match.some(p => location.pathname.startsWith(p))
+    const Icon = item.icon
+    const locked = isFreeTier && ((item.tier === 'gated' && !hasReadPass) || item.tier === 'locked')
+    if (locked) {
+      return (
+        <button
+          key={item.name}
+          type="button"
+          className="shell-nav-item shell-nav-locked"
+          onClick={() => navigate('/pricing')}
+          title={item.name + ' — unlocks on a paid plan'}
+        >
+          <Icon size={16} />
+          <span className="shell-nav-text">{item.name}</span>
+          <Lock size={12} className="shell-nav-lock" />
+        </button>
+      )
+    }
+    return (
+      <Link
+        key={item.name}
+        to={item.to}
+        className={`shell-nav-item ${active ? 'shell-nav-active' : ''}`}
+        title={item.name}
+      >
+        <Icon size={16} />
+        <span className="shell-nav-text">{item.name}</span>
+      </Link>
+    )
+  }
+
+  const editingObj = editingView ? cfg.views.find(v => v.id === editingView) : null
 
   return (
     <div className="shell">
@@ -167,99 +234,140 @@ export default function AppShell({ children }) {
 
       {menuOpen && <div className="shell-scrim" onClick={() => setMenuOpen(false)} />}
 
-      <aside className={`shell-sidebar ${menuOpen ? 'shell-open' : ''}`}>
+      <aside className={`shell-sidebar ${menuOpen ? 'shell-open' : ''} ${compact ? 'shell-compact' : ''}`}>
         <div className="shell-side-top">
           <Link to="/dashboard" className="shell-logo">
             <span className="shell-logo-icon">⬡</span>
-            <span>FASS <strong>Flow</strong></span>
+            <span className="shell-nav-text">FASS <strong>Flow</strong></span>
           </Link>
+          <button className="shell-compact-toggle" onClick={toggleCompact} aria-label="Toggle compact sidebar" title="Compact / expand">
+            <PanelLeft size={16} />
+          </button>
           <button className="shell-closemenu" onClick={() => setMenuOpen(false)} aria-label="Close menu">
             <X size={18} />
           </button>
         </div>
 
-        <nav className="shell-nav">
-          {NAV_GROUPS.map((group, gi) => {
-            // On a free account, items tiered 'locked' move out of their
-            // journey group entirely and collect into "More tools" below —
-            // a flat 18-item sidebar is exactly the sprawl V2MOM calls out.
-            const visibleItems = isFreeTier
-              ? group.items.filter(item => item.tier !== 'locked')
-              : group.items
-            if (!visibleItems.length) return null
-            const dimmed = inWorkspace && !FOCUSED_GROUP_LABELS.includes(group.label)
-            return (
-              <div className={`shell-navgroup ${dimmed ? 'shell-navgroup-dimmed' : ''}`} key={gi}>
-                {group.label && <span className="shell-navgroup-label">{group.label}</span>}
-                {visibleItems.map(item => {
-                  const active = item.match.some(p => location.pathname.startsWith(p))
-                  const Icon = item.icon
-                  const isLocked = isFreeTier && item.tier === 'gated' && !hasReadPass
-                  if (isLocked) {
-                    return (
-                      <button
-                        key={item.name}
-                        type="button"
-                        className="shell-nav-item shell-nav-locked"
-                        onClick={() => navigate('/pricing')}
-                        title="Unlocks after your first R-E-A-D score, or on any paid plan"
-                      >
-                        <Icon size={16} />
-                        {item.name}
-                        <Lock size={12} className="shell-nav-lock" />
-                      </button>
-                    )
-                  }
-                  return (
-                    <Link
-                      key={item.name}
-                      to={item.to}
-                      className={`shell-nav-item ${active ? 'shell-nav-active' : ''}`}
-                    >
-                      <Icon size={16} />
-                      {item.name}
-                    </Link>
-                  )
-                })}
-              </div>
-            )
-          })}
+        {/* View switcher — hidden in compact rail (no room for chips) */}
+        {!compact && (
+          <div className="shell-views">
+            <button className={`shell-view-chip ${cfg.activeView === 'all' ? 'is-active' : ''}`} onClick={() => setActiveView('all')}>All</button>
+            {cfg.views.map(v => (
+              <button key={v.id} className={`shell-view-chip ${cfg.activeView === v.id ? 'is-active' : ''}`} onClick={() => setActiveView(v.id)}>{v.name}</button>
+            ))}
+            <button className="shell-view-chip shell-view-add" onClick={createView} title="New view"><Plus size={13} /></button>
+          </div>
+        )}
 
-          {isFreeTier && (() => {
-            const lockedItems = NAV_GROUPS.flatMap(g => g.items).filter(item => item.tier === 'locked')
-            if (!lockedItems.length) return null
-            return (
-              <div className="shell-navgroup shell-navgroup-more">
-                <button
-                  type="button"
-                  className="shell-navgroup-more-toggle"
-                  onClick={() => setMoreOpen(v => !v)}
-                  aria-expanded={moreOpen}
-                >
-                  <Lock size={13} />
-                  <span>More tools — unlocks on Pro</span>
-                  <ChevronDown size={14} className={`shell-more-chevron ${moreOpen ? 'shell-more-open' : ''}`} />
-                </button>
-                {moreOpen && lockedItems.map(item => {
-                  const Icon = item.icon
+        {/* View editor (rename + add/remove tools, max 7) */}
+        {editingObj && !compact ? (
+          <div className="shell-vieweditor">
+            <input
+              className="shell-view-name"
+              value={editingObj.name}
+              onChange={e => renameView(editingObj.id, e.target.value)}
+              placeholder="View name"
+            />
+            <div className="shell-view-count">{editingObj.tools.length}/{MAX_TOOLS_PER_VIEW} tools</div>
+            <div className="shell-view-tools">
+              {ALL_ITEMS.map(item => {
+                const inView = editingObj.tools.includes(item.name)
+                const full = editingObj.tools.length >= MAX_TOOLS_PER_VIEW && !inView
+                const Icon = item.icon
+                return (
+                  <button
+                    key={item.name}
+                    className={`shell-view-tool ${inView ? 'is-in' : ''}`}
+                    onClick={() => toggleToolInView(editingObj.id, item.name)}
+                    disabled={full}
+                    title={full ? 'View is full (7 max)' : item.name}
+                  >
+                    <Icon size={14} />
+                    <span>{item.name}</span>
+                    {inView ? <Check size={13} /> : <Plus size={13} />}
+                  </button>
+                )
+              })}
+            </div>
+            <div className="shell-view-editactions">
+              <button className="shell-view-del" onClick={() => deleteView(editingObj.id)}><Trash2 size={13} /> Delete view</button>
+              <button className="shell-view-done" onClick={() => setEditingView(null)}>Done</button>
+            </div>
+          </div>
+        ) : (
+          <nav className="shell-nav">
+            {cfg.activeView !== 'all' && activeView ? (
+              // ── Custom view: flat list of the chosen tools ──
+              <div className="shell-navgroup">
+                <span className="shell-navgroup-label shell-view-headerlabel">
+                  {activeView.name}
+                  {!compact && (
+                    <button className="shell-view-edit" onClick={() => setEditingView(activeView.id)} title="Edit this view"><Pencil size={12} /></button>
+                  )}
+                </span>
+                {activeView.tools.map(name => ITEM_BY_NAME[name]).filter(Boolean).map(renderItem)}
+                {activeView.tools.length === 0 && !compact && (
+                  <button className="shell-view-empty" onClick={() => setEditingView(activeView.id)}>＋ Add tools to this view</button>
+                )}
+                {!compact && (
+                  <button className="shell-view-showall" onClick={() => setActiveView('all')}>Show all tools →</button>
+                )}
+              </div>
+            ) : (
+              // ── All: the full grouped nav (original behavior) ──
+              <>
+                {NAV_GROUPS.map((group, gi) => {
+                  const visibleItems = isFreeTier
+                    ? group.items.filter(item => item.tier !== 'locked')
+                    : group.items
+                  if (!visibleItems.length) return null
+                  const dimmed = inWorkspace && !FOCUSED_GROUP_LABELS.includes(group.label)
                   return (
-                    <button
-                      key={item.name}
-                      type="button"
-                      className="shell-nav-item shell-nav-locked"
-                      onClick={() => navigate('/pricing')}
-                      title="Available on Pro"
-                    >
-                      <Icon size={16} />
-                      {item.name}
-                      <Lock size={12} className="shell-nav-lock" />
-                    </button>
+                    <div className={`shell-navgroup ${dimmed ? 'shell-navgroup-dimmed' : ''}`} key={gi}>
+                      {group.label && <span className="shell-navgroup-label">{group.label}</span>}
+                      {visibleItems.map(renderItem)}
+                    </div>
                   )
                 })}
-              </div>
-            )
-          })()}
-        </nav>
+
+                {isFreeTier && !compact && (() => {
+                  const lockedItems = ALL_ITEMS.filter(item => item.tier === 'locked')
+                  if (!lockedItems.length) return null
+                  return (
+                    <div className="shell-navgroup shell-navgroup-more">
+                      <button
+                        type="button"
+                        className="shell-navgroup-more-toggle"
+                        onClick={() => setMoreOpen(v => !v)}
+                        aria-expanded={moreOpen}
+                      >
+                        <Lock size={13} />
+                        <span>More tools — unlocks on Pro</span>
+                        <ChevronDown size={14} className={`shell-more-chevron ${moreOpen ? 'shell-more-open' : ''}`} />
+                      </button>
+                      {moreOpen && lockedItems.map(item => {
+                        const Icon = item.icon
+                        return (
+                          <button
+                            key={item.name}
+                            type="button"
+                            className="shell-nav-item shell-nav-locked"
+                            onClick={() => navigate('/pricing')}
+                            title="Available on Pro"
+                          >
+                            <Icon size={16} />
+                            <span className="shell-nav-text">{item.name}</span>
+                            <Lock size={12} className="shell-nav-lock" />
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )
+                })()}
+              </>
+            )}
+          </nav>
+        )}
 
         <div className="shell-user">
           {profile && (
@@ -267,9 +375,9 @@ export default function AppShell({ children }) {
               {PLAN_LABELS[plan] || plan || 'No plan'} · {isActive ? 'Active' : status || 'inactive'}
             </span>
           )}
-          <span className="shell-email" title={email}>{email}</span>
-          <button className="shell-signout" onClick={handleSignOut}>
-            <LogOut size={14} /> Sign out
+          <span className="shell-email shell-nav-text" title={email}>{email}</span>
+          <button className="shell-signout" onClick={handleSignOut} title="Sign out">
+            <LogOut size={14} /> <span className="shell-nav-text">Sign out</span>
           </button>
         </div>
       </aside>
@@ -277,12 +385,7 @@ export default function AppShell({ children }) {
       <div className="shell-content">{children}</div>
 
       <AlertsBell />
-      {/* The full Messages page already has its own inline chat UI + realtime
-          subscription, so the floating dock would just duplicate it there. */}
       {!location.pathname.startsWith('/messages') && <ChatDock userId={userId} />}
-      {/* Mobile-only (≤900px) persistent bottom bar — Home/Messages/Network/
-          Activity/Me, present on every authenticated page. Desktop keeps the
-          full sidebar as the only nav. */}
       <BottomNav userId={userId} />
     </div>
   )
