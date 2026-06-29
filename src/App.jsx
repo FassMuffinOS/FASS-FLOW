@@ -12,6 +12,9 @@ import Careers from './pages/Careers'
 import About from './pages/About'
 import Press from './pages/Press'
 import Blog from './pages/Blog'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfService from './pages/TermsOfService'
+import CookiePolicy from './pages/CookiePolicy'
 import Masterclass from './pages/Masterclass'
 import Support from './pages/Support'
 import BDPartner from './pages/BDPartner'
@@ -219,6 +222,13 @@ function AppRoutes() {
       <Route path="/about" element={<><Nav /><main><About /></main><Footer /></>} />
       <Route path="/press" element={<><Nav /><main><Press /></main><Footer /></>} />
       <Route path="/blog" element={<><Nav /><main><Blog /></main><Footer /></>} />
+
+      {/* Legal pages — no Nav/Footer here since the legal-card layout is
+          full-bleed (matches /extension-privacy's pattern), but they're
+          still public/no-login. */}
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms-of-service" element={<TermsOfService />} />
+      <Route path="/cookie-policy" element={<CookiePolicy />} />
 
       {/* Public affiliate pitch/join page — logged-out visitors see the
           pitch + a "sign in to get your link" CTA; logged-in visitors can
