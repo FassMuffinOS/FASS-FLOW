@@ -1,0 +1,148 @@
+/* Proposal Editor (Phase 1) — Docs-like review surface.
+   Three columns: TOC · document · review rail. Built on fx- primitives +
+   the design tokens. */
+
+.pe { min-height: 100vh; background: var(--bg-base); }
+
+/* Header */
+.pe-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 24px;
+  padding: 28px 32px 18px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+}
+.pe-head-main h1 {
+  font-size: 1.5rem; font-weight: 800; color: var(--ink);
+  margin-top: 4px; letter-spacing: -0.02em;
+}
+.pe-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.pe-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.74rem; font-weight: 600; color: var(--text-secondary);
+  background: var(--bg-base); border: 1px solid var(--border);
+  border-radius: var(--radius-pill); padding: 4px 11px;
+}
+.pe-chip-due { color: var(--accent-hover); background: var(--accent-tint); border-color: transparent; }
+
+.pe-head-actions { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.pe-progress {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap;
+}
+.pe-progress-track {
+  width: 90px; height: 6px; border-radius: var(--radius-pill);
+  background: var(--gray-100); overflow: hidden;
+}
+.pe-progress-fill { display: block; height: 100%; background: var(--accent); transition: width .3s; }
+
+.pe-warn {
+  display: flex; align-items: center; gap: 8px;
+  margin: 0; padding: 10px 32px;
+  background: #FFF7ED; color: var(--amber);
+  font-size: 0.82rem; font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Three-column body */
+.pe-body {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr) 300px;
+  gap: 0;
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .pe-body { grid-template-columns: minmax(0, 1fr); }
+  .pe-toc, .pe-review { display: none; }
+}
+
+.pe-rail-head {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--text-muted); padding: 18px 16px 10px;
+}
+
+/* TOC */
+.pe-toc {
+  position: sticky; top: 0; align-self: start;
+  border-right: 1px solid var(--border);
+  height: calc(100vh - 0px); overflow-y: auto;
+  background: var(--bg-surface);
+}
+.pe-toc nav { display: flex; flex-direction: column; padding: 0 8px 24px; }
+.pe-toc-item {
+  display: flex; align-items: center; gap: 6px;
+  text-align: left; background: none; border: none; cursor: pointer;
+  font-family: inherit; font-size: 0.82rem; font-weight: 500;
+  color: var(--text-secondary);
+  padding: 8px 10px; border-radius: var(--radius-sm);
+  transition: background .14s, color .14s;
+}
+.pe-toc-item:hover { background: var(--bg-base); color: var(--ink); }
+.pe-toc-item.is-active { background: var(--accent-tint); color: var(--accent-hover); font-weight: 600; }
+.pe-toc-check { color: var(--accent); flex: none; }
+
+/* Document */
+.pe-doc { padding: 36px 0 80px; display: flex; justify-content: center; }
+.pe-editor {
+  width: 100%; max-width: 760px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 56px 64px;
+}
+.pe-editor .ProseMirror { outline: none; color: var(--ink); line-height: 1.7; }
+.pe-editor .ProseMirror:focus { outline: none; }
+.pe-editor .ProseMirror h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.25rem; font-weight: 800; color: var(--ink);
+  margin: 28px 0 10px; padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+}
+.pe-editor .ProseMirror h2:first-child { border-top: none; margin-top: 0; padding-top: 0; }
+.pe-editor .ProseMirror p { margin: 10px 0; font-size: 0.95rem; color: var(--text-secondary); }
+/* Review highlight — the spans a human must confirm/replace. */
+.pe-editor .ProseMirror mark, .pe-editor .ProseMirror mark.rv {
+  background: #FEF3C7; color: #92400E;
+  padding: 1px 3px; border-radius: 3px;
+  box-decoration-break: clone; -webkit-box-decoration-break: clone;
+}
+
+/* Review rail */
+.pe-review {
+  position: sticky; top: 0; align-self: start;
+  height: calc(100vh - 0px); overflow-y: auto;
+  border-left: 1px solid var(--border);
+  background: var(--bg-surface);
+}
+.pe-review-sub { font-size: 0.78rem; color: var(--text-muted); padding: 0 16px 12px; line-height: 1.5; }
+.pe-review-list { display: flex; flex-direction: column; gap: 2px; padding: 0 8px 24px; }
+.pe-review-card { border-radius: var(--radius-sm); }
+.pe-review-card.is-active { background: var(--bg-base); }
+.pe-review-title {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  text-align: left; background: none; border: none; cursor: pointer;
+  font-family: inherit; font-size: 0.83rem; font-weight: 600; color: var(--ink);
+  padding: 9px 10px;
+}
+.pe-review-card.is-approved .pe-review-title { color: var(--accent-hover); }
+.pe-review-title .pe-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--amber); flex: none;
+}
+.pe-review-card.is-approved .pe-review-title svg { color: var(--accent); }
+.pe-review-detail { padding: 4px 10px 14px; }
+.pe-approve { width: 100%; justify-content: center; margin-bottom: 8px; }
+.pe-comment {
+  font-size: 0.8rem; color: var(--text-secondary);
+  background: var(--bg-base); border-left: 2px solid var(--border);
+  padding: 6px 10px; border-radius: var(--radius-xs); margin-bottom: 6px;
+}
+.pe-comment-add { display: flex; gap: 6px; }
+.pe-comment-add input {
+  flex: 1; min-width: 0;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 7px 10px; font-family: inherit; font-size: 0.8rem; color: var(--ink);
+  background: var(--bg-surface); outline: none;
+}
+.pe-comment-add input:focus { border-color: var(--accent); }

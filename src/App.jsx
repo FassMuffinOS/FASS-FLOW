@@ -32,6 +32,7 @@ import OpportunityWorkspace from './pages/OpportunityWorkspace'
 import Pipeline from './pages/Pipeline'
 import Awarded from './pages/Awarded'
 import Fill from './pages/Fill'
+import ProposalEditor from './pages/ProposalEditor'
 import Classroom from './pages/Classroom'
 import Notebook from './pages/Notebook'
 import Glossary from './pages/Glossary'
@@ -294,6 +295,9 @@ function AppRoutes() {
       } />
       <Route path="/fill" element={
         <ProtectedRoute><Fill /></ProtectedRoute>
+      } />
+      <Route path="/proposal-editor" element={
+        <ProtectedRoute><ProposalEditor /></ProtectedRoute>
       } />
       <Route path="/classroom" element={
         <ProtectedRoute><Classroom /></ProtectedRoute>

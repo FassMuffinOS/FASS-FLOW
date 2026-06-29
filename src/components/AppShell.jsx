@@ -7,7 +7,7 @@ import {
   ShieldCheck, LogOut, GraduationCap, IdCard, DollarSign, Network, Mail,
   LifeBuoy, Handshake, Calculator, HardHat, Camera,
   Radar, Images, Trophy, Flame, Menu, X, Send, Lock, ChevronDown, Stamp, Wallet, Rocket, Crop, Megaphone, Gift, Landmark,
-  Sparkles, Users, Award, MessageCircle, Newspaper, LayoutGrid,
+  Sparkles, Users, Award, MessageCircle, Newspaper, LayoutGrid, PenSquare,
 } from 'lucide-react'
 import AlertsBell from './AlertsBell'
 import ChatDock from './ChatDock'
@@ -42,6 +42,7 @@ const NAV_GROUPS = [
     { name: 'R-E-A-D', icon: ClipboardCheck, to: '/read', match: ['/read'], tier: 'free' },
     { name: 'Estimator', icon: Calculator, to: '/estimator', match: ['/estimator'], tier: 'locked' },
     { name: 'FASS FILL', icon: ClipboardList, to: '/fill', match: ['/fill'], tier: 'gated' },
+    { name: 'Proposal Editor', icon: PenSquare, to: '/proposal-editor', match: ['/proposal-editor'], tier: 'gated' },
     { name: 'Client Proposals', icon: Send, to: '/proposals', match: ['/proposals'], tier: 'locked' },
     { name: 'Pipeline', icon: Kanban, to: '/pipeline', match: ['/pipeline'], tier: 'gated' },
     { name: 'Awarded', icon: Trophy, to: '/awarded', match: ['/awarded'], tier: 'locked' },

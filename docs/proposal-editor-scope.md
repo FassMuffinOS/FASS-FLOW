@@ -136,15 +136,24 @@ the opportunity it came from (Pipeline, WARDOG, R-E-A-D all already key off
 - **Phase 4 — (optional) Realtime co-review.** Reuse Supabase Realtime so a
   teammate/BD Partner can comment live.
 
-## Open product decisions for next session
+## Product decisions (resolved)
 
-1. **Entry point:** does this replace the FASS FILL "Compliance & Outline" tab,
-   or become a new "Draft" tab/step after the matrix? (Lean: a new step — keep
-   the matrix as the pre-flight, the editor as the build.)
-2. **Who can comment?** Just the owner first, or also a BD Partner / Team Up
-   collaborator (we have the relationships already).
-3. **AI re-draft from a comment:** should "reject + comment" auto-trigger a
-   re-draft of that section from the note? (High-wow, Phase 2.5.)
+1. **Entry point — new step, don't replace.** FASS FILL keeps the compliance
+   matrix as the pre-flight; the editor is a new "Draft" step you move into
+   from it (and a `/proposal-editor` route + sidebar entry under *Bid*). The
+   matrix tells you what's required; the editor builds it. Rationale: the
+   matrix is still valuable on its own, and replacing it would orphan the
+   existing flow.
+2. **Comments — owner-first, schema-ready for collaborators.** Phase 1–2 are
+   single-user (the owner). The `proposal_comments` table carries `author_id`
+   from day one, so enabling BD-Partner / Team-Up co-review later (Phase 4) is
+   a permission check, not a migration. Rationale: ship value now without
+   boxing out the collaboration we already have the relationships for.
+3. **AI re-draft from a comment — yes, Phase 2.5.** "Reject + comment" on a
+   section feeds the note back into `draftSection()` to regenerate just that
+   section. It's the highest-wow moment and reuses code we already have, so it
+   lands right after comments instead of waiting. Rationale: turns the review
+   loop from "flag problems" into "fix them in place."
 
 ## Effort estimate (rough)
 
