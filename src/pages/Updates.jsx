@@ -9,6 +9,26 @@ import './Updates.css'
 const UPDATES = [
   {
     tag: 'GovCon Tools',
+    title: 'Opportunity Workspace — one screen for the whole bid',
+    body: 'WARDOG, R-E-A-D, and Pipeline now open into a single Opportunity Workspace instead of three separate tools, so research, the bid/no-bid call, and tracking stay in one place per opportunity — with a real fit score, win probability, and competition read in the header.',
+  },
+  {
+    tag: 'Dashboard',
+    title: 'AI Chief-of-Staff — ask your business a question',
+    body: 'A query box on the Dashboard answers plain-language questions about your own account activity — pipeline status, recent wins, what needs attention — instead of making you dig through reports.',
+  },
+  {
+    tag: 'GovCon Tools',
+    title: 'Pipeline: a self-checking bid checklist',
+    body: 'Opportunities you\'re pursuing now show up in Pipeline as an ordered, self-checking checklist with a progress bar, so it\'s clear what\'s actually left before a bid is ready to go out.',
+  },
+  {
+    tag: 'GovCon Tools',
+    title: 'Capture solicitations straight from the browser',
+    body: 'A Chrome extension reads solicitation pages and sends them directly into your FASS Flow Inbox, so opportunities you find outside SAM.gov don\'t need to be copy-pasted in by hand.',
+  },
+  {
+    tag: 'GovCon Tools',
     title: 'AI deal scoring on every opportunity',
     body: "WARDOG and the Opportunity Workspace now show an AI-generated win-likelihood score and a 'Win-Delta' badge on every contract, so you can tell at a glance which opportunities are worth your time before you open them.",
   },

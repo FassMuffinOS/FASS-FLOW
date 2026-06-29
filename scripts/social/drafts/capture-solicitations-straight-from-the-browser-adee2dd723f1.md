@@ -1,19 +1,19 @@
-# Business Health score + AI daily brief
+# Capture solicitations straight from the browser
 
-Tag: Dashboard · Generated: 2026-06-29 · Entry hash: b85e82a0e6c6
+Tag: GovCon Tools · Generated: 2026-06-29 · Entry hash: adee2dd723f1
 Source: https://flow.fass.systems/updates
 
 ---
 
 ## LinkedIn
 
-We shipped something new on FASS Flow: business health score + ai daily brief.
+We shipped something new on FASS Flow: capture solicitations straight from the browser.
 
-Dashboard surfaces a health score from real activity plus an AI-written daily summary.
+A Chrome extension reads solicitation pages and sends them directly into your FASS Flow Inbox.
 
 This is live now for every business using FASS Flow — no waitlist, no "coming soon." Full changelog: https://flow.fass.systems/updates
 
-#GovCon #BuildInPublic #SmallBusiness #Dashboard
+#GovCon #BuildInPublic #SmallBusiness #GovConTools
 
 ---
 
@@ -21,9 +21,9 @@ This is live now for every business using FASS Flow — no waitlist, no "coming 
 
 New on FASS Flow 🚀
 
-Business Health score + AI daily brief
+Capture solicitations straight from the browser
 
-Dashboard surfaces a health score from real activity plus an AI-written daily summary.
+A Chrome extension reads solicitation pages and sends them directly into your FASS Flow Inbox.
 
 See everything we've shipped: https://flow.fass.systems/updates
 
@@ -33,9 +33,9 @@ See everything we've shipped: https://flow.fass.systems/updates
 
 ## X
 
-Shipped: Business Health score + AI daily brief.
+Shipped: Capture solicitations straight from the browser.
 
-Dashboard surfaces a health score from real activity plus an AI-written daily summary.
+A Chrome extension reads solicitation pages and sends them directly into your FASS Flow Inbox.
 
 https://flow.fass.systems/updates
 
@@ -43,25 +43,25 @@ https://flow.fass.systems/updates
 
 ## TikTok
 
-[TikTok script — Business Health score + AI daily brief]
+[TikTok script — Capture solicitations straight from the browser]
 
 HOOK (0-3s, on screen + voiceover):
 "We just added this to FASS Flow..."
 
 BODY (3-20s, screen-record the feature):
-"Dashboard surfaces a health score from real activity plus an AI-written daily summary."
+"A Chrome extension reads solicitation pages and sends them directly into your FASS Flow Inbox."
 
 CTA (last 3s):
 "Link in bio — flow.fass.systems. Full changelog at /updates."
 
-On-screen text overlay suggestion: "Business Health score + AI daily brief"
-Tag: Dashboard
+On-screen text overlay suggestion: "Capture solicitations straight from the browser"
+Tag: GovCon Tools
 
 ---
 
 ## Reddit devlog
 
-**Title suggestion:** Shipped: Business Health score + AI daily brief (FASS Flow devlog)
+**Title suggestion:** Shipped: Capture solicitations straight from the browser (FASS Flow devlog)
 
 **Suggested subreddits:** r/SaaS, r/microsaas, r/GovCon (if relevant to GovCon Tools), r/sidehustle
 
@@ -69,9 +69,9 @@ Tag: Dashboard
 
 Quick devlog update — just shipped this on FASS Flow:
 
-**Business Health score + AI daily brief**
+**Capture solicitations straight from the browser**
 
-Dashboard surfaces a health score from real activity plus an AI-written daily summary.
+A Chrome extension reads solicitation pages and sends them directly into your FASS Flow Inbox.
 
 This is live now, no waitlist. Posting because I'm building this in the open and figured some of you tracking SaaS/GovCon tooling builds might find it useful or have feedback.
 
@@ -84,7 +84,7 @@ Note: review each subreddit's self-promo rules before posting — some cap how o
 
 ## Newsletter
 
-**Subject line:** New on FASS Flow: Business Health score + AI daily brief
+**Subject line:** New on FASS Flow: Capture solicitations straight from the browser
 
 **Body:**
 
@@ -92,9 +92,9 @@ Hey —
 
 Quick update on what shipped this week.
 
-**Business Health score + AI daily brief**
+**Capture solicitations straight from the browser**
 
-Dashboard surfaces a health score from real activity plus an AI-written daily summary.
+A Chrome extension reads solicitation pages and sends them directly into your FASS Flow Inbox.
 
 This is live now for everyone on FASS Flow — no separate plan, no upgrade required.
 

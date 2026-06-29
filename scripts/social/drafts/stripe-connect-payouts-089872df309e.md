@@ -31,6 +31,16 @@ See everything we've shipped: https://flow.fass.systems/updates
 
 ---
 
+## X
+
+Shipped: Stripe Connect payouts.
+
+Businesses connect their own Stripe account for direct payouts on gift card and wallet sales.
+
+https://flow.fass.systems/updates
+
+---
+
 ## TikTok
 
 [TikTok script — Stripe Connect payouts]
@@ -49,6 +59,51 @@ Tag: Payments
 
 ---
 
+## Reddit devlog
+
+**Title suggestion:** Shipped: Stripe Connect payouts (FASS Flow devlog)
+
+**Suggested subreddits:** r/SaaS, r/microsaas, r/GovCon (if relevant to GovCon Tools), r/sidehustle
+
+**Body:**
+
+Quick devlog update — just shipped this on FASS Flow:
+
+**Stripe Connect payouts**
+
+Businesses connect their own Stripe account for direct payouts on gift card and wallet sales.
+
+This is live now, no waitlist. Posting because I'm building this in the open and figured some of you tracking SaaS/GovCon tooling builds might find it useful or have feedback.
+
+Changelog: https://flow.fass.systems/updates
+
+---
+Note: review each subreddit's self-promo rules before posting — some cap how often a single account can post product updates.
+
+---
+
+## Newsletter
+
+**Subject line:** New on FASS Flow: Stripe Connect payouts
+
+**Body:**
+
+Hey —
+
+Quick update on what shipped this week.
+
+**Stripe Connect payouts**
+
+Businesses connect their own Stripe account for direct payouts on gift card and wallet sales.
+
+This is live now for everyone on FASS Flow — no separate plan, no upgrade required.
+
+See the full changelog: https://flow.fass.systems/updates
+
+— FASS Flow
+
+---
+
 Status: DRAFT — not posted anywhere. Review, edit if needed, then post manually
-(or hand to Claude to stage in LinkedIn via the Chrome session — it will not
-click Post itself).
+(or hand to Claude to stage in a logged-in session via the Chrome extension —
+it will not click Post/Submit/Send itself).

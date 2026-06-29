@@ -31,6 +31,16 @@ See everything we've shipped: https://flow.fass.systems/updates
 
 ---
 
+## X
+
+Shipped: Careers page launched.
+
+A public Careers page with real open roles and an in-app application flow.
+
+https://flow.fass.systems/updates
+
+---
+
 ## TikTok
 
 [TikTok script — Careers page launched]
@@ -49,6 +59,51 @@ Tag: Company
 
 ---
 
+## Reddit devlog
+
+**Title suggestion:** Shipped: Careers page launched (FASS Flow devlog)
+
+**Suggested subreddits:** r/SaaS, r/microsaas, r/GovCon (if relevant to GovCon Tools), r/sidehustle
+
+**Body:**
+
+Quick devlog update — just shipped this on FASS Flow:
+
+**Careers page launched**
+
+A public Careers page with real open roles and an in-app application flow.
+
+This is live now, no waitlist. Posting because I'm building this in the open and figured some of you tracking SaaS/GovCon tooling builds might find it useful or have feedback.
+
+Changelog: https://flow.fass.systems/updates
+
+---
+Note: review each subreddit's self-promo rules before posting — some cap how often a single account can post product updates.
+
+---
+
+## Newsletter
+
+**Subject line:** New on FASS Flow: Careers page launched
+
+**Body:**
+
+Hey —
+
+Quick update on what shipped this week.
+
+**Careers page launched**
+
+A public Careers page with real open roles and an in-app application flow.
+
+This is live now for everyone on FASS Flow — no separate plan, no upgrade required.
+
+See the full changelog: https://flow.fass.systems/updates
+
+— FASS Flow
+
+---
+
 Status: DRAFT — not posted anywhere. Review, edit if needed, then post manually
-(or hand to Claude to stage in LinkedIn via the Chrome session — it will not
-click Post itself).
+(or hand to Claude to stage in a logged-in session via the Chrome extension —
+it will not click Post/Submit/Send itself).

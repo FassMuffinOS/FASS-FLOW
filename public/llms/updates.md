@@ -2,6 +2,10 @@
 
 A running changelog of real features shipped on FASS Flow. Newest first, customer-facing outcomes only — no fabricated metrics.
 
+- **Opportunity Workspace — one screen for the whole bid** (GovCon Tools) — WARDOG, R-E-A-D, and Pipeline now open into a single Opportunity Workspace with a real fit score, win probability, and competition read in the header.
+- **AI Chief-of-Staff — ask your business a question** (Dashboard) — A query box on the Dashboard answers plain-language questions about your own account activity instead of making you dig through reports.
+- **Pipeline: a self-checking bid checklist** (GovCon Tools) — Opportunities you're pursuing show up as an ordered, self-checking checklist with a progress bar.
+- **Capture solicitations straight from the browser** (GovCon Tools) — A Chrome extension reads solicitation pages and sends them directly into your FASS Flow Inbox.
 - **AI deal scoring on every opportunity** (GovCon Tools) — WARDOG and the Opportunity Workspace show an AI-generated win-likelihood score and a Win-Delta badge on every contract.
 - **Full solicitation text, captured automatically** (GovCon Tools) — Saving an opportunity pulls the complete solicitation description and attached PDFs into FASS Flow directly.
 - **Wider NAICS search + more results per search** (GovCon Tools) — A searchable NAICS code picker and a larger per-search result set with load-more pagination.

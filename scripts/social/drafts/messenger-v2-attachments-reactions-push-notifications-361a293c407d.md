@@ -31,6 +31,16 @@ See everything we've shipped: https://flow.fass.systems/updates
 
 ---
 
+## X
+
+Shipped: Messenger v2: attachments, reactions, push notifications.
+
+File attachments, emoji reactions, message editing, read receipts, typing indicators, real push notifications.
+
+https://flow.fass.systems/updates
+
+---
+
 ## TikTok
 
 [TikTok script — Messenger v2: attachments, reactions, push notifications]
@@ -49,6 +59,51 @@ Tag: Messenger
 
 ---
 
+## Reddit devlog
+
+**Title suggestion:** Shipped: Messenger v2: attachments, reactions, push notifications (FASS Flow devlog)
+
+**Suggested subreddits:** r/SaaS, r/microsaas, r/GovCon (if relevant to GovCon Tools), r/sidehustle
+
+**Body:**
+
+Quick devlog update — just shipped this on FASS Flow:
+
+**Messenger v2: attachments, reactions, push notifications**
+
+File attachments, emoji reactions, message editing, read receipts, typing indicators, real push notifications.
+
+This is live now, no waitlist. Posting because I'm building this in the open and figured some of you tracking SaaS/GovCon tooling builds might find it useful or have feedback.
+
+Changelog: https://flow.fass.systems/updates
+
+---
+Note: review each subreddit's self-promo rules before posting — some cap how often a single account can post product updates.
+
+---
+
+## Newsletter
+
+**Subject line:** New on FASS Flow: Messenger v2: attachments, reactions, push notifications
+
+**Body:**
+
+Hey —
+
+Quick update on what shipped this week.
+
+**Messenger v2: attachments, reactions, push notifications**
+
+File attachments, emoji reactions, message editing, read receipts, typing indicators, real push notifications.
+
+This is live now for everyone on FASS Flow — no separate plan, no upgrade required.
+
+See the full changelog: https://flow.fass.systems/updates
+
+— FASS Flow
+
+---
+
 Status: DRAFT — not posted anywhere. Review, edit if needed, then post manually
-(or hand to Claude to stage in LinkedIn via the Chrome session — it will not
-click Post itself).
+(or hand to Claude to stage in a logged-in session via the Chrome extension —
+it will not click Post/Submit/Send itself).

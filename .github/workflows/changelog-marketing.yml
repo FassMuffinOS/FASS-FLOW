@@ -1,0 +1,54 @@
+name: Changelog -> marketing assets
+
+# Fires only when public/llms/updates.md changes on main — i.e. only when a
+# genuinely real, shipped feature gets added to the changelog. Routine
+# commits (bug fixes, refactors, config) don't trigger this.
+#
+# What it does (all pure file generation, nothing here logs into or posts
+# to any platform):
+#   - scripts/social/generate-drafts.mjs  -> LinkedIn/FB/IG/X/TikTok/Reddit/
+#                                             newsletter DRAFT copy in
+#                                             scripts/social/drafts/
+#   - scripts/social/generate-rss.mjs     -> public/rss.xml
+#   - scripts/social/bump-sitemap-lastmod.mjs -> public/sitemap.xml lastmod
+#
+# Generated files are committed back to the repo by github-actions[bot] so
+# rss.xml/sitemap.xml ship automatically, and the new draft files show up
+# in the next PR/commit for a human to review and post manually.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/llms/updates.md'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run changelog publish pipeline
+        working-directory: .
+        run: node scripts/social/publish.mjs
+
+      - name: Commit generated assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/rss.xml public/sitemap.xml scripts/social/drafts scripts/social/.drafts-state.json
+          if git diff --cached --quiet; then
+            echo "No generated changes to commit."
+          else
+            git commit -m "chore: auto-generate marketing drafts + rss/sitemap from changelog [skip ci]"
+            git push
+          fi

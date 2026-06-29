@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Auto-generated from public/llms/updates.md by scripts/social/generate-rss.mjs.
+     Do not edit by hand — edit updates.md instead and regenerate. -->
+<rss version="2.0">
+  <channel>
+    <title>FASS Flow Product Updates</title>
+    <link>https://flow.fass.systems/updates</link>
+    <description>A running changelog of real features shipped on FASS Flow.</description>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 29 Jun 2026 11:58:19 GMT</lastBuildDate>
+    <item>
+      <title>Opportunity Workspace — one screen for the whole bid</title>
+      <description>WARDOG, R-E-A-D, and Pipeline now open into a single Opportunity Workspace with a real fit score, win probability, and competition read in the header.</description>
+      <category>GovCon Tools</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">GovCon Tools|Opportunity Workspace — one screen for the whole bid</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>AI Chief-of-Staff — ask your business a question</title>
+      <description>A query box on the Dashboard answers plain-language questions about your own account activity instead of making you dig through reports.</description>
+      <category>Dashboard</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">Dashboard|AI Chief-of-Staff — ask your business a question</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>Pipeline: a self-checking bid checklist</title>
+      <description>Opportunities you&apos;re pursuing show up as an ordered, self-checking checklist with a progress bar.</description>
+      <category>GovCon Tools</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">GovCon Tools|Pipeline: a self-checking bid checklist</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>Capture solicitations straight from the browser</title>
+      <description>A Chrome extension reads solicitation pages and sends them directly into your FASS Flow Inbox.</description>
+      <category>GovCon Tools</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">GovCon Tools|Capture solicitations straight from the browser</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>AI deal scoring on every opportunity</title>
+      <description>WARDOG and the Opportunity Workspace show an AI-generated win-likelihood score and a Win-Delta badge on every contract.</description>
+      <category>GovCon Tools</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">GovCon Tools|AI deal scoring on every opportunity</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>Full solicitation text, captured automatically</title>
+      <description>Saving an opportunity pulls the complete solicitation description and attached PDFs into FASS Flow directly.</description>
+      <category>GovCon Tools</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">GovCon Tools|Full solicitation text, captured automatically</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>Wider NAICS search + more results per search</title>
+      <description>A searchable NAICS code picker and a larger per-search result set with load-more pagination.</description>
+      <category>GovCon Tools</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">GovCon Tools|Wider NAICS search + more results per search</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>Careers page launched</title>
+      <description>A public Careers page with real open roles and an in-app application flow.</description>
+      <category>Company</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">Company|Careers page launched</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>Growth Challenge: gamified milestones</title>
+      <description>Tracks real account milestones and rewards progress automatically.</description>
+      <category>Growth</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">Growth|Growth Challenge: gamified milestones</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>Group and teaming threads in Messenger</title>
+      <description>Threads with three or more participants for subcontracting and teaming.</description>
+      <category>Networking</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">Networking|Group and teaming threads in Messenger</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>Capability-based people search</title>
+      <description>Search by NAICS code, certification, or past performance to find teaming partners.</description>
+      <category>Networking</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">Networking|Capability-based people search</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>Business Profiles</title>
+      <description>Public profile pages showing verified capabilities, certifications, and activity.</description>
+      <category>Networking</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">Networking|Business Profiles</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>Messenger v2: attachments, reactions, push notifications</title>
+      <description>File attachments, emoji reactions, message editing, read receipts, typing indicators, real push notifications.</description>
+      <category>Messenger</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">Messenger|Messenger v2: attachments, reactions, push notifications</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>Share opportunities, proposals, and posts into chat</title>
+      <description>WARDOG opportunities, R-E-A-D analyses, Team Up posts, and Passport cards shareable as live cards in Messenger.</description>
+      <category>Messenger</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">Messenger|Share opportunities, proposals, and posts into chat</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>Digital gift cards with Apple Wallet passes</title>
+      <description>Public storefront, real Apple Wallet pass delivery, full redemption history.</description>
+      <category>Wallet</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">Wallet|Digital gift cards with Apple Wallet passes</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>Push loyalty offers to Apple Wallet</title>
+      <description>Send offers and updated rewards directly to a customer&apos;s Apple Wallet pass.</description>
+      <category>Wallet</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">Wallet|Push loyalty offers to Apple Wallet</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>Stamp cards and rewards programs</title>
+      <description>Digital stamp/rewards cards, tap-to-join, in-person redemption.</description>
+      <category>Wallet</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">Wallet|Stamp cards and rewards programs</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>Stripe Connect payouts</title>
+      <description>Businesses connect their own Stripe account for direct payouts on gift card and wallet sales.</description>
+      <category>Payments</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">Payments|Stripe Connect payouts</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>Comms Hub</title>
+      <description>A single threaded inbox for customer SMS conversations with nudge alerts.</description>
+      <category>Operations</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">Operations|Comms Hub</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>Team Up</title>
+      <description>A partner network board and live chat for GovCon teaming.</description>
+      <category>Operations</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">Operations|Team Up</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>Affiliate Program with gamified dashboard</title>
+      <description>Referral commissions, levels, and recruiting tracked through a dedicated dashboard.</description>
+      <category>Affiliates</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">Affiliates|Affiliate Program with gamified dashboard</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>Business Health score + AI daily brief</title>
+      <description>Dashboard surfaces a health score from real activity plus an AI-written daily summary.</description>
+      <category>Dashboard</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">Dashboard|Business Health score + AI daily brief</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+    <item>
+      <title>New site, new look</title>
+      <description>Rebuilt public site: animated landing page, About, Press, and Blog.</description>
+      <category>Company</category>
+      <link>https://flow.fass.systems/updates</link>
+      <guid isPermaLink="false">Company|New site, new look</guid>
+      <pubDate>Mon, 29 Jun 2026 11:58:19 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

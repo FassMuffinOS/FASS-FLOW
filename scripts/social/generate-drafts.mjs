@@ -5,7 +5,8 @@
  * Reads public/llms/updates.md (the canonical changelog mirror, same content
  * shown on /updates), diffs it against a local state file to find entries
  * that haven't had drafts generated yet, and writes ready-to-paste drafts
- * for LinkedIn, Facebook/Instagram, and TikTok to scripts/social/drafts/.
+ * for LinkedIn, Facebook/Instagram, X, TikTok, Reddit, and the newsletter
+ * to scripts/social/drafts/.
  *
  * This script ONLY generates text files on disk. It never logs into, posts
  * to, or otherwise touches any social platform. A human reviews and pastes
@@ -113,6 +114,56 @@ On-screen text overlay suggestion: "${entry.title}"
 Tag: ${entry.tag}`;
 }
 
+function xDraft(entry) {
+  // X/Twitter: short, no hashtag stuffing, link at the end.
+  let body = `Shipped: ${entry.title}.\n\n${entry.body}`;
+  const link = `\n\n${SITE_URL}/updates`;
+  const max = 280 - link.length;
+  if (body.length > max) body = body.slice(0, max - 1).trimEnd() + '…';
+  return body + link;
+}
+
+function redditDevlogDraft(entry) {
+  return `**Title suggestion:** Shipped: ${entry.title} (FASS Flow devlog)
+
+**Suggested subreddits:** r/SaaS, r/microsaas, r/GovCon (if relevant to GovCon Tools), r/sidehustle
+
+**Body:**
+
+Quick devlog update — just shipped this on FASS Flow:
+
+**${entry.title}**
+
+${entry.body}
+
+This is live now, no waitlist. Posting because I'm building this in the open and figured some of you tracking SaaS/GovCon tooling builds might find it useful or have feedback.
+
+Changelog: ${SITE_URL}/updates
+
+---
+Note: review each subreddit's self-promo rules before posting — some cap how often a single account can post product updates.`;
+}
+
+function newsletterDraft(entry) {
+  return `**Subject line:** New on FASS Flow: ${entry.title}
+
+**Body:**
+
+Hey —
+
+Quick update on what shipped this week.
+
+**${entry.title}**
+
+${entry.body}
+
+This is live now for everyone on FASS Flow — no separate plan, no upgrade required.
+
+See the full changelog: ${SITE_URL}/updates
+
+— FASS Flow`;
+}
+
 function buildDraftFile(entry, hash) {
   const date = new Date().toISOString().slice(0, 10);
   return `# ${entry.title}
@@ -134,15 +185,33 @@ ${metaCaption(entry)}
 
 ---
 
+## X
+
+${xDraft(entry)}
+
+---
+
 ## TikTok
 
 ${tiktokScript(entry)}
 
 ---
 
+## Reddit devlog
+
+${redditDevlogDraft(entry)}
+
+---
+
+## Newsletter
+
+${newsletterDraft(entry)}
+
+---
+
 Status: DRAFT — not posted anywhere. Review, edit if needed, then post manually
-(or hand to Claude to stage in LinkedIn via the Chrome session — it will not
-click Post itself).
+(or hand to Claude to stage in a logged-in session via the Chrome extension —
+it will not click Post/Submit/Send itself).
 `;
 }
 

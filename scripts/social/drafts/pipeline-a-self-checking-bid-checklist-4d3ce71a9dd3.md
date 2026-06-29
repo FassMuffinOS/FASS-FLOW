@@ -1,19 +1,19 @@
-# Business Health score + AI daily brief
+# Pipeline: a self-checking bid checklist
 
-Tag: Dashboard · Generated: 2026-06-29 · Entry hash: b85e82a0e6c6
+Tag: GovCon Tools · Generated: 2026-06-29 · Entry hash: 4d3ce71a9dd3
 Source: https://flow.fass.systems/updates
 
 ---
 
 ## LinkedIn
 
-We shipped something new on FASS Flow: business health score + ai daily brief.
+We shipped something new on FASS Flow: pipeline: a self-checking bid checklist.
 
-Dashboard surfaces a health score from real activity plus an AI-written daily summary.
+Opportunities you're pursuing show up as an ordered, self-checking checklist with a progress bar.
 
 This is live now for every business using FASS Flow — no waitlist, no "coming soon." Full changelog: https://flow.fass.systems/updates
 
-#GovCon #BuildInPublic #SmallBusiness #Dashboard
+#GovCon #BuildInPublic #SmallBusiness #GovConTools
 
 ---
 
@@ -21,9 +21,9 @@ This is live now for every business using FASS Flow — no waitlist, no "coming 
 
 New on FASS Flow 🚀
 
-Business Health score + AI daily brief
+Pipeline: a self-checking bid checklist
 
-Dashboard surfaces a health score from real activity plus an AI-written daily summary.
+Opportunities you're pursuing show up as an ordered, self-checking checklist with a progress bar.
 
 See everything we've shipped: https://flow.fass.systems/updates
 
@@ -33,9 +33,9 @@ See everything we've shipped: https://flow.fass.systems/updates
 
 ## X
 
-Shipped: Business Health score + AI daily brief.
+Shipped: Pipeline: a self-checking bid checklist.
 
-Dashboard surfaces a health score from real activity plus an AI-written daily summary.
+Opportunities you're pursuing show up as an ordered, self-checking checklist with a progress bar.
 
 https://flow.fass.systems/updates
 
@@ -43,25 +43,25 @@ https://flow.fass.systems/updates
 
 ## TikTok
 
-[TikTok script — Business Health score + AI daily brief]
+[TikTok script — Pipeline: a self-checking bid checklist]
 
 HOOK (0-3s, on screen + voiceover):
 "We just added this to FASS Flow..."
 
 BODY (3-20s, screen-record the feature):
-"Dashboard surfaces a health score from real activity plus an AI-written daily summary."
+"Opportunities you're pursuing show up as an ordered, self-checking checklist with a progress bar."
 
 CTA (last 3s):
 "Link in bio — flow.fass.systems. Full changelog at /updates."
 
-On-screen text overlay suggestion: "Business Health score + AI daily brief"
-Tag: Dashboard
+On-screen text overlay suggestion: "Pipeline: a self-checking bid checklist"
+Tag: GovCon Tools
 
 ---
 
 ## Reddit devlog
 
-**Title suggestion:** Shipped: Business Health score + AI daily brief (FASS Flow devlog)
+**Title suggestion:** Shipped: Pipeline: a self-checking bid checklist (FASS Flow devlog)
 
 **Suggested subreddits:** r/SaaS, r/microsaas, r/GovCon (if relevant to GovCon Tools), r/sidehustle
 
@@ -69,9 +69,9 @@ Tag: Dashboard
 
 Quick devlog update — just shipped this on FASS Flow:
 
-**Business Health score + AI daily brief**
+**Pipeline: a self-checking bid checklist**
 
-Dashboard surfaces a health score from real activity plus an AI-written daily summary.
+Opportunities you're pursuing show up as an ordered, self-checking checklist with a progress bar.
 
 This is live now, no waitlist. Posting because I'm building this in the open and figured some of you tracking SaaS/GovCon tooling builds might find it useful or have feedback.
 
@@ -84,7 +84,7 @@ Note: review each subreddit's self-promo rules before posting — some cap how o
 
 ## Newsletter
 
-**Subject line:** New on FASS Flow: Business Health score + AI daily brief
+**Subject line:** New on FASS Flow: Pipeline: a self-checking bid checklist
 
 **Body:**
 
@@ -92,9 +92,9 @@ Hey —
 
 Quick update on what shipped this week.
 
-**Business Health score + AI daily brief**
+**Pipeline: a self-checking bid checklist**
 
-Dashboard surfaces a health score from real activity plus an AI-written daily summary.
+Opportunities you're pursuing show up as an ordered, self-checking checklist with a progress bar.
 
 This is live now for everyone on FASS Flow — no separate plan, no upgrade required.
 
