@@ -16,6 +16,39 @@
   margin-bottom: 12px;
 }
 
+.founders-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 640px;
+  margin: 0 auto 44px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: var(--light-teal, #e1f5ee);
+  color: var(--dark-teal, #0f6e56);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.founders-banner svg {
+  flex-shrink: 0;
+}
+
+.plan-founders-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--dark-teal, #0f6e56);
+}
+
 .pricing-desc {
   color: var(--gray-600);
   font-size: 1rem;

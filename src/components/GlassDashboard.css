@@ -42,7 +42,7 @@
 
 .glass-dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 14px;
 }
 
@@ -50,15 +50,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
-.dashboard-stat-value {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.01em;
+.dashboard-perk-icon {
+  color: #5eead5;
 }
 
 .dashboard-stat-label {
@@ -73,8 +69,7 @@
 
 @media (max-width: 640px) {
   .glass-dashboard-grid {
-    grid-template-columns: repeat(2, 1fr);
-    row-gap: 18px;
+    grid-template-columns: 1fr;
+    row-gap: 16px;
   }
-  .dashboard-stat-value { font-size: 1.2rem; }
 }
