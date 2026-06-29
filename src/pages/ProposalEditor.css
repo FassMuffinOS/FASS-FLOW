@@ -84,6 +84,49 @@
 .pe-check.warn svg { color: var(--amber); }
 .pe-modal-note { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 18px; line-height: 1.5; }
 .pe-modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+
+/* Reuse Engine — inline suggestions in the review detail */
+.pe-sugg { margin: 8px 0; padding: 8px 10px; background: var(--bg-base); border-radius: var(--radius-sm); }
+.pe-sugg-head {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 0.64rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--text-muted); margin-bottom: 6px;
+}
+.pe-sugg-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;
+  background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-xs);
+  padding: 7px 9px; margin-bottom: 4px; cursor: pointer; font-family: inherit;
+  transition: border-color .14s;
+}
+.pe-sugg-item:hover { border-color: var(--accent); }
+.pe-sugg-title { font-size: 0.8rem; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pe-sugg-item svg { flex: none; color: var(--accent); }
+
+.pe-save-lib {
+  display: inline-flex; align-items: center; gap: 6px; width: 100%; justify-content: center;
+  background: none; border: 1px dashed var(--border); border-radius: var(--radius-sm);
+  padding: 8px; cursor: pointer; font-family: inherit;
+  font-size: 0.78rem; font-weight: 600; color: var(--text-secondary);
+  transition: border-color .14s, color .14s;
+}
+.pe-save-lib:hover:not(:disabled) { border-color: var(--accent); color: var(--accent-hover); }
+.pe-save-lib:disabled { opacity: .6; cursor: default; }
+
+/* Reuse Engine — Library rail tab */
+.pe-library { padding: 0 12px 24px; }
+.pe-lib-empty {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+  color: var(--text-muted); padding: 8px 6px;
+}
+.pe-lib-empty p { font-size: 0.82rem; line-height: 1.5; }
+.pe-lib-list { display: flex; flex-direction: column; gap: 10px; }
+.pe-lib-card { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; background: var(--bg-surface); }
+.pe-lib-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+.pe-lib-del { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 2px; }
+.pe-lib-del:hover { color: #DC2626; }
+.pe-lib-title { font-size: 0.86rem; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+.pe-lib-snip { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px; }
+.pe-lib-insert { width: 100%; justify-content: center; }
 .pe-progress {
   display: inline-flex; align-items: center; gap: 9px;
   font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap;

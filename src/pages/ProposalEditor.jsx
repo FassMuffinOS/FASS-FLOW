@@ -5,7 +5,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Highlight from '@tiptap/extension-highlight'
 import {
   ListTree, Check, MessageSquare, Download, Type, Ruler, FileText, AlertTriangle,
-  ShieldCheck, CheckCircle2, Circle, Building2, ChevronDown, X,
+  ShieldCheck, CheckCircle2, Circle, Building2, ChevronDown, X, Library, Trash2, Plus, BookmarkPlus,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { getBusinessProfile } from '../lib/businessProfile'
@@ -13,6 +13,7 @@ import { parseSolicitation, buildOutline } from '../lib/solicitationParser'
 import { assembleProposal, assembledToHtml } from '../lib/assembleProposal'
 import { buildComplianceMatrix } from '../lib/complianceMatrix'
 import { buildDocxBlob } from '../lib/exportDocx'
+import { listReuseBlocks, createReuseBlock, markReuseBlockUsed, deleteReuseBlock, guessCategory } from '../lib/reuseLibrary'
 import useSeo from '../hooks/useSeo'
 import './ProposalEditor.css'
 
@@ -36,6 +37,7 @@ export default function ProposalEditor() {
   useSeo({ title: 'Proposal Editor', description: 'Review and finalize your generated proposal.', path: '/proposal-editor' })
   const location = useLocation()
   const { session } = useAuth()
+  const userId = session?.user?.id
 
   // Assemble once: real parsed solicitation if passed in, else the sample.
   const { doc, parsed } = useMemo(() => {
@@ -55,6 +57,16 @@ export default function ProposalEditor() {
   const [insertOpen, setInsertOpen] = useState(false)
   const [preflightOpen, setPreflightOpen] = useState(false)
   const [exporting, setExporting] = useState(false)
+  const [libraryBlocks, setLibraryBlocks] = useState([])
+  const [librarySaving, setLibrarySaving] = useState(null)
+
+  // Load the company reuse library once.
+  useEffect(() => {
+    if (!userId) return
+    let cancelled = false
+    listReuseBlocks(userId).then(b => { if (!cancelled) setLibraryBlocks(b) })
+    return () => { cancelled = true }
+  }, [userId])
 
   // Pull the shared business profile so the user can drop their own
   // UEI / CAGE / set-aside / signer info into the draft instead of retyping.
@@ -120,6 +132,58 @@ export default function ProposalEditor() {
   function insertValue(value) {
     editor?.chain().focus().insertContent(value).run()
     setInsertOpen(false)
+  }
+
+  // Pull the current text of one section out of the editor (everything from
+  // its heading up to the next heading) — used to save it to the library.
+  function sectionText(heading) {
+    const json = editor?.getJSON()
+    if (!json?.content) return ''
+    const txt = n => (n.content || []).map(c => c.text || '').join('')
+    let collecting = false
+    const parts = []
+    for (const n of json.content) {
+      if (n.type === 'heading') {
+        if (collecting) break
+        if (txt(n).trim() === heading.trim()) { collecting = true }
+      } else if (collecting && n.type === 'paragraph') {
+        parts.push(txt(n))
+      }
+    }
+    return parts.join('\n\n').trim()
+  }
+
+  async function saveToLibrary(section) {
+    const body = sectionText(section.heading)
+    if (!body || !userId) return
+    setLibrarySaving(section.id)
+    const r = await createReuseBlock(userId, {
+      title: section.heading,
+      body,
+      category: guessCategory(section.heading),
+      source: 'manual',
+    })
+    if (r.ok && r.block) setLibraryBlocks(prev => [r.block, ...prev])
+    setLibrarySaving(null)
+  }
+
+  function insertBlock(block) {
+    // Preserve paragraph breaks when dropping a saved block in.
+    const html = block.body.split(/\n{2,}/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('')
+    editor?.chain().focus().insertContent(html).run()
+    if (userId) markReuseBlockUsed(userId, block.id)
+  }
+
+  async function removeBlock(id) {
+    if (!userId) return
+    const ok = await deleteReuseBlock(userId, id)
+    if (ok) setLibraryBlocks(prev => prev.filter(b => b.id !== id))
+  }
+
+  // Library blocks that match a section's category — the inline suggestion.
+  function suggestionsFor(heading) {
+    const cat = guessCategory(heading)
+    return libraryBlocks.filter(b => b.category === cat).slice(0, 3)
   }
 
   async function downloadDocx() {
@@ -255,6 +319,9 @@ export default function ProposalEditor() {
             <button className={railTab === 'compliance' ? 'is-active' : ''} onClick={() => setRailTab('compliance')}>
               <ShieldCheck size={14} /> Compliance
             </button>
+            <button className={railTab === 'library' ? 'is-active' : ''} onClick={() => setRailTab('library')}>
+              <Library size={14} /> Library
+            </button>
           </div>
 
           {railTab === 'compliance' ? (
@@ -284,6 +351,32 @@ export default function ProposalEditor() {
                 ))}
               </div>
             </div>
+          ) : railTab === 'library' ? (
+            <div className="pe-library">
+              <p className="pe-review-sub">Your company's reusable “gold standard” content. Save a section from any proposal, then drop it into the next one. Insert places it at the cursor.</p>
+              {libraryBlocks.length === 0 ? (
+                <div className="pe-lib-empty">
+                  <Library size={20} />
+                  <p>Nothing saved yet. Open a section under <strong>Review</strong> and hit <strong>Save to library</strong> — it'll be one click to reuse on your next bid.</p>
+                </div>
+              ) : (
+                <div className="pe-lib-list">
+                  {libraryBlocks.map(b => (
+                    <div className="pe-lib-card" key={b.id}>
+                      <div className="pe-lib-head">
+                        <span className="fx-pill is-accent">{(b.category || 'other').replace(/_/g, ' ')}</span>
+                        <button className="pe-lib-del" onClick={() => removeBlock(b.id)} aria-label="Delete"><Trash2 size={13} /></button>
+                      </div>
+                      <div className="pe-lib-title">{b.title}</div>
+                      <p className="pe-lib-snip">{b.body.slice(0, 140)}{b.body.length > 140 ? '…' : ''}</p>
+                      <button className="fx-btn fx-btn-ghost pe-lib-insert" onClick={() => insertBlock(b)}>
+                        <Plus size={13} /> Insert at cursor
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           ) : (
           <>
           <p className="pe-review-sub">Highlighted spans in the draft are placeholders to confirm or replace. Approve each section as you finish it.</p>
@@ -300,6 +393,22 @@ export default function ProposalEditor() {
                     <div className="pe-review-detail">
                       <button className="fx-btn fx-btn-ghost pe-approve" onClick={() => toggleApprove(s.id)}>
                         {isApproved ? 'Approved ✓' : 'Approve section'}
+                      </button>
+
+                      {/* Reuse Engine: suggestions from the library + save this section */}
+                      {suggestionsFor(s.heading).length > 0 && (
+                        <div className="pe-sugg">
+                          <span className="pe-sugg-head"><Library size={12} /> From your library</span>
+                          {suggestionsFor(s.heading).map(b => (
+                            <button key={b.id} className="pe-sugg-item" onClick={() => insertBlock(b)} title="Insert at cursor">
+                              <span className="pe-sugg-title">{b.title}</span>
+                              <Plus size={13} />
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      <button className="pe-save-lib" onClick={() => saveToLibrary(s)} disabled={librarySaving === s.id}>
+                        <BookmarkPlus size={13} /> {librarySaving === s.id ? 'Saving…' : 'Save to library'}
                       </button>
                       {(comments[s.id] || []).map((c, ci) => (
                         <p className="pe-comment" key={ci}>{c}</p>
