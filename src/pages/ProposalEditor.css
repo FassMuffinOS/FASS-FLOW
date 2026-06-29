@@ -48,6 +48,42 @@
 }
 .pe-insert-val { font-size: 0.86rem; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pe-insert-empty { display: block; padding: 12px; font-size: 0.82rem; color: var(--accent-hover); font-weight: 600; }
+
+/* Pre-flight export modal */
+.pe-modal-scrim {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(16,24,40,.45);
+  display: grid; place-items: center; padding: 24px;
+}
+.pe-modal {
+  position: relative;
+  width: 100%; max-width: 480px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 28px;
+}
+.pe-modal-close {
+  position: absolute; top: 16px; right: 16px;
+  background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 4px;
+}
+.pe-modal-close:hover { color: var(--ink); }
+.pe-modal-title { font-size: 1.25rem; font-weight: 800; color: var(--ink); }
+.pe-modal-sub { margin-top: 4px; font-size: 0.88rem; color: var(--text-secondary); }
+.pe-modal-checks { display: flex; flex-direction: column; gap: 8px; margin: 20px 0; }
+.pe-check {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 0.86rem; font-weight: 500; line-height: 1.4;
+  padding: 11px 14px; border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+.pe-check svg { flex: none; margin-top: 1px; }
+.pe-check.ok { color: var(--ink); background: var(--bg-base); }
+.pe-check.ok svg { color: var(--accent); }
+.pe-check.warn { color: #92400E; background: #FFFBEB; border-color: #FDE68A; }
+.pe-check.warn svg { color: var(--amber); }
+.pe-modal-note { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 18px; line-height: 1.5; }
+.pe-modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
 .pe-progress {
   display: inline-flex; align-items: center; gap: 9px;
   font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap;

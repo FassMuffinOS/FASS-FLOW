@@ -5,13 +5,14 @@ import StarterKit from '@tiptap/starter-kit'
 import Highlight from '@tiptap/extension-highlight'
 import {
   ListTree, Check, MessageSquare, Download, Type, Ruler, FileText, AlertTriangle,
-  ShieldCheck, CheckCircle2, Circle, Building2, ChevronDown,
+  ShieldCheck, CheckCircle2, Circle, Building2, ChevronDown, X,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { getBusinessProfile } from '../lib/businessProfile'
 import { parseSolicitation, buildOutline } from '../lib/solicitationParser'
 import { assembleProposal, assembledToHtml } from '../lib/assembleProposal'
 import { buildComplianceMatrix } from '../lib/complianceMatrix'
+import { buildDocxBlob } from '../lib/exportDocx'
 import useSeo from '../hooks/useSeo'
 import './ProposalEditor.css'
 
@@ -52,6 +53,8 @@ export default function ProposalEditor() {
   const [railTab, setRailTab] = useState('review') // 'review' | 'compliance'
   const [profile, setProfile] = useState(null)
   const [insertOpen, setInsertOpen] = useState(false)
+  const [preflightOpen, setPreflightOpen] = useState(false)
+  const [exporting, setExporting] = useState(false)
 
   // Pull the shared business profile so the user can drop their own
   // UEI / CAGE / set-aside / signer info into the draft instead of retyping.
@@ -117,6 +120,27 @@ export default function ProposalEditor() {
   function insertValue(value) {
     editor?.chain().focus().insertContent(value).run()
     setInsertOpen(false)
+  }
+
+  async function downloadDocx() {
+    if (!editor) return
+    setExporting(true)
+    try {
+      const blob = await buildDocxBlob(editor.getJSON(), doc)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${(doc.title || 'Proposal').replace(/[^\w\s-]/g, '').trim()}.docx`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+      setPreflightOpen(false)
+    } catch (e) {
+      console.error('docx export failed', e)
+    } finally {
+      setExporting(false)
+    }
   }
 
   function toggleApprove(id) {
@@ -186,7 +210,7 @@ export default function ProposalEditor() {
             )}
           </div>
 
-          <button className="fx-btn fx-btn-ghost" disabled title="Compliant .docx export — Phase 3">
+          <button className="fx-btn fx-btn-primary" onClick={() => setPreflightOpen(true)}>
             <Download size={15} /> Export .docx
           </button>
         </div>
@@ -299,6 +323,62 @@ export default function ProposalEditor() {
           )}
         </aside>
       </div>
+
+      {preflightOpen && (() => {
+        const totalPages = doc.sections.reduce((a, s) => a + (s.pageEstimate || 0), 0)
+        const unapproved = total - reviewedCount
+        const checks = [
+          {
+            ok: !!(fmt.font && fmt.margin),
+            label: fmt.font || fmt.margin
+              ? `Format applied: ${[fmt.font, fmt.fontSize, fmt.margin].filter(Boolean).join(', ')}`
+              : 'No agency format detected — Times New Roman, 12pt, 1-inch defaults applied',
+          },
+          {
+            ok: !fmt.pageLimit || totalPages <= fmt.pageLimit,
+            label: fmt.pageLimit
+              ? `Page estimate ~${totalPages} of ${fmt.pageLimit} allowed`
+              : `Page estimate ~${totalPages} (no limit specified)`,
+          },
+          {
+            ok: matrix.summary.missing === 0,
+            label: matrix.summary.missing === 0
+              ? `All ${matrix.summary.total} scored/required items have a section`
+              : `${matrix.summary.missing} scored/required item${matrix.summary.missing > 1 ? 's have' : ' has'} no section`,
+          },
+          {
+            ok: unapproved === 0,
+            label: unapproved === 0 ? 'Every section reviewed & approved' : `${unapproved} section${unapproved > 1 ? 's' : ''} not yet approved`,
+          },
+        ]
+        const blockers = checks.filter(c => !c.ok).length
+        return (
+          <div className="pe-modal-scrim" onClick={() => setPreflightOpen(false)}>
+            <div className="pe-modal" onClick={e => e.stopPropagation()}>
+              <button className="pe-modal-close" onClick={() => setPreflightOpen(false)} aria-label="Close"><X size={16} /></button>
+              <h2 className="pe-modal-title">Pre-flight check</h2>
+              <p className="pe-modal-sub">Confirm the proposal is submission-ready before you export.</p>
+              <div className="pe-modal-checks">
+                {checks.map((c, i) => (
+                  <div className={`pe-check ${c.ok ? 'ok' : 'warn'}`} key={i}>
+                    {c.ok ? <CheckCircle2 size={16} /> : <AlertTriangle size={16} />}
+                    <span>{c.label}</span>
+                  </div>
+                ))}
+              </div>
+              {blockers > 0 && (
+                <p className="pe-modal-note">{blockers} item{blockers > 1 ? 's' : ''} need attention — you can still export, but review {blockers > 1 ? 'them' : 'it'} first if this is your final submission.</p>
+              )}
+              <div className="pe-modal-actions">
+                <button className="fx-btn fx-btn-ghost" onClick={() => setPreflightOpen(false)}>Cancel</button>
+                <button className="fx-btn fx-btn-primary" onClick={downloadDocx} disabled={exporting}>
+                  <Download size={15} /> {exporting ? 'Generating…' : 'Download .docx'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
