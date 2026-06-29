@@ -12,6 +12,8 @@ import Careers from './pages/Careers'
 import About from './pages/About'
 import Press from './pages/Press'
 import Blog from './pages/Blog'
+import Updates from './pages/Updates'
+import Releases from './pages/Releases'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfService from './pages/TermsOfService'
 import CookiePolicy from './pages/CookiePolicy'
@@ -229,6 +231,8 @@ function AppRoutes() {
       <Route path="/about" element={<><Nav /><main><About /></main><Footer /></>} />
       <Route path="/press" element={<><Nav /><main><Press /></main><Footer /></>} />
       <Route path="/blog" element={<><Nav /><main><Blog /></main><Footer /></>} />
+      <Route path="/updates" element={<><Nav /><main><Updates /></main><Footer /></>} />
+      <Route path="/releases" element={<><Nav /><main><Releases /></main><Footer /></>} />
 
       {/* Legal pages — no Nav/Footer here since the legal-card layout is
           full-bleed (matches /extension-privacy's pattern), but they're

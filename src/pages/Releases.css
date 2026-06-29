@@ -1,0 +1,127 @@
+.releases-hero {
+  padding: 96px 0 56px;
+  text-align: center;
+  background: linear-gradient(180deg, var(--light-teal, #e1f5ee) 0%, transparent 100%);
+}
+
+.releases-hero-inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.releases-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 800;
+  color: var(--navy);
+  line-height: 1.15;
+  margin: 12px 0 16px;
+}
+
+.releases-sub {
+  font-size: 1.02rem;
+  color: var(--gray-600, #4b5563);
+  line-height: 1.6;
+}
+
+.releases-sub a {
+  color: var(--dark-teal, #0f6e56);
+  font-weight: 700;
+}
+
+.releases-section {
+  padding: 56px 0 100px;
+}
+
+.releases-container {
+  max-width: 1040px;
+}
+
+.releases-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.release-card {
+  background: var(--white, #fff);
+  border: 1px solid var(--gray-200, #e5e7eb);
+  border-radius: 14px;
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.release-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.07);
+  border-color: var(--teal);
+  transform: translateY(-2px);
+}
+
+.release-lane {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--dark-teal, #0f6e56);
+  background: var(--light-teal, #e1f5ee);
+  padding: 3px 9px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+
+.release-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--navy);
+  line-height: 1.3;
+  margin-bottom: 14px;
+}
+
+.release-shipped {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  flex: 1;
+}
+
+.release-shipped li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: var(--gray-700, #374151);
+  line-height: 1.5;
+  margin-bottom: 9px;
+}
+
+.release-check {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--teal);
+}
+
+.release-impact {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--navy);
+  background: var(--gray-50, #f9fafb);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.release-impact svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--dark-teal, #0f6e56);
+}
+
+@media (max-width: 640px) {
+  .releases-hero { padding: 64px 0 40px; }
+}

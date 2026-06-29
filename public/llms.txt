@@ -22,6 +22,8 @@ All content below is mirrored as plain Markdown for crawlers that don't execute 
 - [Careers](https://flow.fass.systems/llms/careers.md): Open roles across engineering, design, AI, and customer success.
 - [Press](https://flow.fass.systems/llms/press.md): Company facts and media information.
 - [Blog](https://flow.fass.systems/llms/blog.md): Articles on government contracting and product updates.
+- [Updates](https://flow.fass.systems/llms/updates.md): A running changelog of features shipped on FASS Flow.
+- [Releases](https://flow.fass.systems/llms/releases.md): The same changelog grouped by release, with what shipped and why it matters.
 
 ## Legal
 
