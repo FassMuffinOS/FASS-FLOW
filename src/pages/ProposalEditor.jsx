@@ -5,9 +5,11 @@ import StarterKit from '@tiptap/starter-kit'
 import Highlight from '@tiptap/extension-highlight'
 import {
   ListTree, Check, MessageSquare, Download, Type, Ruler, FileText, AlertTriangle,
+  ShieldCheck, CheckCircle2, Circle,
 } from 'lucide-react'
 import { parseSolicitation, buildOutline } from '../lib/solicitationParser'
 import { assembleProposal, assembledToHtml } from '../lib/assembleProposal'
+import { buildComplianceMatrix } from '../lib/complianceMatrix'
 import useSeo from '../hooks/useSeo'
 import './ProposalEditor.css'
 
@@ -32,11 +34,11 @@ export default function ProposalEditor() {
   const location = useLocation()
 
   // Assemble once: real parsed solicitation if passed in, else the sample.
-  const doc = useMemo(() => {
-    const parsed = location.state?.parsed || parseSolicitation(SAMPLE)
-    const outline = location.state?.outline || buildOutline(parsed)
+  const { doc, parsed } = useMemo(() => {
+    const p = location.state?.parsed || parseSolicitation(SAMPLE)
+    const outline = location.state?.outline || buildOutline(p)
     const title = location.state?.title || 'Janitorial & Custodial Services — SSA Baltimore'
-    return assembleProposal(parsed, outline, { title })
+    return { doc: assembleProposal(p, outline, { title }), parsed: p }
   }, [location.state])
 
   const editorWrapRef = useRef(null)
@@ -44,6 +46,13 @@ export default function ProposalEditor() {
   const [activeSec, setActiveSec] = useState(null)
   const [comments, setComments] = useState({}) // sectionId -> [text]
   const [commentDraft, setCommentDraft] = useState('')
+  const [railTab, setRailTab] = useState('review') // 'review' | 'compliance'
+
+  // Live compliance matrix — recomputes when a section is approved.
+  const matrix = useMemo(
+    () => buildComplianceMatrix(parsed, doc, { approved }),
+    [parsed, doc, approved]
+  )
 
   const editor = useEditor({
     extensions: [StarterKit, Highlight.configure({ multicolor: false })],
@@ -62,6 +71,17 @@ export default function ProposalEditor() {
     setActiveSec(id)
     const el = editorWrapRef.current?.querySelectorAll('.ProseMirror h2')?.[index]
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  function scrollToSectionById(id) {
+    const idx = doc.sections.findIndex(s => s.id === id)
+    if (idx >= 0) scrollToSection(idx, id)
+  }
+
+  function statusIcon(status) {
+    if (status === 'addressed') return <CheckCircle2 size={15} />
+    if (status === 'missing' || status === 'over') return <AlertTriangle size={15} />
+    return <Circle size={15} />
   }
 
   function toggleApprove(id) {
@@ -147,9 +167,46 @@ export default function ProposalEditor() {
           <EditorContent editor={editor} className="pe-editor" />
         </main>
 
-        {/* Review rail */}
+        {/* Right rail — Review | Compliance */}
         <aside className="pe-review">
-          <div className="pe-rail-head"><MessageSquare size={15} /> Needs your review</div>
+          <div className="pe-rail-tabs">
+            <button className={railTab === 'review' ? 'is-active' : ''} onClick={() => setRailTab('review')}>
+              <MessageSquare size={14} /> Review
+            </button>
+            <button className={railTab === 'compliance' ? 'is-active' : ''} onClick={() => setRailTab('compliance')}>
+              <ShieldCheck size={14} /> Compliance
+            </button>
+          </div>
+
+          {railTab === 'compliance' ? (
+            <div className="pe-compliance">
+              <div className="pe-comp-summary">
+                <div className="pe-comp-score">{matrix.summary.ready}/{matrix.summary.total} requirements ready</div>
+                <span className="pe-progress-track"><span className="pe-progress-fill" style={{ width: `${matrix.summary.pct}%` }} /></span>
+                {matrix.summary.missing > 0 && (
+                  <p className="pe-comp-flag"><AlertTriangle size={13} /> {matrix.summary.missing} scored/required item{matrix.summary.missing > 1 ? 's have' : ' has'} no section yet</p>
+                )}
+              </div>
+              <div className="pe-comp-list">
+                {matrix.items.map(it => (
+                  <button
+                    key={it.id}
+                    className={`pe-comp-row st-${it.status}`}
+                    onClick={() => it.sectionId && scrollToSectionById(it.sectionId)}
+                    disabled={!it.sectionId}
+                  >
+                    <span className="pe-comp-ic">{statusIcon(it.status)}</span>
+                    <span className="pe-comp-body">
+                      <span className="pe-comp-kind">{it.kind}</span>
+                      <span className="pe-comp-label">{it.label}</span>
+                      {it.note && <span className="pe-comp-note">{it.note}</span>}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+          <>
           <p className="pe-review-sub">Highlighted spans in the draft are placeholders to confirm or replace. Approve each section as you finish it.</p>
           <div className="pe-review-list">
             {doc.sections.map((s, i) => {
@@ -183,6 +240,8 @@ export default function ProposalEditor() {
               )
             })}
           </div>
+          </>
+          )}
         </aside>
       </div>
     </div>
