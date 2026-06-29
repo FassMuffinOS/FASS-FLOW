@@ -1,8 +1,15 @@
+import useSeo from '../hooks/useSeo'
 import './Legal.css'
 
 // Working draft, not a substitute for review by a lawyer before relying on
 // it for compliance purposes.
 export default function CookiePolicy() {
+  useSeo({
+    title: 'Cookie Policy',
+    description: 'The cookies and similar storage technologies FASS Flow uses, and your choices around them.',
+    path: '/cookie-policy',
+    markdownUrl: '/llms/cookie-policy.md',
+  })
   return (
     <div className="legal">
       <div className="legal-card">

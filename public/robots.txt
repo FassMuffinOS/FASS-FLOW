@@ -1,0 +1,42 @@
+# FASS Flow (flow.fass.systems)
+# Allow everything public; protected app routes (/dashboard, /wardog, etc.)
+# aren't disallowed here because they already require a Supabase session —
+# robots.txt isn't an access-control mechanism, those pages just won't have
+# anything to render for a logged-out crawler.
+
+User-agent: *
+Allow: /
+
+# Explicitly welcome AI/LLM crawlers — see /llms.txt for a curated content
+# index built for exactly this audience.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+Sitemap: https://flow.fass.systems/sitemap.xml

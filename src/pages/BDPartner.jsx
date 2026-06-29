@@ -1,4 +1,5 @@
 import { ArrowRight, Check, Radar } from 'lucide-react'
+import useSeo from '../hooks/useSeo'
 import './BDPartner.css'
 
 const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/8x214g97sdEyff2bjZfnO0d'
@@ -62,6 +63,12 @@ const MODULES = [
 ]
 
 export default function BDPartner() {
+  useSeo({
+    title: 'BD Partner',
+    description: 'FASS BD Partner — a white-glove business development service for small businesses pursuing government contracts.',
+    path: '/bd-partner',
+    markdownUrl: '/llms/bd-partner.md',
+  })
   return (
     <div className="bd">
 

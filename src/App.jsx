@@ -73,6 +73,7 @@ import Resize from './pages/Resize'
 import GrowthChallenge from './pages/GrowthChallenge'
 import AppShell from './components/AppShell'
 import SmoothScroll from './components/SmoothScroll'
+import useSeo from './hooks/useSeo'
 import './index.css'
 import './App.css'
 
@@ -80,6 +81,12 @@ function Landing() {
   // Lenis smooth scroll is scoped to the public landing page only — it
   // never wraps ProtectedRoute/AppShell, so dashboard scroll behavior
   // (tables, modals, etc.) stays native.
+  useSeo({
+    title: 'The Operating System for Government Contracting',
+    description: 'FASS Flow helps small businesses find winnable government contracts, decide whether to bid, cut proposal work from weeks to hours, and get paid. Now in public beta.',
+    path: '/',
+    markdownUrl: '/llms/home.md',
+  })
   return (
     <SmoothScroll>
       <Hero />

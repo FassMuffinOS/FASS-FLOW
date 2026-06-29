@@ -1,5 +1,6 @@
 import { Target, Rocket, Users, GraduationCap, Trophy, Building2, MapPin, Mail } from 'lucide-react'
 import Reveal from '../components/Reveal'
+import useSeo from '../hooks/useSeo'
 import './About.css'
 
 // Mission/values copy intentionally mirrors Careers.jsx and the Hero —
@@ -21,16 +22,24 @@ const MISSION_POINTS = [
 ]
 
 export default function About() {
+  useSeo({
+    title: 'About',
+    description: "FASS Flow is a small Baltimore, MD team building the operating system for small-business government contracting. Now in public beta — founding members lock in pricing for life.",
+    path: '/about',
+    markdownUrl: '/llms/about.md',
+  })
   return (
     <div className="about">
       <section className="about-hero">
         <div className="container">
           <Reveal as="div" className="about-hero-inner">
-            <span className="section-label">About FASS</span>
+            <span className="section-label">About FASS · Now in Beta</span>
             <h1 className="about-title">The Operating System for Small Business Government Contracting</h1>
             <p className="about-sub">
               FASS Flow is a small team building the platform that helps small businesses find government work,
-              decide whether to bid, win it, execute it, and get paid — end to end, in one place.
+              decide whether to bid, win it, execute it, and get paid — end to end, in one place. We're in beta
+              right now, which means the people signing up today are shaping what we build next — and locking in
+              founding pricing while they're at it.
             </p>
           </Reveal>
         </div>

@@ -1,15 +1,23 @@
 import { Newspaper, Mail, Download, Building2, MapPin } from 'lucide-react'
 import Reveal from '../components/Reveal'
+import useSeo from '../hooks/useSeo'
 import './Press.css'
 
 const FACTS = [
   { label: 'Founded', value: '2025' },
+  { label: 'Stage', value: 'Public beta, open for founding-member signups' },
   { label: 'Headquarters', value: 'Baltimore, MD' },
   { label: 'Company', value: 'FASS Technologies LLC' },
   { label: 'What we build', value: 'The end-to-end platform for small-business government contracting' },
 ]
 
 export default function Press() {
+  useSeo({
+    title: 'Press',
+    description: 'Media resources for FASS Flow, the operating system for small-business government contracting. Company facts, boilerplate, and contact info for press inquiries.',
+    path: '/press',
+    markdownUrl: '/llms/press.md',
+  })
   return (
     <div className="press">
       <section className="press-hero">
@@ -50,8 +58,9 @@ export default function Press() {
           <Reveal as="p" className="press-boilerplate">
             FASS Flow is the operating system for small-business government contracting — a single platform that
             helps small businesses find winnable government contracts, decide whether a bid is worth their time, cut
-            proposal and compliance work from weeks to hours, and execute and get paid on the work they win. FASS
-            Technologies LLC is based in Baltimore, MD.
+            proposal and compliance work from weeks to hours, and execute and get paid on the work they win. The
+            platform is currently in public beta; businesses who join now lock in founding-member pricing for as
+            long as they stay subscribed. FASS Technologies LLC is based in Baltimore, MD.
           </Reveal>
         </div>
       </section>

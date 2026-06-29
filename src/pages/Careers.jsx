@@ -6,6 +6,7 @@ import {
   GitBranch, Layers, Globe, Workflow, Building2, Star, Send, Loader2,
 } from 'lucide-react'
 import Reveal from '../components/Reveal'
+import useSeo from '../hooks/useSeo'
 import './Careers.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -90,6 +91,12 @@ const BENEFITS = [
 ]
 
 export default function Careers() {
+  useSeo({
+    title: 'Careers',
+    description: "We're hiring across engineering, design, AI, and customer success to build the operating system for small-business government contracting.",
+    path: '/careers',
+    markdownUrl: '/llms/careers.md',
+  })
   const navigate = useNavigate()
   const formRef = useRef(null)
 

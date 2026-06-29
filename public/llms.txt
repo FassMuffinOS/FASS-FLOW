@@ -1,0 +1,34 @@
+# FASS Flow
+
+> FASS Flow is the operating system for small-business government contracting, built by FASS Technologies LLC (Baltimore, MD). It helps small businesses find winnable government contracts, decide whether to bid, cut proposal work from weeks to hours, execute awarded work, and get paid — all in one platform. Currently in public beta.
+
+FASS Flow's core modules: WARDOG (daily opportunity scanning across SAM.gov and other public procurement sources), R-E-A-D (a six-question bid/no-bid scoring workflow), FASS FILL (guided proposal builder and execution paperwork), and WITNESS (closeout documentation and past-performance proof). FASS Flow also includes FASS Wallet (digital loyalty/gift cards and customer messaging for non-government revenue) and the FASS Masterclass (a 10-mission training program).
+
+All content below is mirrored as plain Markdown for crawlers that don't execute JavaScript — the live site is a client-rendered single-page app.
+
+## Product
+
+- [Home](https://flow.fass.systems/llms/home.md): Platform overview — the three lanes (Win Work, Execute Work, Grow Customers) and how FASS Flow's modules fit together.
+- [Pricing](https://flow.fass.systems/llms/pricing.md): Free, Core, Pro, and Team plans, with founding-member pricing locked for life during beta.
+
+## Learn
+
+- [Masterclass](https://flow.fass.systems/llms/masterclass.md): A 10-mission government contracting course for Maryland/DC Metro service businesses, with worksheets and a certificate of completion.
+- [BD Partner](https://flow.fass.systems/llms/bd-partner.md): A $500/month white-glove business development service — opportunity scanning, bid/no-bid review, and proposal assembly support.
+
+## Company
+
+- [About](https://flow.fass.systems/llms/about.md): Who FASS Technologies LLC is and why FASS Flow exists.
+- [Careers](https://flow.fass.systems/llms/careers.md): Open roles across engineering, design, AI, and customer success.
+- [Press](https://flow.fass.systems/llms/press.md): Company facts and media information.
+- [Blog](https://flow.fass.systems/llms/blog.md): Articles on government contracting and product updates.
+
+## Legal
+
+- [Privacy Policy](https://flow.fass.systems/llms/privacy-policy.md)
+- [Terms of Service](https://flow.fass.systems/llms/terms-of-service.md)
+- [Cookie Policy](https://flow.fass.systems/llms/cookie-policy.md)
+
+## Contact
+
+FASS Technologies LLC · 1521 Bush St, Baltimore, MD 21230 · admin@fass.systems

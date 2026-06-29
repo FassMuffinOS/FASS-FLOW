@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ArrowRight, Check, Lock, Download, Award, ClipboardCheck } from 'lucide-react'
 import { MASTERCLASS_NIGHTS } from '../data/masterclassNights'
+import useSeo from '../hooks/useSeo'
 import './Masterclass.css'
 
 // ── Replace this with your real Stripe Payment Link once created ──
@@ -39,6 +40,12 @@ const NOT_FOR_YOU_IF = [
 ]
 
 export default function Masterclass() {
+  useSeo({
+    title: 'Masterclass',
+    description: 'FASS Academy — a government contracting masterclass with real missions, worksheets, and a certificate of completion.',
+    path: '/masterclass',
+    markdownUrl: '/llms/masterclass.md',
+  })
   const [sampleNight, setSampleNight] = useState(1)
   const mission = MASTERCLASS_NIGHTS.find(n => n.n === sampleNight) || MASTERCLASS_NIGHTS[0]
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Calendar, ArrowRight, ArrowLeft } from 'lucide-react'
 import Reveal from '../components/Reveal'
+import useSeo from '../hooks/useSeo'
 import './Blog.css'
 
 // Three real launch posts — company story + two practical GovCon tips, the
@@ -50,6 +51,30 @@ const POSTS = [
 export default function Blog() {
   const [openSlug, setOpenSlug] = useState(null)
   const openPost = POSTS.find(p => p.slug === openSlug)
+
+  useSeo(
+    openPost
+      ? {
+          title: openPost.title,
+          description: openPost.excerpt,
+          path: `/blog#${openPost.slug}`,
+          markdownUrl: `/llms/blog/${openPost.slug}.md`,
+          jsonLd: {
+            '@context': 'https://schema.org',
+            '@type': 'BlogPosting',
+            headline: openPost.title,
+            datePublished: openPost.date,
+            description: openPost.excerpt,
+            author: { '@type': 'Organization', name: 'FASS Technologies LLC' },
+          },
+        }
+      : {
+          title: 'Blog',
+          description: 'Company updates and practical government contracting tips from the team building FASS Flow.',
+          path: '/blog',
+          markdownUrl: '/llms/blog.md',
+        }
+  )
 
   if (openPost) {
     return (

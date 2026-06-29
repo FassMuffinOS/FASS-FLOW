@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Check, Zap } from 'lucide-react'
+import { Check, Zap, Lock } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Reveal from './Reveal'
+import useSeo from '../hooks/useSeo'
 import './Pricing.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -49,6 +50,7 @@ const PLANS = [
       'Full Academy access',
     ],
     cta: 'Start free trial',
+    foundersNote: 'Founding price — locked for life',
   },
   {
     key: 'pro',
@@ -68,6 +70,7 @@ const PLANS = [
       'AI proposal support',
     ],
     cta: 'Start free trial',
+    foundersNote: 'Founding price — locked for life',
   },
   {
     key: 'team',
@@ -88,6 +91,12 @@ const PLANS = [
 ]
 
 export default function Pricing() {
+  useSeo({
+    title: 'Pricing',
+    description: "FASS Flow pricing — beta founding members lock in today's price for as long as they stay subscribed.",
+    path: '/pricing',
+    markdownUrl: '/llms/pricing.md',
+  })
   const { session } = useAuth()
   const navigate = useNavigate()
   const [checkingOut, setCheckingOut] = useState(null) // plan key in flight, or null
@@ -142,6 +151,12 @@ export default function Pricing() {
           </p>
         </Reveal>
 
+        <Reveal as="div" className="founders-banner" delay={40}>
+          <Lock size={15} />
+          We're in beta. The first businesses to sign up on a paid plan lock in today's price for as long as
+          they stay subscribed — even after we raise it.
+        </Reveal>
+
         <div className="pricing-grid pricing-grid-4">
           {PLANS.map((plan, i) => (
             <Reveal
@@ -171,6 +186,12 @@ export default function Pricing() {
                     </>
                   )}
                 </div>
+                {plan.foundersNote && (
+                  <div className="plan-founders-note">
+                    <Lock size={11} />
+                    {plan.foundersNote}
+                  </div>
+                )}
               </div>
 
               <ul className="plan-features">

@@ -4,7 +4,27 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>FASS Flow</title>
+    <title>FASS Flow | The Operating System for Government Contracting</title>
+
+    <!-- Baseline SEO/AEO meta — per-page overrides applied client-side via
+         src/hooks/useSeo.js. These defaults exist so the very first paint
+         (and any crawler that doesn't run JS) still sees real content
+         instead of a blank shell. -->
+    <meta name="description" content="FASS Flow helps small businesses find winnable government contracts, decide whether to bid, cut proposal work from weeks to hours, and get paid. Built by FASS Technologies LLC, based in Baltimore, MD. Now in public beta." />
+    <link rel="canonical" href="https://flow.fass.systems/" />
+    <meta property="og:site_name" content="FASS Flow" />
+    <meta property="og:title" content="FASS Flow | The Operating System for Government Contracting" />
+    <meta property="og:description" content="Find winnable government contracts, decide whether to bid, cut proposal work from weeks to hours, and get paid — all in one platform. Now in public beta." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://flow.fass.systems/" />
+    <meta property="og:image" content="https://flow.fass.systems/favicon.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="FASS Flow | The Operating System for Government Contracting" />
+    <meta name="twitter:description" content="Find winnable government contracts, decide whether to bid, cut proposal work from weeks to hours, and get paid — all in one platform. Now in public beta." />
+
+    <!-- llms.txt discovery hint + markdown mirror for this page, for
+         crawlers (AI and otherwise) that don't execute JavaScript. -->
+    <link rel="alternate" type="text/markdown" href="https://flow.fass.systems/llms/home.md" />
 
     <!-- PWA: install to home screen, open standalone (esp. Contractor Camera) -->
     <link rel="manifest" href="/manifest.json" />
@@ -14,6 +34,50 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="FASS Flow" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <!-- Structured data: who we are (Organization/LocalBusiness) and what we
+         make (SoftwareApplication). Only real, verifiable data here — no
+         phone number or social profiles exist for FASS Technologies LLC, so
+         none are included. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "FASS Technologies LLC",
+        "url": "https://flow.fass.systems",
+        "logo": "https://flow.fass.systems/favicon.svg",
+        "email": "admin@fass.systems",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "1521 Bush St",
+          "addressLocality": "Baltimore",
+          "addressRegion": "MD",
+          "postalCode": "21230",
+          "addressCountry": "US"
+        }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "FASS Flow",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "description": "FASS Flow is the operating system for small-business government contracting — find winnable contracts, decide whether to bid, fill out proposals, execute the work, and get paid, all in one platform.",
+        "url": "https://flow.fass.systems",
+        "publisher": {
+          "@type": "Organization",
+          "name": "FASS Technologies LLC"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "description": "Free tier available; paid plans starting in beta with founding pricing locked for life."
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

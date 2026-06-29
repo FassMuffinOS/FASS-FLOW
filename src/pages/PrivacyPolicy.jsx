@@ -1,3 +1,4 @@
+import useSeo from '../hooks/useSeo'
 import './Legal.css'
 
 // Drafted to reflect FASS Flow's actual data practices (Supabase auth/DB,
@@ -5,6 +6,12 @@ import './Legal.css'
 // tracking). This is a working draft, not a substitute for review by a
 // lawyer before relying on it for compliance purposes.
 export default function PrivacyPolicy() {
+  useSeo({
+    title: 'Privacy Policy',
+    description: 'How FASS Flow (FASS Technologies LLC) collects, uses, and protects your information.',
+    path: '/privacy-policy',
+    markdownUrl: '/llms/privacy-policy.md',
+  })
   return (
     <div className="legal">
       <div className="legal-card">

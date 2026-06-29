@@ -1,8 +1,15 @@
+import useSeo from '../hooks/useSeo'
 import './Legal.css'
 
 // Working draft, not a substitute for review by a lawyer before relying on
 // it for compliance purposes.
 export default function TermsOfService() {
+  useSeo({
+    title: 'Terms of Service',
+    description: 'The terms governing your use of FASS Flow, operated by FASS Technologies LLC.',
+    path: '/terms-of-service',
+    markdownUrl: '/llms/terms-of-service.md',
+  })
   return (
     <div className="legal">
       <div className="legal-card">
