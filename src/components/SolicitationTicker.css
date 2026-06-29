@@ -1,25 +1,26 @@
 .tk {
   display: flex;
   align-items: stretch;
-  height: 40px;
-  background: #0b1828;
-  border-radius: 12px;
+  height: 42px;
+  background: var(--bg-surface, #fff);
+  border-radius: var(--radius-md, 12px);
   overflow: hidden;
   cursor: pointer;
   margin-bottom: 20px;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid var(--border, #e5e7eb);
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,.06));
 }
 
 .tk-tag {
   flex-shrink: 0;
   display: inline-flex; align-items: center; gap: 7px;
-  background: var(--teal, #1D9E75); color: #fff;
+  background: var(--accent-tint, #E1F5EE); color: var(--accent-hover, #0F6E56);
   font-size: 0.66rem; font-weight: 800; letter-spacing: 0.06em;
   padding: 0 14px;
 }
 .tk-live-dot {
   width: 7px; height: 7px; border-radius: 50%;
-  background: #fff;
+  background: var(--accent, #1D9E75);
   animation: tk-blink 1.4s ease-in-out infinite;
 }
 @keyframes tk-blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
@@ -36,8 +37,8 @@
   content: ''; position: absolute; top: 0; bottom: 0; width: 28px; z-index: 2;
   pointer-events: none;
 }
-.tk-viewport::before { left: 0; background: linear-gradient(to right, #0b1828, transparent); }
-.tk-viewport::after { right: 0; background: linear-gradient(to left, #0b1828, transparent); }
+.tk-viewport::before { left: 0; background: linear-gradient(to right, var(--bg-surface, #fff), transparent); }
+.tk-viewport::after { right: 0; background: linear-gradient(to left, var(--bg-surface, #fff), transparent); }
 
 .tk-track {
   display: inline-flex;
@@ -58,19 +59,19 @@
   display: inline-flex; align-items: center; gap: 9px;
   padding: 0 20px;
   font-size: 0.8rem;
-  color: #c7d2dd;
+  color: var(--text-secondary, #4b5563);
 }
 .tk-bull {
   width: 5px; height: 5px; border-radius: 50%;
-  background: var(--teal, #1D9E75); flex-shrink: 0;
+  background: var(--accent, #1D9E75); flex-shrink: 0;
 }
-.tk-title { color: #fff; font-weight: 600; }
-.tk-sub { color: #8b9bab; }
-.tk-naics { color: #6f8194; font-variant-numeric: tabular-nums; }
+.tk-title { color: var(--ink, #1B2A4A); font-weight: 600; }
+.tk-sub { color: var(--text-muted, #9ca3af); }
+.tk-naics { color: var(--text-muted, #9ca3af); font-variant-numeric: tabular-nums; }
 .tk-due {
-  font-weight: 700; color: #79e0bf; font-variant-numeric: tabular-nums;
+  font-weight: 700; color: var(--accent-hover, #0F6E56); font-variant-numeric: tabular-nums;
 }
-.tk-due-urgent { color: #ffb4a8; }
+.tk-due-urgent { color: var(--amber, #BA7517); }
 
 @media (max-width: 600px) {
   .tk-tag { font-size: 0.6rem; padding: 0 10px; }

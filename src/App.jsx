@@ -25,6 +25,7 @@ import ThankYou from './pages/ThankYou'
 import SignIn from './pages/SignIn'
 import AuthCallback from './pages/AuthCallback'
 import Dashboard from './pages/Dashboard'
+import GetStartedHub from './pages/GetStartedHub'
 import Wardog from './pages/Wardog'
 import Read from './pages/Read'
 import OpportunityWorkspace from './pages/OpportunityWorkspace'
@@ -79,6 +80,7 @@ import SmoothScroll from './components/SmoothScroll'
 import useSeo from './hooks/useSeo'
 import { apiFetch } from './lib/apiClient'
 import './index.css'
+import './styles/primitives.css'
 import './App.css'
 
 function Landing() {
@@ -271,6 +273,9 @@ function AppRoutes() {
       {/* Protected routes — no Nav/Footer (dashboard has its own header) */}
       <Route path="/dashboard" element={
         <ProtectedRoute><Dashboard /></ProtectedRoute>
+      } />
+      <Route path="/get-started" element={
+        <ProtectedRoute><GetStartedHub /></ProtectedRoute>
       } />
       <Route path="/wardog" element={
         <ProtectedRoute><Wardog /></ProtectedRoute>

@@ -169,16 +169,17 @@
 
 .dash-tool-card {
   background: var(--white);
-  border: 1px solid var(--gray-200);
-  border-radius: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   padding: 20px 22px;
   cursor: pointer;
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
 }
 
 .dash-tool-card:hover:not(.dash-tab-coming) {
-  border-color: var(--teal);
-  box-shadow: 0 4px 16px rgba(29,158,117,0.12);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
 
@@ -215,8 +216,9 @@
 /* Dashboard section */
 .dash-section {
   background: var(--white);
-  border: 1px solid var(--gray-200);
-  border-radius: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   padding: 28px;
   margin-bottom: 20px;
 }

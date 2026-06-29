@@ -59,6 +59,24 @@
   --space-24: 96px;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ── 2026 design system: radius scale ──
+     Collapses the ~15 ad-hoc radii found across the codebase into 4 steps.
+     New/converted surfaces use these; legacy files inherit as they migrate. */
+  --radius-xs:   6px;
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-pill: 999px;
+
+  /* ── Semantic intent layer ──
+     Green is an ACCENT, not the structure. Ink/navy leads; --accent is
+     reserved for the single primary action + live signals per view. */
+  --ink:          var(--navy);
+  --accent:       var(--teal);
+  --accent-hover: var(--dark-teal);
+  --accent-tint:  var(--light-teal);
+  --ring:         0 0 0 3px rgba(29,158,117,0.18);
 }
 
 /* ── ICE DARK MODE ── */

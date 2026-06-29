@@ -78,7 +78,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 0.86rem;
   font-weight: 600;
   color: var(--text-secondary);
@@ -86,14 +86,18 @@
   transition: background 0.15s, color 0.15s;
 }
 
+/* Neutral hover — green is reserved for the one active destination, so
+   hover doesn't compete with it. */
 a.shell-nav-item:hover {
-  background: var(--light-teal);
-  color: var(--dark-teal);
+  background: var(--bg-base);
+  color: var(--ink);
 }
 
+/* Active destination: accent tint + an accent left indicator bar. */
 .shell-nav-active {
-  background: var(--light-teal);
-  color: var(--dark-teal) !important;
+  background: var(--accent-tint);
+  color: var(--accent-hover) !important;
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 
 /* Free-tier locked nav items — same shape as a normal nav link, but a
