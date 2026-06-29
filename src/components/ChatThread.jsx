@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Send, Loader, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { apiFetch } from '../lib/apiClient'
 import './ChatThread.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -23,12 +24,12 @@ export default function ChatThread({ threadId, otherName, onClose }) {
   const load = useCallback(async () => {
     if (!userId || !API_BASE || !threadId) return
     try {
-      const res = await fetch(`${API_BASE}/api/v1/chat/threads/${threadId}/messages?user_id=${userId}`)
+      const res = await apiFetch(`/api/v1/chat/threads/${threadId}/messages?user_id=${userId}`)
       if (res.ok) {
         const data = await res.json()
         setMessages(data.messages || [])
       }
-      fetch(`${API_BASE}/api/v1/chat/threads/${threadId}/read`, {
+      apiFetch(`/api/v1/chat/threads/${threadId}/read`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId }),
@@ -54,7 +55,7 @@ export default function ChatThread({ threadId, otherName, onClose }) {
     setSending(true)
     setDraft('')
     try {
-      const res = await fetch(`${API_BASE}/api/v1/chat/threads/${threadId}/messages`, {
+      const res = await apiFetch(`/api/v1/chat/threads/${threadId}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId, body }),

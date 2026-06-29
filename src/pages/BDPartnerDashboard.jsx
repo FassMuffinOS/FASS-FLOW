@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Handshake, Radar, ClipboardCheck, FileText, Phone, StickyNote, Trophy, Loader } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { apiFetch } from '../lib/apiClient'
 import './BDPartnerDashboard.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -44,7 +45,7 @@ export default function BDPartnerDashboard() {
   const loadActivity = useCallback(async () => {
     if (!userId || !API_BASE) return
     try {
-      const res = await fetch(`${API_BASE}/api/v1/bd-partner/activity?user_id=${userId}`)
+      const res = await apiFetch(`/api/v1/bd-partner/activity?user_id=${userId}`)
       if (res.ok) setActivity((await res.json()).activity || [])
     } catch (err) {
       console.error('BDPartnerDashboard: failed to load activity', err)
@@ -54,7 +55,7 @@ export default function BDPartnerDashboard() {
   const loadStatus = useCallback(async () => {
     if (!userId || !API_BASE) return
     try {
-      const res = await fetch(`${API_BASE}/api/v1/bd-partner/status?user_id=${userId}`)
+      const res = await apiFetch(`/api/v1/bd-partner/status?user_id=${userId}`)
       if (res.ok) setClient((await res.json()).client)
     } catch (err) {
       console.error('BDPartnerDashboard: failed to load status', err)

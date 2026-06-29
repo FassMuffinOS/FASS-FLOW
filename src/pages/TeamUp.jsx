@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { logBusinessEvent } from '../lib/businessEvents'
 import { triggerGrowthCheck } from '../lib/growthChallenge'
 import ShareToChatButton from '../components/ShareToChatButton'
+import { apiFetch } from '../lib/apiClient'
 import './TeamUp.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -109,7 +110,7 @@ export default function TeamUp() {
   }
 
   async function messageAuthor(post) {
-    const res = await fetch(`${API_BASE}/api/v1/chat/threads/start`, {
+    const res = await apiFetch(`/api/v1/chat/threads/start`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: userId, other_user_id: post.user_id, post_id: post.id }),

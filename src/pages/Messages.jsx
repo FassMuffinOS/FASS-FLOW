@@ -12,6 +12,7 @@ import { usePresence } from '../hooks/usePresence'
 import { useTyping } from '../hooks/useTyping'
 import { usePushNotifications } from '../hooks/usePushNotifications'
 import SharedObjectCard from '../components/SharedObjectCard'
+import { apiFetch } from '../lib/apiClient'
 import './Messages.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -98,7 +99,7 @@ export default function Messages() {
   const loadThreads = useCallback(async () => {
     if (!userId || !API_BASE) return
     try {
-      const res = await fetch(`${API_BASE}/api/v1/chat/threads/mine?user_id=${userId}`)
+      const res = await apiFetch(`/api/v1/chat/threads/mine?user_id=${userId}`)
       if (res.ok) {
         setThreads((await res.json()).threads || [])
       } else {
@@ -118,9 +119,9 @@ export default function Messages() {
     if (!userId || !API_BASE || !threadId) return
     setLoadingMessages(true)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/chat/threads/${threadId}/messages?user_id=${userId}`)
+      const res = await apiFetch(`/api/v1/chat/threads/${threadId}/messages?user_id=${userId}`)
       if (res.ok) setMessages((await res.json()).messages || [])
-      fetch(`${API_BASE}/api/v1/chat/threads/${threadId}/read`, {
+      apiFetch(`/api/v1/chat/threads/${threadId}/read`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId }),
@@ -179,7 +180,7 @@ export default function Messages() {
         if (msg.thread_id === activeId) {
           setMessages(prev => prev.some(m => m.id === msg.id) ? prev : [...prev, { ...msg, reactions: [] }])
           if (msg.sender_id !== userId) {
-            fetch(`${API_BASE}/api/v1/chat/threads/${msg.thread_id}/read`, {
+            apiFetch(`/api/v1/chat/threads/${msg.thread_id}/read`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ user_id: userId }),
@@ -210,7 +211,7 @@ export default function Messages() {
   async function startThreadWith(person) {
     setStartError(null)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/chat/threads/start`, {
+      const res = await apiFetch(`/api/v1/chat/threads/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId, other_user_id: person.id, post_id: null }),
@@ -240,7 +241,7 @@ export default function Messages() {
   async function startGroupThread(people, title) {
     setStartError(null)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/chat/threads/start`, {
+      const res = await apiFetch(`/api/v1/chat/threads/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -275,7 +276,7 @@ export default function Messages() {
     if (!activeId) return
     setStartError(null)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/chat/threads/${activeId}/participants`, {
+      const res = await apiFetch(`/api/v1/chat/threads/${activeId}/participants`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId, new_user_id: person.id }),
@@ -300,7 +301,7 @@ export default function Messages() {
     if (!userId || !API_BASE || !threadId) return
     setLoadingMembers(true)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/chat/threads/${threadId}/participants?user_id=${userId}`)
+      const res = await apiFetch(`/api/v1/chat/threads/${threadId}/participants?user_id=${userId}`)
       if (res.ok) setMembersData((await res.json()).participants || [])
     } catch {
       // leave membersData as-is; panel shows a loading/empty state either way
@@ -323,7 +324,7 @@ export default function Messages() {
     setSending(true)
     setDraft('')
     try {
-      const res = await fetch(`${API_BASE}/api/v1/chat/threads/${activeId}/messages`, {
+      const res = await apiFetch(`/api/v1/chat/threads/${activeId}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId, body }),
@@ -350,7 +351,7 @@ export default function Messages() {
       const form = new FormData()
       form.append('user_id', userId)
       form.append('file', file)
-      const res = await fetch(`${API_BASE}/api/v1/chat/threads/${activeId}/attachments`, { method: 'POST', body: form })
+      const res = await apiFetch(`/api/v1/chat/threads/${activeId}/attachments`, { method: 'POST', body: form })
       if (res.ok) {
         const created = await res.json()
         setMessages(prev => prev.some(m => m.id === created.id) ? prev : [...prev, created])
@@ -371,7 +372,7 @@ export default function Messages() {
   async function saveEdit() {
     const body = editDraft.trim()
     if (!body || !activeId || !editingId) return
-    const res = await fetch(`${API_BASE}/api/v1/chat/threads/${activeId}/messages/${editingId}`, {
+    const res = await apiFetch(`/api/v1/chat/threads/${activeId}/messages/${editingId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: userId, body }),
@@ -385,7 +386,7 @@ export default function Messages() {
 
   async function confirmDelete(messageId) {
     setConfirmDeleteId(null)
-    const res = await fetch(`${API_BASE}/api/v1/chat/threads/${activeId}/messages/${messageId}`, {
+    const res = await apiFetch(`/api/v1/chat/threads/${activeId}/messages/${messageId}`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: userId }),
@@ -398,7 +399,7 @@ export default function Messages() {
 
   async function toggleReaction(messageId, emoji) {
     setOpenPickerId(null)
-    const res = await fetch(`${API_BASE}/api/v1/chat/messages/${messageId}/reactions`, {
+    const res = await apiFetch(`/api/v1/chat/messages/${messageId}/reactions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: userId, emoji }),
@@ -796,7 +797,7 @@ function PeopleSearch({ userId, mode = 'dm', onPick, onPickGroup, onClose, error
     if (filters?.minContracts && Number(filters.minContracts) > 0) {
       params.set('min_contracts_won', filters.minContracts)
     }
-    fetch(`${API_BASE}/api/v1/chat/people/search?${params.toString()}`)
+    apiFetch(`/api/v1/chat/people/search?${params.toString()}`)
       .then(res => res.ok ? res.json() : { people: [] })
       .then(data => setPeople(data.people || []))
       .catch(() => setPeople([]))

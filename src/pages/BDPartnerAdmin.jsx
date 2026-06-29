@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Handshake, Loader2, RefreshCw, UserPlus, Radar, ClipboardCheck, FileText, Phone, StickyNote, Trophy } from 'lucide-react'
+import { apiFetch } from '../lib/apiClient'
 import './BDPartnerAdmin.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -86,7 +87,7 @@ export default function BDPartnerAdmin() {
   async function loadActivity(userId) {
     setActivityLoading(true)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/bd-partner/activity?user_id=${userId}`)
+      const res = await apiFetch(`/api/v1/bd-partner/activity?user_id=${userId}`)
       const data = await res.json().catch(() => ({}))
       setActivity(data.activity || [])
     } catch (err) {

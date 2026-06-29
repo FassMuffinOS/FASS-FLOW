@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { MessageCircle, Send, Loader, Plus, X, Sparkles, Pencil, Check } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { apiFetch } from '../lib/apiClient'
 import './CommsHub.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -41,7 +42,7 @@ export default function CommsHub() {
   const loadThreads = useCallback(async () => {
     if (!userId || !API_BASE) { setLoading(false); return }
     try {
-      const res = await fetch(`${API_BASE}/api/v1/comms/threads?business_user_id=${userId}`)
+      const res = await apiFetch(`/api/v1/comms/threads?business_user_id=${userId}`)
       if (res.ok) {
         const data = await res.json()
         setThreads((data.threads || []).sort((a, b) => new Date(b.last_at) - new Date(a.last_at)))
@@ -67,7 +68,7 @@ export default function CommsHub() {
     if (!userId || !phone) return
     setThreadLoading(true)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/comms/thread?business_user_id=${userId}&phone=${encodeURIComponent(phone)}`)
+      const res = await apiFetch(`/api/v1/comms/thread?business_user_id=${userId}&phone=${encodeURIComponent(phone)}`)
       if (res.ok) {
         const data = await res.json()
         setThread(data.messages || [])
@@ -82,7 +83,7 @@ export default function CommsHub() {
   const loadContact = useCallback(async (phone) => {
     if (!userId || !phone) return
     try {
-      const res = await fetch(`${API_BASE}/api/v1/comms/contact?business_user_id=${userId}&phone=${encodeURIComponent(phone)}`)
+      const res = await apiFetch(`/api/v1/comms/contact?business_user_id=${userId}&phone=${encodeURIComponent(phone)}`)
       if (res.ok) {
         const data = await res.json()
         setContact(data.contact || null)
@@ -110,7 +111,7 @@ export default function CommsHub() {
   async function saveContact(phone) {
     if (!userId || !phone) return
     try {
-      const res = await fetch(`${API_BASE}/api/v1/comms/contact`, {
+      const res = await apiFetch(`/api/v1/comms/contact`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ business_user_id: userId, phone, ...contactForm }),
@@ -129,7 +130,7 @@ export default function CommsHub() {
     e.stopPropagation()
     if (!userId || !phone) return
     try {
-      await fetch(`${API_BASE}/api/v1/comms/contact/dismiss-nudge`, {
+      await apiFetch(`/api/v1/comms/contact/dismiss-nudge`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ business_user_id: userId, phone, days: 14 }),
@@ -144,7 +145,7 @@ export default function CommsHub() {
     if (!userId || !phone.trim() || !body.trim()) return
     setSending(true)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/comms/send`, {
+      const res = await apiFetch(`/api/v1/comms/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ business_user_id: userId, phone: phone.trim(), body: body.trim() }),

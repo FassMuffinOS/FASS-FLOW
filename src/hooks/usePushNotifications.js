@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { apiFetch } from '../lib/apiClient'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || ''
@@ -42,7 +43,7 @@ export function usePushNotifications(userId) {
         })
       }
       const raw = sub.toJSON()
-      await fetch(`${API_BASE}/api/v1/chat/push/subscribe`, {
+      await apiFetch(`/api/v1/chat/push/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

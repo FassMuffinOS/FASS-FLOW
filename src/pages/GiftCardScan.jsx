@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import { Gift, Loader, CheckCircle2, AlertTriangle, DollarSign } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { apiFetch } from '../lib/apiClient'
 import './GiftCardScan.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -28,7 +29,7 @@ export default function GiftCardScan() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/giftcards/lookup?slug=${encodeURIComponent(slug)}&business_user_id=${session.user.id}`)
+      const res = await apiFetch(`/api/v1/giftcards/lookup?slug=${encodeURIComponent(slug)}&business_user_id=${session.user.id}`)
       if (!res.ok) {
         const data = await res.json().catch(() => null)
         setError(data?.detail || 'Could not look up that gift card.')
@@ -51,7 +52,7 @@ export default function GiftCardScan() {
     if (!session?.user || !slug || !amount || Number(amount) <= 0) return
     setRedeeming(true)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/giftcards/redeem`, {
+      const res = await apiFetch(`/api/v1/giftcards/redeem`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slug, business_user_id: session.user.id, amount: Number(amount) }),

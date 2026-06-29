@@ -8,6 +8,7 @@ import {
 import { supabase } from '../lib/supabase'
 import { usePresence } from '../hooks/usePresence'
 import SharedObjectCard from './SharedObjectCard'
+import { apiFetch } from '../lib/apiClient'
 import './ChatDock.css'
 
 const REACTION_EMOJI = ['👍', '❤️', '😂', '😮', '😢', '🙏']
@@ -61,7 +62,7 @@ export default function ChatDock({ userId }) {
   const loadThreads = useCallback(async () => {
     if (!userId || !API_BASE) return
     try {
-      const res = await fetch(`${API_BASE}/api/v1/chat/threads/mine?user_id=${userId}`)
+      const res = await apiFetch(`/api/v1/chat/threads/mine?user_id=${userId}`)
       if (res.ok) {
         setThreads((await res.json()).threads || [])
       } else {
@@ -110,7 +111,7 @@ export default function ChatDock({ userId }) {
   async function startWith(person) {
     setStartError(null)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/chat/threads/start`, {
+      const res = await apiFetch(`/api/v1/chat/threads/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId, other_user_id: person.id, post_id: null }),
@@ -225,9 +226,9 @@ function ChatPopup({ userId, threadId, name, otherId, minimized, online, onClose
     if (!API_BASE) return
     setLoading(true)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/chat/threads/${threadId}/messages?user_id=${userId}`)
+      const res = await apiFetch(`/api/v1/chat/threads/${threadId}/messages?user_id=${userId}`)
       if (res.ok) setMessages((await res.json()).messages || [])
-      fetch(`${API_BASE}/api/v1/chat/threads/${threadId}/read`, {
+      apiFetch(`/api/v1/chat/threads/${threadId}/read`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId }),
@@ -270,7 +271,7 @@ function ChatPopup({ userId, threadId, name, otherId, minimized, online, onClose
         const msg = payload.new
         setMessages(prev => prev.some(m => m.id === msg.id) ? prev : [...prev, { ...msg, reactions: [] }])
         if (msg.sender_id !== userId) {
-          fetch(`${API_BASE}/api/v1/chat/threads/${threadId}/read`, {
+          apiFetch(`/api/v1/chat/threads/${threadId}/read`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: userId }),
@@ -292,7 +293,7 @@ function ChatPopup({ userId, threadId, name, otherId, minimized, online, onClose
     setSending(true)
     setDraft('')
     try {
-      const res = await fetch(`${API_BASE}/api/v1/chat/threads/${threadId}/messages`, {
+      const res = await apiFetch(`/api/v1/chat/threads/${threadId}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId, body }),
@@ -314,7 +315,7 @@ function ChatPopup({ userId, threadId, name, otherId, minimized, online, onClose
       const form = new FormData()
       form.append('user_id', userId)
       form.append('file', file)
-      const res = await fetch(`${API_BASE}/api/v1/chat/threads/${threadId}/attachments`, { method: 'POST', body: form })
+      const res = await apiFetch(`/api/v1/chat/threads/${threadId}/attachments`, { method: 'POST', body: form })
       if (res.ok) {
         const created = await res.json()
         setMessages(prev => prev.some(m => m.id === created.id) ? prev : [...prev, created])
@@ -329,7 +330,7 @@ function ChatPopup({ userId, threadId, name, otherId, minimized, online, onClose
   async function saveEdit() {
     const body = editDraft.trim()
     if (!body || !editingId) return
-    const res = await fetch(`${API_BASE}/api/v1/chat/threads/${threadId}/messages/${editingId}`, {
+    const res = await apiFetch(`/api/v1/chat/threads/${threadId}/messages/${editingId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: userId, body }),
@@ -343,7 +344,7 @@ function ChatPopup({ userId, threadId, name, otherId, minimized, online, onClose
 
   async function confirmDelete(messageId) {
     setConfirmDeleteId(null)
-    const res = await fetch(`${API_BASE}/api/v1/chat/threads/${threadId}/messages/${messageId}`, {
+    const res = await apiFetch(`/api/v1/chat/threads/${threadId}/messages/${messageId}`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: userId }),
@@ -356,7 +357,7 @@ function ChatPopup({ userId, threadId, name, otherId, minimized, online, onClose
 
   async function toggleReaction(messageId, emoji) {
     setOpenPickerId(null)
-    const res = await fetch(`${API_BASE}/api/v1/chat/messages/${messageId}/reactions`, {
+    const res = await apiFetch(`/api/v1/chat/messages/${messageId}/reactions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: userId, emoji }),
@@ -557,7 +558,7 @@ function DockSearch({ userId, onPick, onClose, error }) {
   const search = useCallback((query) => {
     if (!userId || !API_BASE) return
     setLoading(true)
-    fetch(`${API_BASE}/api/v1/chat/people/search?user_id=${userId}&q=${encodeURIComponent(query)}`)
+    apiFetch(`/api/v1/chat/people/search?user_id=${userId}&q=${encodeURIComponent(query)}`)
       .then(res => res.ok ? res.json() : { people: [] })
       .then(data => setPeople(data.people || []))
       .catch(() => setPeople([]))

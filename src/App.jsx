@@ -76,6 +76,7 @@ import GrowthChallenge from './pages/GrowthChallenge'
 import AppShell from './components/AppShell'
 import SmoothScroll from './components/SmoothScroll'
 import useSeo from './hooks/useSeo'
+import { apiFetch } from './lib/apiClient'
 import './index.css'
 import './App.css'
 
@@ -160,7 +161,7 @@ function BDPartnerRoute() {
         return
       }
       try {
-        const res = await fetch(`${API_BASE}/api/v1/bd-partner/status?user_id=${session.user.id}`)
+        const res = await apiFetch(`/api/v1/bd-partner/status?user_id=${session.user.id}`)
         if (res.ok) {
           const data = await res.json()
           if (!cancelled) setActive(!!data.active)

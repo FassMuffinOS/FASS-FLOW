@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Home, MessageCircle, Network, Activity, User } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { apiFetch } from '../lib/apiClient'
 import './BottomNav.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -32,7 +33,7 @@ export default function BottomNav({ userId }) {
   const loadUnread = useCallback(async () => {
     if (!userId || !API_BASE) return
     try {
-      const res = await fetch(`${API_BASE}/api/v1/chat/threads/mine?user_id=${userId}`)
+      const res = await apiFetch(`/api/v1/chat/threads/mine?user_id=${userId}`)
       if (res.ok) {
         const threads = (await res.json()).threads || []
         setUnread(threads.reduce((sum, t) => sum + (t.unread_count || 0), 0))

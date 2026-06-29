@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { Send, X, Search } from 'lucide-react'
+import { apiFetch } from '../lib/apiClient'
 import './ShareToChatButton.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -46,7 +47,7 @@ export default function ShareToChatButton({ objectType, objectId, snapshot, labe
   function search(query) {
     if (!userId || !API_BASE) return
     setLoading(true)
-    fetch(`${API_BASE}/api/v1/chat/people/search?user_id=${userId}&q=${encodeURIComponent(query)}`)
+    apiFetch(`/api/v1/chat/people/search?user_id=${userId}&q=${encodeURIComponent(query)}`)
       .then(res => res.ok ? res.json() : { people: [] })
       .then(data => setPeople(data.people || []))
       .catch(() => setPeople([]))
@@ -72,7 +73,7 @@ export default function ShareToChatButton({ objectType, objectId, snapshot, labe
     setSendingTo(person.id)
     setError('')
     try {
-      const startRes = await fetch(`${API_BASE}/api/v1/chat/threads/start`, {
+      const startRes = await apiFetch(`/api/v1/chat/threads/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId, other_user_id: person.id, post_id: null }),
@@ -83,7 +84,7 @@ export default function ShareToChatButton({ objectType, objectId, snapshot, labe
         return
       }
       const { thread_id } = await startRes.json()
-      const shareRes = await fetch(`${API_BASE}/api/v1/chat/threads/${thread_id}/share`, {
+      const shareRes = await apiFetch(`/api/v1/chat/threads/${thread_id}/share`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

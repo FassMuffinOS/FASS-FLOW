@@ -3,12 +3,17 @@
 // entered in one tool shows up in the others instead of staying trapped in
 // that tool's own localStorage or table. See fass-flow-backend's
 // app/routers/business_profile.py for the upsert/merge semantics.
-const API_BASE = import.meta.env.VITE_API_URL || ''
+//
+// 2026-06-29: every endpoint below now requires the caller to be logged in
+// as the user_id it's acting on (see business_profile.py's security-fix
+// docstring) — calls now go through apiFetch so the Supabase access token
+// rides along as a Bearer header instead of a raw, unauthenticated fetch.
+import { apiAvailable, apiFetch } from './apiClient'
 
 export async function getBusinessProfile(userId) {
-  if (!userId || !API_BASE) return null
+  if (!userId || !apiAvailable()) return null
   try {
-    const res = await fetch(`${API_BASE}/api/v1/business-profile/mine?user_id=${userId}`)
+    const res = await apiFetch(`/api/v1/business-profile/mine?user_id=${userId}`)
     if (!res.ok) return null
     return await res.json()
   } catch {
@@ -22,9 +27,9 @@ export async function getBusinessProfile(userId) {
 // each tool's own primary save; a profile-sync hiccup shouldn't block the
 // user's actual action.
 export async function saveBusinessProfile(userId, fields) {
-  if (!userId || !API_BASE) return false
+  if (!userId || !apiAvailable()) return false
   try {
-    const res = await fetch(`${API_BASE}/api/v1/business-profile/mine`, {
+    const res = await apiFetch('/api/v1/business-profile/mine', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: userId, ...fields }),
@@ -41,9 +46,9 @@ export async function saveBusinessProfile(userId, fields) {
 // 1 entity, Pro gets 3, Team is unlimited (enforced server-side).
 
 export async function listBusinessEntities(userId) {
-  if (!userId || !API_BASE) return { entities: [], limit: 1, plan: 'free' }
+  if (!userId || !apiAvailable()) return { entities: [], limit: 1, plan: 'free' }
   try {
-    const res = await fetch(`${API_BASE}/api/v1/business-profile/entities?user_id=${userId}`)
+    const res = await apiFetch(`/api/v1/business-profile/entities?user_id=${userId}`)
     if (!res.ok) return { entities: [], limit: 1, plan: 'free' }
     return await res.json()
   } catch {
@@ -52,9 +57,9 @@ export async function listBusinessEntities(userId) {
 }
 
 export async function createBusinessEntity(userId, businessName) {
-  if (!userId || !API_BASE) return { ok: false }
+  if (!userId || !apiAvailable()) return { ok: false }
   try {
-    const res = await fetch(`${API_BASE}/api/v1/business-profile/entities`, {
+    const res = await apiFetch('/api/v1/business-profile/entities', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: userId, business_name: businessName || null }),
@@ -68,9 +73,9 @@ export async function createBusinessEntity(userId, businessName) {
 }
 
 export async function activateBusinessEntity(userId, entityId) {
-  if (!userId || !entityId || !API_BASE) return false
+  if (!userId || !entityId || !apiAvailable()) return false
   try {
-    const res = await fetch(`${API_BASE}/api/v1/business-profile/entities/${entityId}/activate?user_id=${userId}`, {
+    const res = await apiFetch(`/api/v1/business-profile/entities/${entityId}/activate?user_id=${userId}`, {
       method: 'POST',
     })
     return res.ok
@@ -80,9 +85,9 @@ export async function activateBusinessEntity(userId, entityId) {
 }
 
 export async function deleteBusinessEntity(userId, entityId) {
-  if (!userId || !entityId || !API_BASE) return { ok: false }
+  if (!userId || !entityId || !apiAvailable()) return { ok: false }
   try {
-    const res = await fetch(`${API_BASE}/api/v1/business-profile/entities/${entityId}?user_id=${userId}`, {
+    const res = await apiFetch(`/api/v1/business-profile/entities/${entityId}?user_id=${userId}`, {
       method: 'DELETE',
     })
     const data = await res.json().catch(() => null)

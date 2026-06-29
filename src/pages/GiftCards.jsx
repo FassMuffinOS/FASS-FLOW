@@ -3,6 +3,7 @@ import { Gift, Send, Loader, DollarSign, User, Phone, Download, Ticket, Wallet, 
 import { useAuth } from '../context/AuthContext'
 import { logBusinessEvent } from '../lib/businessEvents'
 import { triggerGrowthCheck } from '../lib/growthChallenge'
+import { apiFetch } from '../lib/apiClient'
 import './GiftCards.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -38,7 +39,7 @@ export default function GiftCards() {
   const load = useCallback(async () => {
     if (!session?.user || !API_BASE) { setLoading(false); return }
     try {
-      const res = await fetch(`${API_BASE}/api/v1/giftcards/mine?user_id=${session.user.id}`)
+      const res = await apiFetch(`/api/v1/giftcards/mine?user_id=${session.user.id}`)
       if (res.ok) {
         const data = await res.json()
         setCards(data.cards || [])
@@ -58,7 +59,7 @@ export default function GiftCards() {
     setIssuing(true)
     setIssuedNotice(null)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/giftcards/issue`, {
+      const res = await apiFetch(`/api/v1/giftcards/issue`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -100,7 +101,7 @@ export default function GiftCards() {
     if (!session?.user || !API_BASE) return
     setHistoryLoading(true)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/giftcards/history?slug=${slug}&business_user_id=${session.user.id}`)
+      const res = await apiFetch(`/api/v1/giftcards/history?slug=${slug}&business_user_id=${session.user.id}`)
       if (res.ok) {
         const data = await res.json()
         setHistory(data.history || [])

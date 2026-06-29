@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { getBusinessProfile, saveBusinessProfile } from '../lib/businessProfile'
 import ShareToChatButton from '../components/ShareToChatButton'
+import { apiFetch } from '../lib/apiClient'
 import './Passport.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -86,7 +87,7 @@ export default function Wallet() {
     let cancelled = false
     async function loadMine() {
       try {
-        const res = await fetch(`${API_BASE}/api/v1/wallet/mine?user_id=${session.user.id}`)
+        const res = await apiFetch(`/api/v1/wallet/mine?user_id=${session.user.id}`)
         if (!res.ok) {
           // No wallet card yet — fall back to the shared business profile in
           // case identity was captured some other way (e.g. a future tool
@@ -247,7 +248,7 @@ export default function Wallet() {
     setCardSaving(true)
     setCardSaved(false)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/wallet/customize`, {
+      const res = await apiFetch(`/api/v1/wallet/customize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -273,7 +274,7 @@ export default function Wallet() {
     setClaimingFree(true)
     setWalletError('')
     try {
-      const res = await fetch(`${API_BASE}/api/v1/wallet/free`, {
+      const res = await apiFetch(`/api/v1/wallet/free`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -321,7 +322,7 @@ export default function Wallet() {
     setWalletCheckingOut(true)
     setWalletError('')
     try {
-      const res = await fetch(`${API_BASE}/api/v1/wallet/checkout`, {
+      const res = await apiFetch(`/api/v1/wallet/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

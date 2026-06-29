@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import ShareToChatButton from '../components/ShareToChatButton'
 import NaicsCombobox from '../components/NaicsCombobox'
+import { apiFetch } from '../lib/apiClient'
 import './Wardog.css'
 
 // Maps the certification labels captured in onboarding / FASS FILL's
@@ -508,7 +509,7 @@ export default function Wardog() {
   useEffect(() => {
     if (!session?.user?.id) return
     let cancelled = false
-    fetch(`${API_BASE}/api/v1/business-profile/mine?user_id=${session.user.id}`)
+    apiFetch(`/api/v1/business-profile/mine?user_id=${session.user.id}`)
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (cancelled || !data) return
