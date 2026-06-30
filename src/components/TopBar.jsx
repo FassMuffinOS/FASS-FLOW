@@ -70,8 +70,12 @@ export default function TopBar({ items = [], userId, affiliateOnly = false }) {
   // ("Next: Score it with R-E-A-D" while looking at referral stats), so this
   // is suppressed by ROUTE, distinct from `affiliateOnly` which suppresses by
   // ACCOUNT TYPE everywhere. Get Started/Dashboard links stay — they're how
-  // this user gets back to the main product from the affiliate area.
-  const onAffiliatePage = location.pathname.startsWith('/affiliates')
+  // this user gets back to the main product from the affiliate area. The
+  // ?from=affiliates marker covers the shared Settings/Support pages opened
+  // from inside the hub, so the nudge stays hidden there too.
+  const onAffiliatePage =
+    location.pathname.startsWith('/affiliates') ||
+    new URLSearchParams(location.search).get('from') === 'affiliates'
 
   const query = q.trim().toLowerCase()
   const results = query

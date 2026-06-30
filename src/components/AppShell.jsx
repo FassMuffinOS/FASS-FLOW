@@ -102,11 +102,16 @@ const ITEM_BY_NAME = Object.fromEntries(ALL_ITEMS.map(i => [i.name, i]))
 // lives in App.jsx via src/lib/affiliateGate.js). For case 2 it's purely
 // contextual — the user keeps full platform access, the sidebar just reframes
 // to match where they are.
+// Settings and Support are SHARED pages that live outside /affiliates/* — so
+// their links carry ?from=affiliates, which keeps the shell in marketing-hub
+// context (see inAffiliateArea below) instead of snapping back to the GovCon
+// sidebar the moment a creator opens their settings. `match` stays a bare
+// pathname prefix so active-highlighting still works regardless of the query.
 const MARKETING_HUB_ITEMS = [
   { name: 'Marketing Hub', icon: Megaphone, to: '/affiliates/dashboard', match: ['/affiliates/dashboard'] },
   { name: 'Program Details', icon: Award, to: '/affiliates', match: ['/affiliates'] },
-  { name: 'Settings', icon: SettingsIcon, to: '/settings', match: ['/settings'] },
-  { name: 'Support', icon: LifeBuoy, to: '/support', match: ['/support'] },
+  { name: 'Settings', icon: SettingsIcon, to: '/settings?from=affiliates', match: ['/settings'] },
+  { name: 'Support', icon: LifeBuoy, to: '/support?from=affiliates', match: ['/support'] },
 ]
 
 const PLAN_LABELS = {
@@ -190,10 +195,13 @@ export default function AppShell({ children }) {
   // — render the stripped creator-only chrome instead of the full GovCon nav.
   const affiliateOnly = !!profile?.is_affiliate_only
   // A regular GovCon customer is "in the marketing hub" whenever they're on an
-  // /affiliates/* page. showMarketingHub unifies both: an affiliate-only
-  // account is ALWAYS in the hub (no platform to leave); a regular user is in
-  // it only while inside the affiliate area, and gets a Back-to-platform link.
-  const inAffiliateArea = location.pathname.startsWith('/affiliates')
+  // /affiliates/* page, OR on a SHARED page (Settings/Support) they reached
+  // from the hub — flagged by ?from=affiliates so opening settings doesn't
+  // kick them back to the GovCon sidebar. showMarketingHub unifies both: an
+  // affiliate-only account is ALWAYS in the hub (no platform to leave); a
+  // regular user is in it only in this context, and gets a Back-to-platform link.
+  const fromAffiliates = new URLSearchParams(location.search).get('from') === 'affiliates'
+  const inAffiliateArea = location.pathname.startsWith('/affiliates') || fromAffiliates
   const showMarketingHub = affiliateOnly || inAffiliateArea
 
   // ── view config helpers ──
