@@ -7,7 +7,9 @@ import {
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { aiEnabled, scoreOpportunity } from '../lib/aiClient'
-import { intelEnabled, getIncumbentHistory, forecastRecompete } from '../lib/intelligenceClient'
+import {
+  intelEnabled, getIncumbentHistory, forecastRecompete, listMyReports, startIntelReportCheckout,
+} from '../lib/intelligenceClient'
 import Read from './Read'
 import Fill from './Fill'
 import OpportunityContext from '../components/OpportunityContext'
@@ -109,10 +111,12 @@ export default function OpportunityWorkspace() {
     return () => { cancelled = true }
   }, [proposalId]) // eslint-disable-line
 
-  // WARDOG Intel — Enterprise-only incumbent & award-history read. Gated
-  // server-side too (intelligence.py 402s anyone not on the Enterprise
-  // plan), but checking profiles.plan here first avoids firing a request
-  // that's just going to come back as a paywall for everyone else.
+  // WARDOG Intel — Enterprise plan = unlimited access. Everyone else can
+  // buy a single $39 report (see intelligence.py /checkout) — activeReportId
+  // is that report's id, the thing that unlocks the panel for non-Enterprise
+  // users. Gated server-side too either way, but checking profiles.plan
+  // here first avoids firing a request that's just going to come back as
+  // a paywall.
   const [enterprisePlan, setEnterprisePlan] = useState(false)
   const [intel, setIntel] = useState(null)
   const [intelLoading, setIntelLoading] = useState(false)
@@ -120,6 +124,10 @@ export default function OpportunityWorkspace() {
   const [forecast, setForecast] = useState(null)
   const [forecastLoading, setForecastLoading] = useState(false)
   const [forecastError, setForecastError] = useState('')
+  const [myReports, setMyReports] = useState([])
+  const [activeReportId, setActiveReportId] = useState('')
+  const [buyingReport, setBuyingReport] = useState(false)
+  const [buyError, setBuyError] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -133,18 +141,69 @@ export default function OpportunityWorkspace() {
     return () => { cancelled = true }
   }, [user?.id])
 
+  // Picks up the redirect back from Stripe Checkout (?intel_unlock=success
+  // &report_id=...) and cleans the URL so a refresh doesn't re-trigger it.
+  useEffect(() => {
+    const unlock = searchParams.get('intel_unlock')
+    const rid = searchParams.get('report_id')
+    if (unlock === 'success' && rid) {
+      setActiveReportId(rid)
+      const next = new URLSearchParams(searchParams)
+      next.delete('intel_unlock')
+      next.delete('report_id')
+      setSearchParams(next, { replace: true })
+    }
+  }, []) // eslint-disable-line
+
+  // Non-Enterprise users: load their report inventory so an already-paid,
+  // unused report can be spent without buying another one.
+  useEffect(() => {
+    let cancelled = false
+    if (!user?.id || !intelEnabled() || enterprisePlan) return
+    async function run() {
+      try {
+        const result = await listMyReports(user.id)
+        if (!cancelled) setMyReports(result.reports || [])
+      } catch {
+        if (!cancelled) setMyReports([])
+      }
+    }
+    run()
+    return () => { cancelled = true }
+  }, [user?.id, enterprisePlan, activeReportId])
+
+  async function buyReport() {
+    setBuyingReport(true)
+    setBuyError('')
+    try {
+      const { url } = await startIntelReportCheckout(user.id, user.email)
+      if (url) {
+        window.location.href = url
+        return
+      }
+      setBuyError('Could not start checkout. Try again in a moment.')
+    } catch (e) {
+      setBuyError(e.message || 'Could not start checkout.')
+    } finally {
+      setBuyingReport(false)
+    }
+  }
+
+  const hasIntelAccess = enterprisePlan || !!activeReportId
+  const unusedReports = myReports.filter(r => r.status === 'unused')
+
   useEffect(() => {
     let cancelled = false
     setIntel(null)
     setIntelError('')
     setForecast(null)
     setForecastError('')
-    if (!enterprisePlan || !naics || !user?.id) return
+    if (!hasIntelAccess || !naics || !user?.id) return
 
     async function run() {
       setIntelLoading(true)
       try {
-        const result = await getIncumbentHistory({ naics, agency, userId: user.id })
+        const result = await getIncumbentHistory({ naics, agency, userId: user.id, reportId: activeReportId })
         if (!cancelled) setIntel(result)
       } catch (e) {
         if (!cancelled) setIntelError(e.message || 'Could not pull award history')
@@ -154,14 +213,14 @@ export default function OpportunityWorkspace() {
     }
     run()
     return () => { cancelled = true }
-  }, [enterprisePlan, naics, agency, user?.id])
+  }, [hasIntelAccess, naics, agency, user?.id, activeReportId])
 
   async function runForecast() {
     setForecastLoading(true)
     setForecastError('')
     try {
       const result = await forecastRecompete({
-        naics, agency, title, awards: intel?.awards || [], userId: user.id,
+        naics, agency, title, awards: intel?.awards || [], userId: user.id, reportId: activeReportId,
       })
       setForecast(result)
     } catch (e) {
@@ -286,7 +345,32 @@ export default function OpportunityWorkspace() {
           <div className="ow-score ow-score-error">{scoreError}</div>
         )}
 
-        {enterprisePlan && (
+        {!enterprisePlan && naics && !activeReportId && (
+          <div className="ow-intel ow-intel-paywall">
+            <div className="ow-intel-header">
+              <Radar size={14} /> WARDOG Intel — incumbent &amp; award history
+            </div>
+            <p className="ow-score-summary">
+              See who's held this NAICS/agency pair, what they were paid, and an AI re-compete read —
+              $39 for this one report, or unlimited on Enterprise.
+            </p>
+            {unusedReports.length > 0 && (
+              <button
+                type="button"
+                className="ow-intel-cta"
+                onClick={() => setActiveReportId(unusedReports[0].id)}
+              >
+                Use a report you already bought ({unusedReports.length} available)
+              </button>
+            )}
+            <button type="button" className="ow-intel-cta" disabled={buyingReport} onClick={buyReport}>
+              {buyingReport ? 'Starting checkout…' : 'Buy this report — $39'}
+            </button>
+            {buyError && <div className="ow-score-error">{buyError}</div>}
+          </div>
+        )}
+
+        {hasIntelAccess && (
           <div className="ow-intel">
             <div className="ow-intel-header">
               <Radar size={14} /> WARDOG Intel — incumbent &amp; award history
