@@ -29,15 +29,33 @@ export function AuthProvider({ children }) {
   // reads ?ref= on whatever URL the visitor actually lands on. First code
   // seen wins for the life of the 30-day window; a later link doesn't
   // overwrite an earlier one, matching the backend's first-click-wins rule.
+  //
+  // ?src= is the channel tag (discord/reddit/tiktok/…) so the creator can see
+  // which placement drove the click. It rides along with the code under
+  // first-click-wins: the source stored is the one from the FIRST tagged link
+  // this visitor hit, kept in lockstep with the code it was captured with.
   useEffect(() => {
-    const code = new URLSearchParams(window.location.search).get('ref')
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('ref')
     if (!code) return
-    localStorage.setItem(REF_STORAGE_KEY, JSON.stringify({ code, ts: Date.now() }))
+    const source = params.get('src') || null
+    // Preserve the original capture if one already exists in-window — don't
+    // let a later link overwrite the source that first brought them in.
+    let existing = null
+    try {
+      existing = JSON.parse(localStorage.getItem(REF_STORAGE_KEY) || 'null')
+    } catch {
+      existing = null
+    }
+    const fresh = !existing?.code || Date.now() - (existing.ts || 0) > REF_WINDOW_MS
+    if (fresh) {
+      localStorage.setItem(REF_STORAGE_KEY, JSON.stringify({ code, source, ts: Date.now() }))
+    }
     if (API_BASE) {
       fetch(`${API_BASE}/api/v1/affiliates/track-click`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, landing_path: window.location.pathname }),
+        body: JSON.stringify({ code, landing_path: window.location.pathname, source }),
       }).catch(() => {})
     }
   }, [])
@@ -61,7 +79,7 @@ export function AuthProvider({ children }) {
     fetch(`${API_BASE}/api/v1/affiliates/attribute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: session.user.id, code: raw.code }),
+      body: JSON.stringify({ user_id: session.user.id, code: raw.code, source: raw.source || null }),
     }).catch(() => {})
   }, [session])
 

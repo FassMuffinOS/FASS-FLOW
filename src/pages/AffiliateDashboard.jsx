@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   Megaphone, Copy, Link2, Loader2, MousePointerClick, UserPlus, DollarSign, Wallet,
   Target, CheckCircle2, Circle, Calculator, MessageSquare, Users, Check, Trophy, Sparkles,
-  Share2, Send,
+  Share2, Send, BarChart3,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { apiFetch } from '../lib/apiClient'
@@ -103,6 +103,24 @@ const ONBOARDING_ITEMS = [
   { key: 'watch_onboarding', label: 'Watch the 2-minute creator onboarding walkthrough', auto: false },
 ]
 
+// Channels a creator typically drops their link on. The `id` becomes the
+// ?src= tag on the link, which flows through track-click -> attribute ->
+// conversion so the dashboard can show clicks AND earnings per channel.
+// These ids must match what the share buttons tag themselves with below.
+const CHANNELS = [
+  { id: 'tiktok', label: 'TikTok' },
+  { id: 'youtube', label: 'YouTube' },
+  { id: 'instagram', label: 'Instagram' },
+  { id: 'facebook', label: 'Facebook' },
+  { id: 'reddit', label: 'Reddit' },
+  { id: 'discord', label: 'Discord' },
+  { id: 'kick', label: 'Kick' },
+  { id: 'x', label: 'X / Twitter' },
+  { id: 'linkedin', label: 'LinkedIn' },
+  { id: 'newsletter', label: 'Newsletter' },
+  { id: 'bio', label: 'Link in bio' },
+]
+
 export default function AffiliateDashboard() {
   const { session } = useAuth()
   const navigate = useNavigate()
@@ -123,6 +141,9 @@ export default function AffiliateDashboard() {
   const [xpToast, setXpToast] = useState(null)
   const [shareCopied, setShareCopied] = useState(false)
   const [canNativeShare] = useState(() => typeof navigator !== 'undefined' && !!navigator.share)
+  const [channels, setChannels] = useState([])
+  const [builderSrc, setBuilderSrc] = useState(CHANNELS[0].id)
+  const [builderCopied, setBuilderCopied] = useState(false)
 
   function flashXp(amount) {
     if (!amount) return
@@ -203,6 +224,7 @@ export default function AffiliateDashboard() {
         setConversions(data.conversions || [])
         setRecruits(data.recruits || [])
         setGamification(data.gamification || null)
+        setChannels(data.channels || [])
       }
     } catch (err) {
       console.error('AffiliateDashboard: failed to load', err)
@@ -244,11 +266,29 @@ export default function AffiliateDashboard() {
 
   const link = affiliate ? `${window.location.origin}/?ref=${affiliate.code}` : ''
 
+  // Same referral code, with a ?src= channel tag so clicks/earnings can be
+  // traced back to where the link was posted. Used by the channel builder
+  // and by each share button (which tags itself with its own platform id).
+  function linkWithSource(src) {
+    if (!affiliate) return ''
+    const base = `${window.location.origin}/?ref=${affiliate.code}`
+    return src ? `${base}&src=${encodeURIComponent(src)}` : base
+  }
+
   function copyLink() {
     if (!link) return
     navigator.clipboard.writeText(link).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 1800)
+    })
+  }
+
+  function copyBuilderLink() {
+    const v = linkWithSource(builderSrc)
+    if (!v) return
+    navigator.clipboard.writeText(v).then(() => {
+      setBuilderCopied(true)
+      setTimeout(() => setBuilderCopied(false), 1800)
     })
   }
 
@@ -277,31 +317,33 @@ export default function AffiliateDashboard() {
     return `${shareLine()} They handle bidding, contracts, and customer rewards for small businesses — join with my link:`
   }
 
+  // Each share path tags itself so a click that comes back through it is
+  // attributed to the right channel automatically — no manual builder step.
   function shareToX() {
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage())}&url=${encodeURIComponent(link)}`
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage())}&url=${encodeURIComponent(linkWithSource('x'))}`
     window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   function shareToFacebook() {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}&quote=${encodeURIComponent(shareMessage())}`
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(linkWithSource('facebook'))}&quote=${encodeURIComponent(shareMessage())}`
     window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   function shareToLinkedIn() {
-    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(link)}`
+    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(linkWithSource('linkedin'))}`
     window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   async function shareNative() {
     try {
-      await navigator.share({ title: 'FASS Flow', text: shareMessage(), url: link })
+      await navigator.share({ title: 'FASS Flow', text: shareMessage(), url: linkWithSource('share') })
     } catch {
       // Cancelled or unsupported mid-call — no-op, user can use the other buttons.
     }
   }
 
   function copyShareText() {
-    navigator.clipboard.writeText(`${shareMessage()} ${link}`).then(() => {
+    navigator.clipboard.writeText(`${shareMessage()} ${linkWithSource('copy')}`).then(() => {
       setShareCopied(true)
       setTimeout(() => setShareCopied(false), 1800)
     })
@@ -443,6 +485,31 @@ export default function AffiliateDashboard() {
         </div>
       </div>
 
+      <div className="afd-builder">
+        <span className="afd-link-label">Make a channel link</span>
+        <p className="afd-builder-sub">
+          Tag your link with where you're posting it. Same link, but every click and signup is sorted by
+          channel below — so you can see what's actually working and double down.
+        </p>
+        <div className="afd-builder-chips">
+          {CHANNELS.map(ch => (
+            <button
+              key={ch.id}
+              className={`afd-builder-chip ${builderSrc === ch.id ? 'is-active' : ''}`}
+              onClick={() => setBuilderSrc(ch.id)}
+            >
+              {ch.label}
+            </button>
+          ))}
+        </div>
+        <div className="afd-link-row">
+          <input readOnly value={linkWithSource(builderSrc)} onClick={e => e.target.select()} />
+          <button className="btn-outline afd-copy-btn" onClick={copyBuilderLink}>
+            <Copy size={14} /> {builderCopied ? 'Copied' : 'Copy'}
+          </button>
+        </div>
+      </div>
+
       <div className="afd-share">
         <span className="afd-link-label">Share your progress</span>
         <p className="afd-share-preview">{shareMessage()} <span className="afd-share-preview-link">{link}</span></p>
@@ -505,6 +572,40 @@ export default function AffiliateDashboard() {
           <span className="afd-stat-value">${stats?.override_earned?.toFixed(2) ?? '0.00'}</span>
           <span className="afd-stat-label">override earnings</span>
         </div>
+      </div>
+
+      <div className="afd-section">
+        <div className="afd-section-head"><BarChart3 size={17} /> Where it's coming from</div>
+        <p className="afd-section-sub">
+          Clicks and signups by channel — based on the <code>?src=</code> tag on the links you share.
+          Untagged is anything posted with a plain link.
+        </p>
+        {channels.length === 0 ? (
+          <div className="afd-recruits-empty">
+            No clicks yet. Use a channel link above when you post, and your top channels will show up here.
+          </div>
+        ) : (
+          <div className="afd-channels">
+            <div className="afd-channel-row afd-channel-head">
+              <span>Channel</span>
+              <span>Clicks</span>
+              <span>Signups</span>
+              <span>Earned</span>
+            </div>
+            {channels.map(ch => {
+              const known = CHANNELS.find(c => c.id === ch.source)
+              const label = known ? known.label : (ch.source === 'untagged' ? 'Untagged' : ch.source)
+              return (
+                <div className="afd-channel-row" key={ch.source}>
+                  <span className="afd-channel-name">{label}</span>
+                  <span>{ch.clicks}</span>
+                  <span>{ch.conversions}</span>
+                  <span className="afd-channel-earned">${ch.earned.toFixed(2)}</span>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       <div className="afd-cal-head">Growth calendar — {monthLabel}</div>
