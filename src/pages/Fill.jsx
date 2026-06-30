@@ -714,9 +714,18 @@ export default function Fill({ embedded = false } = {}) {
                     />
                     {activeDoc.agency && <span className="fl-results-agency">{activeDoc.agency}</span>}
                   </div>
-                  <button className="btn-primary fl-save-btn" onClick={saveDoc} disabled={saving}>
-                    {saving ? <Loader2 size={14} className="spin" /> : <Save size={14} />} Save
-                  </button>
+                  <div className="fl-results-actions">
+                    <button
+                      className="btn-outline"
+                      onClick={() => navigate('/proposal-editor', { state: { parsed: activeDoc.parsed, outline: activeDoc.outline, title: activeDoc.title } })}
+                      title="Build the full proposal from this solicitation"
+                    >
+                      <FileText size={14} /> Open in Editor
+                    </button>
+                    <button className="btn-primary fl-save-btn" onClick={saveDoc} disabled={saving}>
+                      {saving ? <Loader2 size={14} className="spin" /> : <Save size={14} />} Save
+                    </button>
+                  </div>
                 </div>
 
                 <SnapshotCard parsed={activeDoc.parsed} />

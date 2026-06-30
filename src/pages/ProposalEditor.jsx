@@ -6,9 +6,11 @@ import Highlight from '@tiptap/extension-highlight'
 import {
   ListTree, Check, MessageSquare, Download, Type, Ruler, FileText, AlertTriangle,
   ShieldCheck, CheckCircle2, Circle, Building2, ChevronDown, X, Library, Trash2, Plus, BookmarkPlus,
+  Sparkles, Loader2,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { getBusinessProfile } from '../lib/businessProfile'
+import { draftSection, aiEnabled } from '../lib/aiClient'
 import { parseSolicitation, buildOutline } from '../lib/solicitationParser'
 import { assembleProposal, assembledToHtml } from '../lib/assembleProposal'
 import { buildComplianceMatrix } from '../lib/complianceMatrix'
@@ -40,13 +42,25 @@ export default function ProposalEditor() {
   const { session } = useAuth()
   const userId = session?.user?.id
 
-  // Assemble once: real parsed solicitation if passed in, else the sample.
-  const { doc, parsed } = useMemo(() => {
+  // The parse/outline come from FASS FILL (via route state) or the sample.
+  const { parsed, outline, baseTitle } = useMemo(() => {
     const p = location.state?.parsed || parseSolicitation(SAMPLE)
-    const outline = location.state?.outline || buildOutline(p)
-    const title = location.state?.title || 'Janitorial & Custodial Services — SSA Baltimore'
-    return { doc: assembleProposal(p, outline, { title }), parsed: p }
+    const o = location.state?.outline || buildOutline(p)
+    const t = location.state?.title || 'Janitorial & Custodial Services — SSA Baltimore'
+    return { parsed: p, outline: o, baseTitle: t }
   }, [location.state])
+
+  // AI drafts replace the placeholder scaffolds per section; the assembler
+  // already merges a drafts map, so re-assembling swaps placeholder → AI prose.
+  const [drafts, setDrafts] = useState({})        // sectionId -> html
+  const [citations, setCitations] = useState({})  // sectionId -> grounded passages
+  const [draftingId, setDraftingId] = useState(null)
+  const [draftError, setDraftError] = useState(null)
+
+  const doc = useMemo(
+    () => assembleProposal(parsed, outline, { title: baseTitle, drafts }),
+    [parsed, outline, baseTitle, drafts]
+  )
 
   const editorWrapRef = useRef(null)
   const [approved, setApproved] = useState(() => new Set())
@@ -79,7 +93,7 @@ export default function ProposalEditor() {
     if (!userId) return
     let cancelled = false
     const proposalId = location.state?.proposalId || 'sample'
-    ensureDoc(userId, { proposalId, title: doc.title }).then(async d => {
+    ensureDoc(userId, { proposalId, title: baseTitle }).then(async d => {
       if (cancelled || !d?.id) return
       setDocumentId(d.id)
       const [serverComments, states] = await Promise.all([
@@ -99,7 +113,7 @@ export default function ProposalEditor() {
       setApproved(new Set(ids))
     })
     return () => { cancelled = true }
-  }, [userId, doc, location.state])
+  }, [userId, baseTitle, location.state])
 
   // Pull the shared business profile so the user can drop their own
   // UEI / CAGE / set-aside / signer info into the draft instead of retyping.
@@ -165,6 +179,39 @@ export default function ProposalEditor() {
   function insertValue(value) {
     editor?.chain().focus().insertContent(value).run()
     setInsertOpen(false)
+  }
+
+  // Real AI drafting — replaces a section's placeholder with prose grounded
+  // in the user's own past performance (draftSection's RAG). The returned
+  // grounded_in passages become the section's source citations.
+  async function draftWithAI(section) {
+    if (!aiEnabled()) return
+    setDraftingId(section.id)
+    setDraftError(null)
+    try {
+      const res = await draftSection({
+        sectionName: section.heading,
+        sectionDescription: '',
+        solicitationSummary: baseTitle,
+        profile,
+        pastPerformance: profile?.past_performance || [],
+      })
+      if (res?.draft) {
+        const html = res.draft.split(/\n{2,}/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('')
+        setDrafts(prev => ({ ...prev, [section.id]: html }))
+        setCitations(prev => ({ ...prev, [section.id]: res.grounded_in || [] }))
+      }
+    } catch (e) {
+      setDraftError(e.message || 'Draft failed — the backend may not have an AI provider key configured.')
+    } finally {
+      setDraftingId(null)
+    }
+  }
+
+  async function draftAll() {
+    for (const s of doc.sections) {
+      if (!drafts[s.id]) await draftWithAI(s)   // sequential — don't hammer the LLM
+    }
   }
 
   // Pull the current text of one section out of the editor (everything from
@@ -306,6 +353,12 @@ export default function ProposalEditor() {
             {reviewedCount}/{total} reviewed
           </span>
 
+          {aiEnabled() && (
+            <button className="fx-btn fx-btn-ghost" onClick={draftAll} disabled={draftingId !== null} title="Draft every section from your past performance">
+              {draftingId !== null ? <Loader2 size={15} className="pe-spin" /> : <Sparkles size={15} />} Draft all with AI
+            </button>
+          )}
+
           {/* Insert business info — drop your own UEI/CAGE/signer at the cursor */}
           <div className="pe-insert">
             <button className="fx-btn fx-btn-ghost" onClick={() => setInsertOpen(o => !o)} aria-expanded={insertOpen}>
@@ -445,6 +498,21 @@ export default function ProposalEditor() {
                       <button className="fx-btn fx-btn-ghost pe-approve" onClick={() => toggleApprove(s)}>
                         {isApproved ? 'Approved ✓' : 'Approve section'}
                       </button>
+
+                      {/* Real AI drafting — grounded in the user's past performance */}
+                      {aiEnabled() && (
+                        <button className="pe-aidraft" onClick={() => draftWithAI(s)} disabled={draftingId === s.id}>
+                          {draftingId === s.id ? <Loader2 size={13} className="pe-spin" /> : <Sparkles size={13} />}
+                          {drafts[s.id] ? 'Re-draft with AI' : 'Draft with AI'}
+                        </button>
+                      )}
+                      {citations[s.id]?.length > 0 && (
+                        <div className="pe-cites">
+                          <span className="pe-cites-head"><Sparkles size={11} /> Grounded in your past performance</span>
+                          {citations[s.id].map((g, ci) => (<p className="pe-cite" key={ci}>{g.text}</p>))}
+                        </div>
+                      )}
+                      {draftError && draftingId === null && <p className="pe-draft-err">{draftError}</p>}
 
                       {/* Reuse Engine: suggestions from the library + save this section */}
                       {suggestionsFor(s.heading).length > 0 && (
