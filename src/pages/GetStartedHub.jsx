@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   Search, Radar, Mail, GraduationCap, ClipboardCheck, ClipboardList, Kanban,
   ShieldCheck, HardHat, Camera, Newspaper, Users, DollarSign, BookOpen,
-  Sparkles, IdCard, ArrowRight, Lock, PenSquare,
+  Sparkles, IdCard, ArrowRight, Lock, PenSquare, LayoutGrid,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -40,6 +40,7 @@ const SECTIONS = [
       { icon: ClipboardCheck, name: 'R-E-A-D', to: '/read', tier: 'free', desc: 'Six-question bid / no-bid scoring for every flagged opportunity, grounded in the actual solicitation.' },
       { icon: ClipboardList, name: 'FASS FILL', to: '/fill', tier: 'gated', desc: 'Paste a solicitation, get an instant compliance matrix, outline, and capability statement.' },
       { icon: PenSquare, name: 'Proposal Editor', to: '/proposal-editor', tier: 'gated', desc: 'Review your generated proposal in a Docs-like editor — volumes, table of contents, and only the parts that need you, highlighted.' },
+      { icon: LayoutGrid, name: 'Templates', to: '/templates', tier: 'gated', desc: 'Start from a winning proposal structure for your industry — cover letter to pricing, ready to AI-draft.' },
       { icon: Kanban, name: 'Pipeline', to: '/pipeline', tier: 'gated', desc: 'Kanban + list view of every bid in motion, with a self-checking submission checklist per card.' },
     ],
   },

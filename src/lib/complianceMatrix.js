@@ -39,6 +39,7 @@ function matchSection(label, sections) {
 // doc:    assembleProposal() output (has .sections, .format)
 // state:  { approved: Set<sectionId>, text: string (live editor text) }
 export function buildComplianceMatrix(parsed, doc, state = {}) {
+  parsed = parsed || {} // template docs have no parsed solicitation
   const approved = state.approved || new Set()
   const sections = doc.sections || []
   const items = []

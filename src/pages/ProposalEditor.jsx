@@ -43,13 +43,16 @@ export default function ProposalEditor() {
   const { session } = useAuth()
   const userId = session?.user?.id
 
-  // The parse/outline come from FASS FILL (via route state) or the sample.
+  // Three ways in: an industry template (from the Templates gallery), a real
+  // parsed solicitation (from FASS FILL), or the built-in sample.
+  const templateDoc = location.state?.template || null
   const { parsed, outline, baseTitle } = useMemo(() => {
+    if (templateDoc) return { parsed: null, outline: null, baseTitle: templateDoc.title }
     const p = location.state?.parsed || parseSolicitation(SAMPLE)
     const o = location.state?.outline || buildOutline(p)
     const t = location.state?.title || 'Janitorial & Custodial Services — SSA Baltimore'
     return { parsed: p, outline: o, baseTitle: t }
-  }, [location.state])
+  }, [location.state]) // eslint-disable-line
 
   // AI drafts replace the placeholder scaffolds per section; the assembler
   // already merges a drafts map, so re-assembling swaps placeholder → AI prose.
@@ -68,10 +71,12 @@ export default function ProposalEditor() {
     return () => { cancelled = true }
   }, [userId])
 
-  const doc = useMemo(
-    () => assembleProposal(parsed, outline, { title: baseTitle, drafts }),
-    [parsed, outline, baseTitle, drafts]
-  )
+  const doc = useMemo(() => {
+    const base = templateDoc || assembleProposal(parsed, outline, { title: baseTitle })
+    // Merge AI drafts by section id — uniform for template and parsed docs.
+    if (!Object.keys(drafts).length) return base
+    return { ...base, sections: base.sections.map(s => (drafts[s.id] ? { ...s, html: drafts[s.id], source: 'ai' } : s)) }
+  }, [templateDoc, parsed, outline, baseTitle, drafts])
 
   const editorWrapRef = useRef(null)
   const [approved, setApproved] = useState(() => new Set())
