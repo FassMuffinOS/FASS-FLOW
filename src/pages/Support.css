@@ -320,3 +320,7 @@
   .sup-offer-card { flex-direction: column; }
   .sup-offer-grid { grid-template-columns: 1fr; }
 }
+
+/* Step-by-step Scribe guides */
+.sup-guides { display: flex; flex-direction: column; gap: 28px; }
+.sup-guide-title { font-size: 1.05rem; font-weight: 700; color: var(--navy, #1B2A4A); margin-bottom: 12px; }

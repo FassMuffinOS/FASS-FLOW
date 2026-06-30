@@ -1,8 +1,18 @@
 import { useState } from 'react'
-import { Heart, DollarSign, FileSearch, ArrowRight, BookOpen, Sparkles, Loader2 } from 'lucide-react'
+import { Heart, DollarSign, FileSearch, ArrowRight, BookOpen, Sparkles, Loader2, PlayCircle } from 'lucide-react'
+import ScribeEmbed from '../components/ScribeEmbed'
 import './Support.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
+
+// Interactive Scribe walkthroughs. Add new ones here — they stay current
+// with the source guide automatically.
+const GUIDES = [
+  {
+    title: 'Create & manage bids using FASS Flow',
+    src: 'https://scribehow.com/embed/How_To_Create_And_Manage_Bids_Using_FASS_Flow__jjo7twpkTNy8G2i8_Kmevw',
+  },
+]
 
 const TIP_OPTIONS = [
   {
@@ -127,6 +137,23 @@ export default function Support() {
             FASS Flow is a small team building tools to get more small businesses into government contracting.
             If this has helped your business and you want to chip in, here's how — no pressure, ever.
           </p>
+        </div>
+      </section>
+
+      <section className="sup-section">
+        <div className="container">
+          <h2 className="sup-section-title"><PlayCircle size={20} style={{ verticalAlign: '-3px', marginRight: 8 }} />Step-by-step guides</h2>
+          <p className="sup-section-sub">
+            Interactive walkthroughs of FASS Flow — they update automatically as the app changes, so they never go stale.
+          </p>
+          <div className="sup-guides">
+            {GUIDES.map(g => (
+              <div className="sup-guide" key={g.src}>
+                <h3 className="sup-guide-title">{g.title}</h3>
+                <ScribeEmbed src={g.src} title={g.title} />
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
