@@ -1,7 +1,17 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { Search, LayoutGrid, Compass, CornerDownLeft } from 'lucide-react'
+import { Search, LayoutGrid, Compass, CornerDownLeft, Plus, ChevronDown, LayoutTemplate, ClipboardCheck, ClipboardList, Send, Radar } from 'lucide-react'
 import './TopBar.css'
+
+// High-frequency "create" actions, reachable from anywhere without hunting
+// the sidebar. They route into the relevant workflow's start.
+const QUICK_ACTIONS = [
+  { icon: LayoutTemplate, label: 'New proposal from template', to: '/templates' },
+  { icon: ClipboardCheck, label: 'Score a solicitation (R-E-A-D)', to: '/read' },
+  { icon: ClipboardList, label: 'Build a response (FASS FILL)', to: '/fill' },
+  { icon: Send, label: 'New client proposal', to: '/proposals' },
+  { icon: Radar, label: 'Find work in WARDOG', to: '/wardog' },
+]
 
 // Persistent orientation strip on every signed-in page. Tells you where you
 // are and lets you jump to any of the 30+ tools by typing — the antidote to
@@ -11,8 +21,10 @@ export default function TopBar({ items = [] }) {
   const location = useLocation()
   const [q, setQ] = useState('')
   const [open, setOpen] = useState(false)
+  const [actionsOpen, setActionsOpen] = useState(false)
   const wrapRef = useRef(null)
   const inputRef = useRef(null)
+  const actionsRef = useRef(null)
 
   // ⌘K / Ctrl-K focuses the jump search from anywhere.
   useEffect(() => {
@@ -35,9 +47,12 @@ export default function TopBar({ items = [] }) {
     ? items.filter(i => i.name.toLowerCase().includes(query)).slice(0, 8)
     : []
 
-  // Close the dropdown on outside click.
+  // Close dropdowns on outside click.
   useEffect(() => {
-    function onDoc(e) { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false) }
+    function onDoc(e) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false)
+      if (actionsRef.current && !actionsRef.current.contains(e.target)) setActionsOpen(false)
+    }
     document.addEventListener('mousedown', onDoc)
     return () => document.removeEventListener('mousedown', onDoc)
   }, [])
@@ -86,6 +101,20 @@ export default function TopBar({ items = [] }) {
       </div>
 
       <div className="topbar-quick">
+        <div className="topbar-actions" ref={actionsRef}>
+          <button className="topbar-new" onClick={() => setActionsOpen(o => !o)} title="Quick create">
+            <Plus size={15} /> New <ChevronDown size={13} />
+          </button>
+          {actionsOpen && (
+            <div className="topbar-actions-menu">
+              {QUICK_ACTIONS.map(a => (
+                <button key={a.to} className="topbar-action" onClick={() => { setActionsOpen(false); navigate(a.to) }}>
+                  <a.icon size={15} /> {a.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <Link to="/get-started" className="topbar-quick-btn" title="Get Started — the map of everything"><LayoutGrid size={15} /> Get Started</Link>
         <Link to="/dashboard" className="topbar-quick-btn topbar-quick-icon" title="Dashboard"><Compass size={16} /></Link>
       </div>

@@ -55,6 +55,36 @@
 .topbar-empty { display: block; padding: 12px; font-size: 0.84rem; color: var(--text-muted); }
 
 .topbar-quick { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+/* Quick "+ New" action menu */
+.topbar-actions { position: relative; }
+.topbar-new {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: inherit; font-size: 0.82rem; font-weight: 700; color: #fff;
+  background: var(--accent); border: 1px solid var(--accent);
+  border-radius: var(--radius-sm); padding: 8px 13px; cursor: pointer;
+  transition: background .15s;
+}
+.topbar-new:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.topbar-actions-menu {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 50;
+  width: 264px; background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: 6px;
+}
+.topbar-action {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  background: none; border: none; cursor: pointer; font-family: inherit;
+  font-size: 0.85rem; font-weight: 500; color: var(--ink);
+  padding: 9px 10px; border-radius: var(--radius-sm);
+}
+.topbar-action:hover { background: var(--accent-tint); color: var(--accent-hover); }
+.topbar-action svg { color: var(--text-muted); flex: none; }
+.topbar-action:hover svg { color: var(--accent-hover); }
+
+@media (max-width: 700px) {
+  .topbar-new { font-size: 0; padding: 8px; }
+  .topbar-new svg:last-child { display: none; }
+}
 .topbar-quick-btn {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 0.82rem; font-weight: 600; color: var(--ink);
