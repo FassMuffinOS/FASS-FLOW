@@ -8,7 +8,7 @@ import {
   LifeBuoy, Handshake, Calculator, HardHat, Camera,
   Radar, Images, Trophy, Flame, Menu, X, Send, Lock, ChevronDown, Stamp, Wallet, Rocket, Crop, Megaphone, Gift, Landmark,
   Sparkles, Users, Award, MessageCircle, Newspaper, LayoutGrid, PenSquare,
-  PanelLeft, Plus, Pencil, Check, Trash2,
+  PanelLeft, Plus, Pencil, Check, Trash2, Settings as SettingsIcon,
 } from 'lucide-react'
 import ChatDock from './ChatDock'
 import BottomNav from './BottomNav'
@@ -80,6 +80,7 @@ const NAV_GROUPS = [
     { name: 'Wallet', icon: Wallet, to: '/wallet', match: ['/wallet'], tier: 'free' },
     { name: 'Payouts', icon: Landmark, to: '/payouts', match: ['/payouts'], tier: 'free' },
     { name: 'Support', icon: LifeBuoy, to: '/support', match: ['/support'], tier: 'free' },
+    { name: 'Settings', icon: SettingsIcon, to: '/settings', match: ['/settings'], tier: 'free' },
   ] },
 ]
 
@@ -411,7 +412,7 @@ export default function AppShell({ children }) {
       </aside>
 
       <div className="shell-content">
-        <TopBar items={ALL_ITEMS} />
+        <TopBar items={ALL_ITEMS} userId={userId} />
         {children}
       </div>
 

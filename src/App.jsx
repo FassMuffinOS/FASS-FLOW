@@ -79,6 +79,7 @@ import StartBusiness from './pages/StartBusiness'
 import Payouts from './pages/Payouts'
 import Resize from './pages/Resize'
 import GrowthChallenge from './pages/GrowthChallenge'
+import SettingsPage from './pages/Settings'
 import AppShell from './components/AppShell'
 import SmoothScroll from './components/SmoothScroll'
 import useSeo from './hooks/useSeo'
@@ -432,6 +433,12 @@ function AppRoutes() {
           Dashboard's GrowthChallengeWidget summary card. See growth_challenge.py. */}
       <Route path="/growth-challenge" element={
         <ProtectedRoute><GrowthChallenge /></ProtectedRoute>
+      } />
+      {/* User control center — General/Account/Notifications/Billing &
+          AI Credits/Connectors/Privacy & Security. See app/routers/
+          settings.py for the new endpoints this backs onto. */}
+      <Route path="/settings" element={
+        <ProtectedRoute><SettingsPage /></ProtectedRoute>
       } />
     </Routes>
   )
