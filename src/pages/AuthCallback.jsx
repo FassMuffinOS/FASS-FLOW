@@ -5,8 +5,11 @@ import { supabase } from '../lib/supabase'
 import { getBusinessProfile } from '../lib/businessProfile'
 import { consumePostAuthRedirect } from '../lib/postAuthRedirect'
 import { fetchIsAffiliateOnly } from '../lib/affiliateGate'
+import { consumeAffiliateApplyIntent, readStoredRefCode } from '../lib/affiliateRef'
 import { Loader } from 'lucide-react'
 import './SignIn.css'
+
+const API_BASE = import.meta.env.VITE_API_URL || ''
 
 // Where every OAuth provider (Google/Microsoft/LinkedIn) redirects back to.
 // Supabase's client parses the access token out of the URL automatically
@@ -61,6 +64,35 @@ export default function AuthCallback() {
 
     routed.current = true
     ;(async () => {
+      // Came from /affiliates/apply's "Continue with Google" button — no
+      // password step, so AuthCallback is where the affiliate-specific
+      // provisioning actually happens (apply-oauth mirrors what apply()
+      // does inline for the email/password path). Checked before the
+      // generic postAuthRedirect below since this is a one-shot signal set
+      // by the same page that flag would otherwise also apply to.
+      if (consumeAffiliateApplyIntent()) {
+        try {
+          await fetch(`${API_BASE}/api/v1/affiliates/apply-oauth`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({
+              ref_code: readStoredRefCode(),
+              full_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || null,
+            }),
+          })
+        } catch {
+          // Best-effort — even if this call fails, don't strand a
+          // successfully-authenticated user. They land on the affiliate
+          // dashboard either way; worst case they just don't have an
+          // affiliate row yet and can retry from there.
+        }
+        navigate('/affiliates/dashboard', { replace: true })
+        return
+      }
+
       // A stashed redirect (set right before sending someone to /signin,
       // e.g. the affiliate program's "Become an affiliate" CTA) means they
       // came here for something specific that has nothing to do with the
