@@ -6,6 +6,7 @@ import {
   Share2, Send,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { apiFetch } from '../lib/apiClient'
 import './AffiliateDashboard.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -135,7 +136,7 @@ export default function AffiliateDashboard() {
     if (!userId || assignmentDone || marking) return
     setMarking(true)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/affiliates/assignment/done`, {
+      const res = await apiFetch(`/api/v1/affiliates/assignment/done`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId }),
@@ -157,7 +158,7 @@ export default function AffiliateDashboard() {
     if (!userId || claiming) return
     setClaiming(key)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/affiliates/xp/claim`, {
+      const res = await apiFetch(`/api/v1/affiliates/xp/claim`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId, action: key }),
@@ -193,7 +194,7 @@ export default function AffiliateDashboard() {
   const load = useCallback(async () => {
     if (!userId || !API_BASE) return
     try {
-      const res = await fetch(`${API_BASE}/api/v1/affiliates/me?user_id=${userId}`)
+      const res = await apiFetch(`/api/v1/affiliates/me?user_id=${userId}`)
       if (res.ok) {
         const data = await res.json()
         setAffiliate(data.affiliate)
@@ -224,7 +225,7 @@ export default function AffiliateDashboard() {
     if (!userId) return
     setJoining(true)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/affiliates/join`, {
+      const res = await apiFetch(`/api/v1/affiliates/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId }),

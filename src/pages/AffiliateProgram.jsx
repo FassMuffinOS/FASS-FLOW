@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Megaphone, ArrowRight, Check, Copy, Link2, Loader2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { setPostAuthRedirect } from '../lib/postAuthRedirect'
+import { apiFetch } from '../lib/apiClient'
 import './AffiliateProgram.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -35,7 +35,7 @@ export default function AffiliateProgram() {
     if (!userId || !API_BASE) return
     setLoading(true)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/affiliates/me?user_id=${userId}`)
+      const res = await apiFetch(`/api/v1/affiliates/me?user_id=${userId}`)
       if (res.ok) setAffiliate((await res.json()).affiliate)
     } catch (err) {
       console.error('AffiliateProgram: failed to load affiliate', err)
@@ -59,7 +59,7 @@ export default function AffiliateProgram() {
     setJoining(true)
     setError('')
     try {
-      const res = await fetch(`${API_BASE}/api/v1/affiliates/join`, {
+      const res = await apiFetch(`/api/v1/affiliates/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId }),
@@ -96,12 +96,17 @@ export default function AffiliateProgram() {
           </p>
 
           {!session && (
-            <button
-              className="btn-primary afp-cta"
-              onClick={() => { setPostAuthRedirect('/affiliates/dashboard'); navigate('/signin') }}
-            >
-              Sign up to get your link <ArrowRight size={18} />
-            </button>
+            <>
+              <button
+                className="btn-primary afp-cta"
+                onClick={() => navigate('/affiliates/apply')}
+              >
+                Apply to become a creator partner <ArrowRight size={18} />
+              </button>
+              <p className="afp-hero-note">
+                Already a FASS Flow customer? <button type="button" className="afp-link-btn" onClick={() => navigate('/signin')}>Sign in</button> to join instead — no application needed.
+              </p>
+            </>
           )}
 
           {session && !affiliate && !loading && (

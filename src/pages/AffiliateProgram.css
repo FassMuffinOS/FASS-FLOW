@@ -52,6 +52,17 @@
   font-size: 0.85rem;
 }
 
+.afp-link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  font-weight: 600;
+  color: var(--teal, #1D9E75);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .afp-link-box {
   margin-top: 22px;
   background: rgba(255, 255, 255, 0.08);

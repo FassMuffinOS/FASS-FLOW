@@ -19,7 +19,10 @@ const QUICK_ACTIONS = [
 // Persistent orientation strip on every signed-in page. Tells you where you
 // are and lets you jump to any of the 30+ tools by typing — the antidote to
 // "lost in the sauce" navigation. `items` is AppShell's flat tool list.
-export default function TopBar({ items = [], userId }) {
+// `affiliateOnly` suppresses every GovCon-specific affordance (quick-create
+// menu, Zero-to-Hero guided-track progress, Get Started/Dashboard links) for
+// profiles.is_affiliate_only accounts, which have no use for any of them.
+export default function TopBar({ items = [], userId, affiliateOnly = false }) {
   const navigate = useNavigate()
   const location = useLocation()
   const [progress, setProgress] = useState(null)
@@ -27,7 +30,7 @@ export default function TopBar({ items = [], userId }) {
   // Guided-track progress for the Zero-to-Hero bar + mobile next-step button.
   // Recompute on mount and whenever the track is switched.
   useEffect(() => {
-    if (!userId) return
+    if (!userId || affiliateOnly) return
     let cancelled = false
     async function recompute() {
       const signals = await fetchTrackSignals(userId)
@@ -37,7 +40,7 @@ export default function TopBar({ items = [], userId }) {
     const onChange = () => recompute()
     window.addEventListener(TRACK_EVENT, onChange)
     return () => { cancelled = true; window.removeEventListener(TRACK_EVENT, onChange) }
-  }, [userId])
+  }, [userId, affiliateOnly])
   const [q, setQ] = useState('')
   const [open, setOpen] = useState(false)
   const [actionsOpen, setActionsOpen] = useState(false)
@@ -92,7 +95,7 @@ export default function TopBar({ items = [], userId }) {
         <span>{current ? current.name : 'FASS Flow'}</span>
       </div>
 
-      {progress && !progress.allDone && progress.next && (
+      {!affiliateOnly && progress && !progress.allDone && progress.next && (
         <Link to={progress.next.href} className="topbar-next" title={`${progress.doneCount}/${progress.total} · Next: ${progress.next.title}`}>
           <span className="topbar-next-bar"><span className="topbar-next-fill" style={{ width: `${progress.pct}%` }} /></span>
           <span className="topbar-next-label"><b>Next:</b> {progress.next.title}</span>
@@ -127,23 +130,29 @@ export default function TopBar({ items = [], userId }) {
       </div>
 
       <div className="topbar-quick">
-        <div className="topbar-actions" ref={actionsRef}>
-          <button className="topbar-new" onClick={() => setActionsOpen(o => !o)} title="Quick create">
-            <Plus size={15} /> New <ChevronDown size={13} />
-          </button>
-          {actionsOpen && (
-            <div className="topbar-actions-menu">
-              {QUICK_ACTIONS.map(a => (
-                <button key={a.to} className="topbar-action" onClick={() => { setActionsOpen(false); navigate(a.to) }}>
-                  <a.icon size={15} /> {a.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-        <Link to="/get-started" className="topbar-quick-btn" title="Get Started — the map of everything"><LayoutGrid size={15} /> Get Started</Link>
-        <Link to="/dashboard" className="topbar-quick-btn topbar-quick-icon" title="Dashboard"><Compass size={16} /></Link>
-        <AlertsBell inline />
+        {!affiliateOnly && (
+          <div className="topbar-actions" ref={actionsRef}>
+            <button className="topbar-new" onClick={() => setActionsOpen(o => !o)} title="Quick create">
+              <Plus size={15} /> New <ChevronDown size={13} />
+            </button>
+            {actionsOpen && (
+              <div className="topbar-actions-menu">
+                {QUICK_ACTIONS.map(a => (
+                  <button key={a.to} className="topbar-action" onClick={() => { setActionsOpen(false); navigate(a.to) }}>
+                    <a.icon size={15} /> {a.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        {!affiliateOnly && (
+          <>
+            <Link to="/get-started" className="topbar-quick-btn" title="Get Started — the map of everything"><LayoutGrid size={15} /> Get Started</Link>
+            <Link to="/dashboard" className="topbar-quick-btn topbar-quick-icon" title="Dashboard"><Compass size={16} /></Link>
+          </>
+        )}
+        {!affiliateOnly && <AlertsBell inline />}
       </div>
     </div>
   )

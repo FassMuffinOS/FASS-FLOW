@@ -1,18 +1,18 @@
 import { useNavigate } from 'react-router-dom'
 import { Megaphone, ArrowRight } from 'lucide-react'
 import Reveal from './Reveal'
-import { setPostAuthRedirect } from '../lib/postAuthRedirect'
 import './AffiliateBand.css'
 
-// Homepage CTA for the creator affiliate program — account-first: clicking
-// sends everyone straight into sign-up/sign-in (no pitch page in between),
-// and once they have an account they land directly on the affiliate
-// dashboard, which shows the pitch inline if they haven't joined yet.
+// Homepage CTA for the creator affiliate program — sends every visitor
+// (almost never an existing FASS Flow customer) into the dedicated external
+// application flow (AffiliateApply.jsx), which provisions a separate
+// affiliate-only account and hands back a live referral code instantly —
+// no waiting on review to start sharing. Existing customers still have the
+// zero-step self-serve join via /affiliates -> sign in -> dashboard.
 export default function AffiliateBand() {
   const navigate = useNavigate()
   function start() {
-    setPostAuthRedirect('/affiliates/dashboard')
-    navigate('/signin')
+    navigate('/affiliates/apply')
   }
   return (
     <section className="ab-band">
@@ -21,7 +21,7 @@ export default function AffiliateBand() {
           <div className="ab-icon"><Megaphone size={22} /></div>
           <div className="ab-copy">
             <h3>Earn 30% promoting FASS Flow + FASS Wallet</h3>
-            <p>Content creator? Get a referral link, share it, earn a commission on every signup it brings in — no minimum followers, no application.</p>
+            <p>Content creator? Apply in a minute, get your unique referral code instantly, and start earning 30% recurring commission — no follower minimum.</p>
           </div>
           <button className="btn-primary ab-cta" onClick={start}>
             Become an affiliate <ArrowRight size={16} />

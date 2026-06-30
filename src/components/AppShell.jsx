@@ -88,6 +88,21 @@ const NAV_GROUPS = [
 const ALL_ITEMS = NAV_GROUPS.flatMap(g => g.items)
 const ITEM_BY_NAME = Object.fromEntries(ALL_ITEMS.map(i => [i.name, i]))
 
+// Stripped nav for profiles.is_affiliate_only accounts — the external
+// "apply" flow (AffiliateApply.jsx) provisions a real auth.users row + a
+// real affiliates row so the dashboard, gamification, and recruiting all
+// work unmodified, but these accounts have no business/GovCon use for the
+// other ~30 nav items above. This is the UI-level half of the wall — the
+// route-level half (typing a GovCon URL directly bounces to
+// /affiliates/dashboard even though the sidebar here would never link to
+// it) lives in App.jsx's route guards, via src/lib/affiliateGate.js.
+const AFFILIATE_NAV_ITEMS = [
+  { name: 'Affiliate Dashboard', icon: Award, to: '/affiliates/dashboard', match: ['/affiliates/dashboard'] },
+  { name: 'Program Details', icon: Megaphone, to: '/affiliates', match: ['/affiliates'] },
+  { name: 'Settings', icon: SettingsIcon, to: '/settings', match: ['/settings'] },
+  { name: 'Support', icon: LifeBuoy, to: '/support', match: ['/support'] },
+]
+
 const PLAN_LABELS = {
   lite: 'Lite',
   starter: 'Core',
@@ -165,6 +180,9 @@ export default function AppShell({ children }) {
   const status = profile?.subscription_status
   const isActive = status === 'active'
   const isFreeTier = !isActive
+  // External affiliate-only account (see AffiliateApply.jsx /affiliates/apply)
+  // — render the stripped creator-only chrome instead of the full GovCon nav.
+  const affiliateOnly = !!profile?.is_affiliate_only
 
   // ── view config helpers ──
   const compact = cfg.compact && !menuOpen   // compact only on the docked desktop rail
@@ -244,7 +262,7 @@ export default function AppShell({ children }) {
         <button className="shell-burger" onClick={() => setMenuOpen(true)} aria-label="Open menu">
           <Menu size={22} />
         </button>
-        <Link to="/dashboard" className="shell-logo shell-logo-mobile">
+        <Link to={affiliateOnly ? '/affiliates/dashboard' : '/dashboard'} className="shell-logo shell-logo-mobile">
           <span className="shell-logo-icon">⬡</span>
           <span>FASS <strong>Flow</strong></span>
         </Link>
@@ -254,7 +272,7 @@ export default function AppShell({ children }) {
 
       <aside className={`shell-sidebar ${menuOpen ? 'shell-open' : ''} ${compact ? 'shell-compact' : ''}`}>
         <div className="shell-side-top">
-          <Link to="/dashboard" className="shell-logo">
+          <Link to={affiliateOnly ? '/affiliates/dashboard' : '/dashboard'} className="shell-logo">
             <span className="shell-logo-icon">⬡</span>
             <span className="shell-nav-text">FASS <strong>Flow</strong></span>
           </Link>
@@ -267,8 +285,9 @@ export default function AppShell({ children }) {
         </div>
 
         {/* Track switcher — the user's business identity; switching it flips
-            the view + guided path + AI framing in one move. */}
-        {!compact && (
+            the view + guided path + AI framing in one move. Not meaningful
+            for an affiliate-only account (no business/GovCon track at all). */}
+        {!compact && !affiliateOnly && (
           <div className="shell-track">
             <span className="shell-track-label">Track</span>
             <select className="shell-track-select" value={track} onChange={e => setTrack(e.target.value)}>
@@ -277,8 +296,9 @@ export default function AppShell({ children }) {
           </div>
         )}
 
-        {/* View switcher — hidden in compact rail (no room for chips) */}
-        {!compact && (
+        {/* View switcher — hidden in compact rail (no room for chips), and
+            for affiliate-only accounts (nothing to customize). */}
+        {!compact && !affiliateOnly && (
           <div className="shell-views">
             <button className={`shell-view-chip ${cfg.activeView === 'all' ? 'is-active' : ''}`} onClick={() => setActiveView('all')}>All</button>
             {cfg.views.map(v => (
@@ -289,7 +309,13 @@ export default function AppShell({ children }) {
         )}
 
         {/* View editor (rename + add/remove tools, max 7) */}
-        {editingObj && !compact ? (
+        {affiliateOnly ? (
+          <nav className="shell-nav">
+            <div className="shell-navgroup">
+              {AFFILIATE_NAV_ITEMS.map(renderItem)}
+            </div>
+          </nav>
+        ) : editingObj && !compact ? (
           <div className="shell-vieweditor">
             <input
               className="shell-view-name"
@@ -399,7 +425,9 @@ export default function AppShell({ children }) {
         )}
 
         <div className="shell-user">
-          {profile && (
+          {affiliateOnly ? (
+            <span className="shell-plan-badge plan-active">Creator Partner</span>
+          ) : profile && (
             <span className={`shell-plan-badge ${isActive ? 'plan-active' : 'plan-inactive'}`}>
               {PLAN_LABELS[plan] || plan || 'No plan'} · {isActive ? 'Active' : status || 'inactive'}
             </span>
@@ -412,13 +440,17 @@ export default function AppShell({ children }) {
       </aside>
 
       <div className="shell-content">
-        <TopBar items={ALL_ITEMS} userId={userId} />
+        <TopBar items={affiliateOnly ? AFFILIATE_NAV_ITEMS : ALL_ITEMS} userId={userId} affiliateOnly={affiliateOnly} />
         {children}
       </div>
 
-      {/* AlertsBell now lives in the TopBar as the inline health light. */}
-      {!location.pathname.startsWith('/messages') && <ChatDock userId={userId} />}
-      <BottomNav userId={userId} />
+      {/* AlertsBell now lives in the TopBar as the inline health light.
+          ChatDock and BottomNav are GovCon-product surfaces (proposals,
+          quick actions, mobile nav to /dashboard /network etc.) with
+          nothing relevant for an affiliate-only account — suppressed
+          entirely rather than partially adapted. */}
+      {!affiliateOnly && !location.pathname.startsWith('/messages') && <ChatDock userId={userId} />}
+      {!affiliateOnly && <BottomNav userId={userId} />}
       <InstallPrompt />
     </div>
   )

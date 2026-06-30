@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Megaphone, Loader2, RefreshCw, DollarSign, PlusCircle, Users } from 'lucide-react'
+import { Megaphone, Loader2, RefreshCw, DollarSign, PlusCircle, Users, CheckCircle2, XCircle, FileText } from 'lucide-react'
 import './AffiliateAdmin.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -26,7 +26,7 @@ export default function AffiliateAdmin() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [selected, setSelected] = useState(null)
-  const [detail, setDetail] = useState({ conversions: [], payouts: [], recruits: [] })
+  const [detail, setDetail] = useState({ conversions: [], payouts: [], recruits: [], application: null })
   const [detailLoading, setDetailLoading] = useState(false)
 
   const [convSource, setConvSource] = useState('masterclass')
@@ -37,6 +37,9 @@ export default function AffiliateAdmin() {
   const [payoutAmount, setPayoutAmount] = useState('')
   const [payoutNote, setPayoutNote] = useState('')
   const [paying, setPaying] = useState(false)
+
+  const [reviewNotes, setReviewNotes] = useState('')
+  const [reviewing, setReviewing] = useState(false)
 
   function rememberSecret(v) {
     setSecret(v)
@@ -78,7 +81,12 @@ export default function AffiliateAdmin() {
         headers: { 'X-Admin-Secret': secret },
       })
       const data = await res.json().catch(() => ({}))
-      setDetail({ conversions: data.conversions || [], payouts: data.payouts || [], recruits: data.recruits || [] })
+      setDetail({
+        conversions: data.conversions || [],
+        payouts: data.payouts || [],
+        recruits: data.recruits || [],
+        application: data.application || null,
+      })
     } catch (err) {
       console.error('AffiliateAdmin: failed to load detail', err)
     } finally {
@@ -92,7 +100,34 @@ export default function AffiliateAdmin() {
     setConvNote('')
     setPayoutAmount('')
     setPayoutNote('')
+    setReviewNotes('')
     loadDetail(a.user_id)
+  }
+
+  // Approve/reject is curation-only (see affiliates.py admin_review_application) —
+  // it never pauses the affiliate's ability to earn or share their link.
+  async function reviewApplication(status) {
+    if (!selected) return
+    setReviewing(true)
+    setError('')
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/affiliates/admin/applications/review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Secret': secret },
+        body: JSON.stringify({
+          user_id: selected.user_id,
+          status,
+          notes: reviewNotes.trim(),
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.detail || `Request failed (${res.status})`)
+      await Promise.all([loadDetail(selected.user_id), loadAffiliates()])
+    } catch (err) {
+      setError(err.message || 'Failed to update application')
+    } finally {
+      setReviewing(false)
+    }
   }
 
   async function logConversion(e) {
@@ -192,6 +227,12 @@ export default function AffiliateAdmin() {
                 <span className="afa-row-name">{a.company_name || a.full_name || a.code}</span>
                 <span className={`afa-row-status afa-status-${a.status}`}>{a.status}</span>
               </div>
+              {a.application && (
+                <div className="afa-row-meta">
+                  <FileText size={11} style={{ verticalAlign: 'text-bottom' }} /> application: <span className={`afa-row-status afa-status-${a.application.status}`}>{a.application.status || 'pending'}</span>
+                  {a.application.platform ? ` · ${a.application.platform}` : ''}
+                </div>
+              )}
               <div className="afa-row-meta">code: {a.code} · earned ${a.total_earned?.toFixed(2)} · paid ${a.total_paid?.toFixed(2)}</div>
               {a.recruited_by_name && <div className="afa-row-meta">recruited by {a.recruited_by_name}</div>}
               {a.recruit_count > 0 && (
@@ -218,6 +259,56 @@ export default function AffiliateAdmin() {
                   <DollarSign size={15} /> ${selected.balance_due?.toFixed(2)} due
                 </div>
               </div>
+
+              {detail.application && (
+                <div className="afa-application">
+                  <div className="afa-form-title">
+                    <FileText size={14} style={{ verticalAlign: 'text-bottom' }} /> Application
+                    <span className={`afa-row-status afa-status-${detail.application.status}`} style={{ marginLeft: 8 }}>
+                      {detail.application.status || 'pending'}
+                    </span>
+                  </div>
+                  <div className="afa-application-grid">
+                    {detail.application.email && <div><b>Email</b> {detail.application.email}</div>}
+                    {detail.application.platform && <div><b>Platform</b> {detail.application.platform}</div>}
+                    {detail.application.channel_url && (
+                      <div><b>Channel</b> <a href={detail.application.channel_url} target="_blank" rel="noreferrer">{detail.application.channel_url}</a></div>
+                    )}
+                    {detail.application.audience_size && <div><b>Audience</b> {detail.application.audience_size}</div>}
+                    {detail.application.why_join && <div><b>Why join</b> {detail.application.why_join}</div>}
+                    {detail.application.how_promote && <div><b>How they'll promote</b> {detail.application.how_promote}</div>}
+                    {detail.application.notes && <div><b>Review notes</b> {detail.application.notes}</div>}
+                  </div>
+                  <div className="afa-form-row" style={{ marginTop: 10 }}>
+                    <input
+                      placeholder="Review notes (optional)"
+                      value={reviewNotes}
+                      onChange={e => setReviewNotes(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      disabled={reviewing}
+                      onClick={() => reviewApplication('approved')}
+                    >
+                      {reviewing ? <Loader2 size={14} className="spin" /> : <CheckCircle2 size={14} />}
+                      Approve
+                    </button>
+                    <button
+                      type="button"
+                      className="afa-reject-btn"
+                      disabled={reviewing}
+                      onClick={() => reviewApplication('rejected')}
+                    >
+                      {reviewing ? <Loader2 size={14} className="spin" /> : <XCircle size={14} />}
+                      Reject
+                    </button>
+                  </div>
+                  <p className="afa-fine">
+                    Approve/reject is for curation only — it doesn't pause this creator's ability to earn or share their link.
+                  </p>
+                </div>
+              )}
 
               <form className="afa-form" onSubmit={logConversion}>
                 <div className="afa-form-title">Log a manual conversion</div>

@@ -1,0 +1,349 @@
+/* "Icy" application page — cool-blue gradient backdrop, frosted-glass
+   (backdrop-filter blur) card, faint crystalline shard accents. Distinct on
+   purpose from the rest of the app's navy/teal palette: this is a separate
+   funnel for people who aren't FASS Flow customers yet, and it should feel
+   like a different, slightly more special front door. */
+
+.afa-page {
+  position: relative;
+  min-height: 100vh;
+  padding: 56px 20px 64px;
+  background: radial-gradient(circle at 15% 10%, #1e3a5f 0%, #0b1b2e 45%, #060e18 100%);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.afa-shard {
+  position: absolute;
+  border-radius: 32px;
+  background: linear-gradient(135deg, rgba(173, 216, 255, 0.14), rgba(99, 179, 237, 0.03));
+  border: 1px solid rgba(173, 216, 255, 0.12);
+  filter: blur(0.5px);
+  pointer-events: none;
+}
+
+.afa-shard-1 {
+  width: 360px;
+  height: 360px;
+  top: -120px;
+  right: -100px;
+  transform: rotate(18deg);
+}
+
+.afa-shard-2 {
+  width: 220px;
+  height: 220px;
+  bottom: -80px;
+  left: -60px;
+  transform: rotate(-12deg);
+}
+
+.afa-shard-3 {
+  width: 140px;
+  height: 140px;
+  top: 40%;
+  right: 8%;
+  transform: rotate(30deg);
+  display: none;
+}
+
+@media (min-width: 1100px) {
+  .afa-shard-3 { display: block; }
+}
+
+.afa-shell {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  max-width: 1080px;
+  width: 100%;
+  align-items: start;
+}
+
+.afa-side {
+  color: #eaf4ff;
+  padding-top: 12px;
+}
+
+.afa-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #8ecbff;
+  background: rgba(142, 203, 255, 0.12);
+  border: 1px solid rgba(142, 203, 255, 0.3);
+  border-radius: 999px;
+  padding: 6px 12px;
+  margin-bottom: 18px;
+}
+
+.afa-title {
+  font-size: 2.1rem;
+  font-weight: 800;
+  line-height: 1.15;
+  margin: 0 0 14px;
+  background: linear-gradient(135deg, #ffffff, #bfe3ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.afa-sub {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(234, 244, 255, 0.78);
+  margin: 0 0 26px;
+  max-width: 440px;
+}
+
+.afa-why {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.afa-why li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.92rem;
+  color: rgba(234, 244, 255, 0.88);
+  line-height: 1.45;
+}
+
+.afa-why li svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #6fd6ff;
+}
+
+.afa-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(173, 216, 255, 0.22);
+  border-radius: 22px;
+  padding: 28px;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 20px 60px rgba(0, 20, 50, 0.45);
+}
+
+.afa-form-title {
+  margin: 0 0 18px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.afa-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.afa-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.afa-field span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(234, 244, 255, 0.75);
+}
+
+.afa-field span em {
+  font-style: normal;
+  font-weight: 400;
+  color: rgba(234, 244, 255, 0.45);
+}
+
+.afa-field input,
+.afa-field select,
+.afa-field textarea {
+  background: rgba(8, 22, 38, 0.55);
+  border: 1px solid rgba(173, 216, 255, 0.25);
+  border-radius: 10px;
+  color: #fff;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.afa-field input::placeholder,
+.afa-field textarea::placeholder {
+  color: rgba(234, 244, 255, 0.35);
+}
+
+.afa-field input:focus,
+.afa-field select:focus,
+.afa-field textarea:focus {
+  outline: none;
+  border-color: #6fd6ff;
+  box-shadow: 0 0 0 3px rgba(111, 214, 255, 0.18);
+}
+
+.afa-field-row {
+  display: flex;
+  gap: 14px;
+}
+
+.afa-error {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #ff9b9b;
+}
+
+.afa-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: linear-gradient(135deg, #4fc3ff, #2d8fe0);
+  color: #04141f;
+  font-weight: 700;
+  font-size: 0.94rem;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 18px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  margin-top: 6px;
+}
+
+.afa-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(79, 195, 255, 0.3);
+}
+
+.afa-submit:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.afa-fine {
+  margin: 4px 0 0;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: rgba(234, 244, 255, 0.45);
+}
+
+.afa-fine a {
+  color: #8ecbff;
+}
+
+.afa-success {
+  text-align: center;
+  padding: 12px 4px;
+}
+
+.afa-success-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+  border-radius: 16px;
+  background: rgba(111, 214, 255, 0.15);
+  border: 1px solid rgba(111, 214, 255, 0.35);
+  color: #6fd6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.afa-success h2 {
+  margin: 0 0 8px;
+  font-size: 1.3rem;
+  color: #fff;
+}
+
+.afa-success-sub {
+  margin: 0 0 20px;
+  font-size: 0.9rem;
+  color: rgba(234, 244, 255, 0.7);
+  line-height: 1.5;
+}
+
+.afa-link-box {
+  background: rgba(8, 22, 38, 0.55);
+  border: 1px solid rgba(173, 216, 255, 0.25);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 18px;
+  text-align: left;
+}
+
+.afa-link-label {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(234, 244, 255, 0.55);
+  margin-bottom: 8px;
+}
+
+.afa-link-row {
+  display: flex;
+  gap: 8px;
+}
+
+.afa-link-row input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(173, 216, 255, 0.2);
+  border-radius: 8px;
+  color: #fff;
+  padding: 9px 12px;
+  font-size: 0.85rem;
+}
+
+.afa-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  background: rgba(111, 214, 255, 0.12);
+  border: 1px solid rgba(111, 214, 255, 0.3);
+  color: #6fd6ff;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.spin {
+  animation: afa-spin 0.9s linear infinite;
+}
+
+@keyframes afa-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 880px) {
+  .afa-shell {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .afa-side { padding-top: 0; }
+  .afa-title { font-size: 1.7rem; }
+}
+
+@media (max-width: 540px) {
+  .afa-field-row { flex-direction: column; }
+  .afa-card { padding: 20px; }
+}

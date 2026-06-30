@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { isAffiliateAllowedPath, useAffiliateOnly } from './lib/affiliateGate'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
 import HomeBand from './components/HomeBand'
@@ -45,6 +46,7 @@ import Admin from './pages/Admin'
 import SecurityDashboard from './pages/SecurityDashboard'
 import BDPartnerAdmin from './pages/BDPartnerAdmin'
 import AffiliateProgram from './pages/AffiliateProgram'
+import AffiliateApply from './pages/AffiliateApply'
 import AffiliateDashboard from './pages/AffiliateDashboard'
 import AffiliateAdmin from './pages/AffiliateAdmin'
 import JoinNetwork from './pages/JoinNetwork'
@@ -110,17 +112,30 @@ function Landing() {
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
+  const location = useLocation()
+  const affiliateOnly = useAffiliateOnly(session)
   if (loading) return null
   if (!session) return <Navigate to="/signin" replace />
+  // Route-level wall: an affiliate-only account typing a GovCon URL directly
+  // gets bounced, not just left without a matching sidebar item. See
+  // src/lib/affiliateGate.js.
+  if (affiliateOnly === null) return null
+  if (affiliateOnly && !isAffiliateAllowedPath(location.pathname)) {
+    return <Navigate to="/affiliates/dashboard" replace />
+  }
   return <AppShell>{children}</AppShell>
 }
 
 // Authenticated but chrome-free — for the full-screen onboarding wizard,
-// which shouldn't render the sidebar it's about to set up.
+// which shouldn't render the sidebar it's about to set up. Always GovCon —
+// an affiliate-only account has no business to onboard, so it never applies.
 function AuthOnly({ children }) {
   const { session, loading } = useAuth()
+  const affiliateOnly = useAffiliateOnly(session)
   if (loading) return null
   if (!session) return <Navigate to="/signin" replace />
+  if (affiliateOnly === null) return null
+  if (affiliateOnly) return <Navigate to="/affiliates/dashboard" replace />
   return children
 }
 
@@ -134,8 +149,19 @@ function AuthOnly({ children }) {
 // logged-out visitors still get the public marketing chrome.
 function AuthAwarePage({ children }) {
   const { session, loading } = useAuth()
+  const location = useLocation()
+  const affiliateOnly = useAffiliateOnly(session)
   if (loading) return null
-  if (session) return <AppShell>{children}</AppShell>
+  if (session) {
+    if (affiliateOnly === null) return null
+    // /support and /affiliates are on the affiliate allow-list; /resize and
+    // /trust are GovCon-adjacent utilities an affiliate-only account has no
+    // use for, so those bounce same as any other GovCon route.
+    if (affiliateOnly && !isAffiliateAllowedPath(location.pathname)) {
+      return <Navigate to="/affiliates/dashboard" replace />
+    }
+    return <AppShell>{children}</AppShell>
+  }
   return <><Nav /><main>{children}</main><Footer /></>
 }
 
@@ -148,8 +174,14 @@ function AuthAwarePage({ children }) {
 // 10 nights, worksheets, and certificate live.
 function MasterclassRoute() {
   const { session, loading } = useAuth()
+  const affiliateOnly = useAffiliateOnly(session)
   if (loading) return null
-  if (session) return <Navigate to="/classroom" replace />
+  if (session) {
+    if (affiliateOnly === null) return null
+    // An affiliate-only account has no Classroom access (it isn't a GovCon
+    // customer) — send it to its own dashboard instead of /classroom.
+    return <Navigate to={affiliateOnly ? '/affiliates/dashboard' : '/classroom'} replace />
+  }
   return <><Nav /><main><Masterclass /></main><Footer /></>
 }
 
@@ -167,13 +199,14 @@ const API_BASE = import.meta.env.VITE_API_URL || ''
 
 function BDPartnerRoute() {
   const { session, loading } = useAuth()
+  const affiliateOnly = useAffiliateOnly(session)
   const [checking, setChecking] = useState(true)
   const [active, setActive] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     async function checkStatus() {
-      if (!session?.user?.id || !API_BASE) {
+      if (!session?.user?.id || !API_BASE || affiliateOnly) {
         if (!cancelled) setChecking(false)
         return
       }
@@ -191,10 +224,14 @@ function BDPartnerRoute() {
     }
     checkStatus()
     return () => { cancelled = true }
-  }, [session])
+  }, [session, affiliateOnly])
 
-  if (loading || (session && checking)) return null
+  if (loading || (session && affiliateOnly === null)) return null
   if (!session) return <><Nav /><main><BDPartner /></main><Footer /></>
+  // BD Partner ($500/mo white-glove service) is a GovCon product surface —
+  // an affiliate-only account has no client record and no use for it.
+  if (affiliateOnly) return <Navigate to="/affiliates/dashboard" replace />
+  if (checking) return null
   return <AppShell>{active ? <BDPartnerDashboard /> : <BDPartner />}</AppShell>
 }
 
@@ -264,6 +301,10 @@ function AppRoutes() {
           pitch + a "sign in to get your link" CTA; logged-in visitors can
           join on the spot. Uses AuthAwarePage chrome rules. */}
       <Route path="/affiliates" element={<AuthAwarePage><AffiliateProgram /></AuthAwarePage>} />
+
+      {/* External affiliate application — own full-bleed page, no Nav/Footer,
+          deliberately separate from SignIn.jsx (see AffiliateApply.jsx). */}
+      <Route path="/affiliates/apply" element={<AffiliateApply />} />
 
       {/* Auth routes — no Nav/Footer */}
       <Route path="/signin" element={<SignIn />} />

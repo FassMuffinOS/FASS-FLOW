@@ -146,6 +146,9 @@
 
 .afa-status-active { background: #e6f6f3; color: #0a5c4d; }
 .afa-status-paused { background: #fff6e0; color: #92660a; }
+.afa-status-pending { background: #eef2ff; color: #3730a3; }
+.afa-status-approved { background: #e6f6f3; color: #0a5c4d; }
+.afa-status-rejected { background: #fef2f2; color: #b91c1c; }
 
 .afa-row-meta {
   font-size: 0.74rem;
@@ -201,6 +204,52 @@
   font-weight: 800;
   color: var(--teal, #0a5c4d);
   white-space: nowrap;
+}
+
+.afa-application {
+  border: 1px solid var(--gray-200, #e5e7eb);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  background: var(--gray-50, #f7f8fa);
+}
+
+.afa-application-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.82rem;
+  color: var(--gray-600, #4b5563);
+}
+
+.afa-application-grid b {
+  font-weight: 700;
+  color: var(--gray-500, #6b7280);
+  margin-right: 4px;
+}
+
+.afa-reject-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.afa-reject-btn:hover:not(:disabled) { background: #fef2f2; }
+.afa-reject-btn:disabled { opacity: 0.6; cursor: default; }
+
+.afa-fine {
+  font-size: 0.74rem;
+  color: var(--gray-400, #6b7280);
+  margin: 8px 0 0;
+  line-height: 1.4;
 }
 
 .afa-form {

@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { getBusinessProfile } from '../lib/businessProfile'
 import { consumePostAuthRedirect } from '../lib/postAuthRedirect'
+import { fetchIsAffiliateOnly } from '../lib/affiliateGate'
 import { Loader } from 'lucide-react'
 import './SignIn.css'
 
@@ -69,6 +70,15 @@ export default function AuthCallback() {
       const redirect = consumePostAuthRedirect()
       if (redirect) {
         navigate(redirect, { replace: true })
+        return
+      }
+      // An affiliate-only account (e.g. resetting its password, or a magic
+      // link) has no business to onboard at all — route-level wall, same
+      // gate ProtectedRoute uses, applied here before the /start vs
+      // /onboarding vs /dashboard branching below.
+      const isAffiliateOnly = await fetchIsAffiliateOnly(session.user.id)
+      if (isAffiliateOnly) {
+        navigate('/affiliates/dashboard', { replace: true })
         return
       }
       try {
