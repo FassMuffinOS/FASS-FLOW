@@ -16,7 +16,7 @@ import { assembleProposal, assembledToHtml } from '../lib/assembleProposal'
 import { buildComplianceMatrix } from '../lib/complianceMatrix'
 import { buildDocxBlob } from '../lib/exportDocx'
 import { listReuseBlocks, createReuseBlock, markReuseBlockUsed, deleteReuseBlock, guessCategory } from '../lib/reuseLibrary'
-import { ensureDoc, listComments, addComment as apiAddComment, deleteComment as apiDeleteComment, listSectionState, setSectionApproved } from '../lib/proposalReview'
+import { ensureDoc, listComments, addComment as apiAddComment, deleteComment as apiDeleteComment, resolveComment as apiResolveComment, listSectionState, setSectionApproved } from '../lib/proposalReview'
 import useSeo from '../hooks/useSeo'
 import './ProposalEditor.css'
 
@@ -184,14 +184,14 @@ export default function ProposalEditor() {
   // Real AI drafting — replaces a section's placeholder with prose grounded
   // in the user's own past performance (draftSection's RAG). The returned
   // grounded_in passages become the section's source citations.
-  async function draftWithAI(section) {
+  async function draftWithAI(section, guidance = '') {
     if (!aiEnabled()) return
     setDraftingId(section.id)
     setDraftError(null)
     try {
       const res = await draftSection({
         sectionName: section.heading,
-        sectionDescription: '',
+        sectionDescription: guidance, // reviewer notes steer the re-draft
         solicitationSummary: baseTitle,
         profile,
         pastPerformance: profile?.past_performance || [],
@@ -318,6 +318,24 @@ export default function ProposalEditor() {
     const key = section.heading
     setComments(prev => ({ ...prev, [key]: (prev[key] || []).filter(c => c.id !== commentId) }))
     if (documentId && !String(commentId).startsWith('local-')) apiDeleteComment(userId, commentId)
+  }
+
+  function toggleResolve(section, comment) {
+    const key = section.heading
+    const next = comment.status === 'resolved' ? 'open' : 'resolved'
+    setComments(prev => ({
+      ...prev,
+      [key]: (prev[key] || []).map(c => c.id === comment.id ? { ...c, status: next } : c),
+    }))
+    if (documentId && !String(comment.id).startsWith('local-')) apiResolveComment(userId, comment.id, next)
+  }
+
+  // "Re-draft from notes" — feed a section's open comments into the AI as
+  // guidance so the regenerated draft actually addresses the feedback.
+  function redraftFromNotes(section) {
+    const open = (comments[section.heading] || []).filter(c => c.status !== 'resolved')
+    if (!open.length) return
+    draftWithAI(section, 'Revise to address this reviewer feedback: ' + open.map(c => c.body).join('; '))
   }
 
   const total = doc.sections.length
@@ -530,11 +548,17 @@ export default function ProposalEditor() {
                         <BookmarkPlus size={13} /> {librarySaving === s.id ? 'Saving…' : 'Save to library'}
                       </button>
                       {(comments[s.heading] || []).map(c => (
-                        <div className="pe-comment" key={c.id}>
+                        <div className={`pe-comment ${c.status === 'resolved' ? 'is-resolved' : ''}`} key={c.id}>
+                          <button className="pe-comment-resolve" onClick={() => toggleResolve(s, c)} title={c.status === 'resolved' ? 'Reopen' : 'Resolve'}><Check size={11} /></button>
                           <span>{c.body}</span>
                           <button className="pe-comment-del" onClick={() => removeComment(s, c.id)} aria-label="Delete note"><X size={11} /></button>
                         </div>
                       ))}
+                      {aiEnabled() && (comments[s.heading] || []).some(c => c.status !== 'resolved') && (
+                        <button className="pe-aidraft pe-redraft" onClick={() => redraftFromNotes(s)} disabled={draftingId === s.id}>
+                          {draftingId === s.id ? <Loader2 size={13} className="pe-spin" /> : <Sparkles size={13} />} Re-draft from notes
+                        </button>
+                      )}
                       <div className="pe-comment-add">
                         <input
                           value={commentDraft}

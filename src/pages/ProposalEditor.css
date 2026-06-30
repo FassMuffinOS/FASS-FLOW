@@ -261,6 +261,12 @@
 .pe-comment span { flex: 1; }
 .pe-comment-del { flex: none; background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 1px; }
 .pe-comment-del:hover { color: #DC2626; }
+.pe-comment-resolve { flex: none; background: none; border: 1px solid var(--border); border-radius: 50%; width: 16px; height: 16px; display: grid; place-items: center; cursor: pointer; color: var(--text-muted); padding: 0; }
+.pe-comment-resolve:hover { border-color: var(--accent); color: var(--accent); }
+.pe-comment.is-resolved { opacity: .55; }
+.pe-comment.is-resolved span { text-decoration: line-through; }
+.pe-comment.is-resolved .pe-comment-resolve { background: var(--accent); border-color: var(--accent); color: #fff; }
+.pe-redraft { margin-top: 6px; }
 .pe-comment-add { display: flex; gap: 6px; }
 .pe-comment-add input {
   flex: 1; min-width: 0;
