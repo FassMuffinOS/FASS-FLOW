@@ -13,6 +13,7 @@ import {
 import ChatDock from './ChatDock'
 import BottomNav from './BottomNav'
 import TopBar from './TopBar'
+import InstallPrompt from './InstallPrompt'
 import { loadSidebarConfig, saveSidebarConfig, newViewId, MAX_TOOLS_PER_VIEW } from '../lib/sidebarViews'
 import { getTrack, setTrack, TRACKS, TRACK_TO_VIEW, TRACK_EVENT } from '../lib/track'
 import './AppShell.css'
@@ -417,6 +418,7 @@ export default function AppShell({ children }) {
       {/* AlertsBell now lives in the TopBar as the inline health light. */}
       {!location.pathname.startsWith('/messages') && <ChatDock userId={userId} />}
       <BottomNav userId={userId} />
+      <InstallPrompt />
     </div>
   )
 }
