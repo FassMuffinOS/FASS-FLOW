@@ -4,9 +4,8 @@ import { Check, Zap, Lock } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Reveal from './Reveal'
 import useSeo from '../hooks/useSeo'
+import { apiFetch } from '../lib/apiClient'
 import './Pricing.css'
-
-const API_BASE = import.meta.env.VITE_API_URL || ''
 
 // Offer architecture: one platform, three lanes — Win Work (GovCon),
 // Execute Work (field/job tools), Grow Customers (Wallet/loyalty). Wallet
@@ -139,7 +138,7 @@ export default function Pricing() {
     setError('')
     setCheckingOut(plan.key)
     try {
-      const res = await fetch(`${API_BASE}/api/v1/subscriptions/checkout`, {
+      const res = await apiFetch('/api/v1/subscriptions/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan: plan.key, user_id: session.user.id, email: session.user.email }),

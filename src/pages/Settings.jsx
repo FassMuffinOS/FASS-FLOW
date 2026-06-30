@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { TRACKS } from '../lib/track'
 import { apiFetch } from '../lib/apiClient'
-import { getCreditBalance } from '../lib/credits'
+import { getCreditBalance, listCreditPacks, startCreditCheckout } from '../lib/credits'
 import {
   getPreferences, updatePreferences, changeEmail, changePassword,
   requestDataExport, requestAccountDeletion, listAccountRequests,
@@ -68,7 +68,7 @@ export default function SettingsPage() {
             {active === 'general' && <GeneralSection userId={userId} />}
             {active === 'account' && <AccountSection userId={userId} email={email} />}
             {active === 'notifications' && <NotificationsSection userId={userId} />}
-            {active === 'billing' && <BillingSection userId={userId} />}
+            {active === 'billing' && <BillingSection userId={userId} email={email} />}
             {active === 'connectors' && <ConnectorsSection userId={userId} />}
             {active === 'privacy' && <PrivacySection userId={userId} />}
           </div>
@@ -305,11 +305,14 @@ function NotificationsSection({ userId }) {
 }
 
 // ── Billing & AI Credits ──
-function BillingSection({ userId }) {
+function BillingSection({ userId, email }) {
   const [profile, setProfile] = useState(null)
   const [balance, setBalance] = useState(null)
+  const [packs, setPacks] = useState([])
   const [loading, setLoading] = useState(true)
   const [portalLoading, setPortalLoading] = useState(false)
+  const [buyingPack, setBuyingPack] = useState(null)
+  const [justBought, setJustBought] = useState(false)
 
   useEffect(() => {
     if (!userId || !API_BASE) { setLoading(false); return }
@@ -317,20 +320,46 @@ function BillingSection({ userId }) {
     Promise.all([
       apiFetch(`/api/v1/users/${userId}/profile`).then(res => res.ok ? res.json() : null).catch(() => null),
       getCreditBalance(userId),
-    ]).then(([p, b]) => {
+      listCreditPacks(),
+    ]).then(([p, b, packList]) => {
       if (cancelled) return
       setProfile(p)
       setBalance(b)
+      setPacks(packList)
       setLoading(false)
     })
     return () => { cancelled = true }
   }, [userId])
+
+  useEffect(() => {
+    // Return trip from credits.py's /checkout success_url. Pure
+    // presentation — the balance already came back fresh from the effect
+    // above, this just confirms the purchase landed and tidies the URL so
+    // a refresh doesn't re-show the banner.
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('credits') === 'success') {
+      setJustBought(true)
+      params.delete('credits')
+      const rest = params.toString()
+      window.history.replaceState({}, '', `${window.location.pathname}${rest ? `?${rest}` : ''}`)
+    }
+  }, [])
 
   async function openPortal() {
     setPortalLoading(true)
     const url = await getBillingPortalUrl(userId)
     setPortalLoading(false)
     if (url) window.location.href = url
+  }
+
+  async function buyPack(priceId) {
+    setBuyingPack(priceId)
+    const url = await startCreditCheckout(priceId, userId, email)
+    if (url) {
+      window.location.href = url
+      return
+    }
+    setBuyingPack(null)
   }
 
   if (loading) return <SectionLoading />
@@ -355,10 +384,32 @@ function BillingSection({ userId }) {
       {!profile?.stripe_customer_id && <p className="set-row-desc set-billing-note">No billing account yet — subscribe on the Pricing page to manage billing here.</p>}
 
       <h3 className="set-subhead">AI Credits</h3>
+      {justBought && <p className="set-row-desc set-credits-success"><Check size={13} /> Credits added — thanks!</p>}
       <Row title="Balance" desc="1 credit per AI-drafted proposal section.">
         <span className="set-credit-balance">{balance == null ? '—' : balance}</span>
       </Row>
-      <p className="set-row-desc">Need more? Reach out on the Support page — refills are honored honor-system during beta.</p>
+
+      {packs.length > 0 ? (
+        <div className="set-credit-packs">
+          <p className="set-row-desc">Buy more — bigger packs come with a bonus, no subscription required.</p>
+          <div className="set-pack-grid">
+            {packs.map(pack => (
+              <button
+                key={pack.price_id}
+                className="set-pack-card"
+                onClick={() => buyPack(pack.price_id)}
+                disabled={buyingPack !== null}
+              >
+                <span className="set-pack-price">{pack.amount_display}</span>
+                <span className="set-pack-credits">{pack.credits.toLocaleString()} credits</span>
+                {buyingPack === pack.price_id && <span className="set-pack-loading">Starting checkout…</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <p className="set-row-desc">Need more? Reach out on the Support page — refills are honored honor-system during beta.</p>
+      )}
     </div>
   )
 }
