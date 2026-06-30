@@ -48,7 +48,7 @@ export function scopeTakeoff({ scopeText, title, agency, naicsCode, userId }) {
 
 // RAG-grounded section draft: backend ranks the user's past-performance
 // entries by relevance and only feeds the LLM the ones that matched.
-export function draftSection({ sectionName, sectionDescription, solicitationSummary, profile, pastPerformance }) {
+export function draftSection({ sectionName, sectionDescription, solicitationSummary, profile, pastPerformance, userId }) {
   return post('/draft-section', {
     section_name: sectionName,
     section_description: sectionDescription || '',
@@ -57,6 +57,7 @@ export function draftSection({ sectionName, sectionDescription, solicitationSumm
     core_competencies: profile?.core_competencies || '',
     differentiators: profile?.differentiators || '',
     past_performance: pastPerformance || [],
+    user_id: userId || null, // when present, the draft costs 1 AI credit
   })
 }
 

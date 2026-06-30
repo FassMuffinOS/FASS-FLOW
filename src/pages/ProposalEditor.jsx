@@ -17,6 +17,7 @@ import { buildComplianceMatrix } from '../lib/complianceMatrix'
 import { buildDocxBlob } from '../lib/exportDocx'
 import { listReuseBlocks, createReuseBlock, markReuseBlockUsed, deleteReuseBlock, guessCategory } from '../lib/reuseLibrary'
 import { ensureDoc, listComments, addComment as apiAddComment, deleteComment as apiDeleteComment, resolveComment as apiResolveComment, listSectionState, setSectionApproved } from '../lib/proposalReview'
+import { getCreditBalance } from '../lib/credits'
 import useSeo from '../hooks/useSeo'
 import './ProposalEditor.css'
 
@@ -56,6 +57,16 @@ export default function ProposalEditor() {
   const [citations, setCitations] = useState({})  // sectionId -> grounded passages
   const [draftingId, setDraftingId] = useState(null)
   const [draftError, setDraftError] = useState(null)
+  const [credits, setCredits] = useState(null)    // AI-credit balance (null = unknown)
+  const [showRefill, setShowRefill] = useState(false)
+
+  // Load the AI-credit balance so the editor can show it + gate drafting.
+  useEffect(() => {
+    if (!userId) return
+    let cancelled = false
+    getCreditBalance(userId).then(b => { if (!cancelled && b !== null) setCredits(b) })
+    return () => { cancelled = true }
+  }, [userId])
 
   const doc = useMemo(
     () => assembleProposal(parsed, outline, { title: baseTitle, drafts }),
@@ -184,8 +195,9 @@ export default function ProposalEditor() {
   // Real AI drafting — replaces a section's placeholder with prose grounded
   // in the user's own past performance (draftSection's RAG). The returned
   // grounded_in passages become the section's source citations.
+  // Returns true on success, false on any failure (so draftAll can stop).
   async function draftWithAI(section, guidance = '') {
-    if (!aiEnabled()) return
+    if (!aiEnabled()) return false
     setDraftingId(section.id)
     setDraftError(null)
     try {
@@ -195,22 +207,36 @@ export default function ProposalEditor() {
         solicitationSummary: baseTitle,
         profile,
         pastPerformance: profile?.past_performance || [],
+        userId, // metered: each draft costs 1 AI credit
       })
       if (res?.draft) {
         const html = res.draft.split(/\n{2,}/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('')
         setDrafts(prev => ({ ...prev, [section.id]: html }))
         setCitations(prev => ({ ...prev, [section.id]: res.grounded_in || [] }))
       }
+      if (typeof res?.remaining_credits === 'number') setCredits(res.remaining_credits)
+      return true
     } catch (e) {
-      setDraftError(e.message || 'Draft failed — the backend may not have an AI provider key configured.')
+      // 402 from the backend surfaces as an "out of credits" message → refill.
+      if (/credit/i.test(e.message || '')) {
+        setCredits(0)
+        setShowRefill(true)
+      } else {
+        setDraftError(e.message || 'Draft failed — the backend may not have an AI provider key configured.')
+      }
+      return false
     } finally {
       setDraftingId(null)
     }
   }
 
   async function draftAll() {
+    if (credits !== null && credits <= 0) { setShowRefill(true); return }
     for (const s of doc.sections) {
-      if (!drafts[s.id]) await draftWithAI(s)   // sequential — don't hammer the LLM
+      if (!drafts[s.id]) {
+        const ok = await draftWithAI(s)   // sequential — don't hammer the LLM
+        if (!ok) break                    // stop on first failure (e.g. out of credits)
+      }
     }
   }
 
@@ -371,6 +397,11 @@ export default function ProposalEditor() {
             {reviewedCount}/{total} reviewed
           </span>
 
+          {aiEnabled() && credits !== null && (
+            <span className={`pe-credits ${credits <= 0 ? 'is-empty' : ''}`} title="AI credits — each draft costs 1">
+              <Sparkles size={12} /> {credits} {credits === 1 ? 'credit' : 'credits'}
+            </span>
+          )}
           {aiEnabled() && (
             <button className="fx-btn fx-btn-ghost" onClick={draftAll} disabled={draftingId !== null} title="Draft every section from your past performance">
               {draftingId !== null ? <Loader2 size={15} className="pe-spin" /> : <Sparkles size={15} />} Draft all with AI
@@ -578,6 +609,24 @@ export default function ProposalEditor() {
           )}
         </aside>
       </div>
+
+      {showRefill && (
+        <div className="pe-modal-scrim" onClick={() => setShowRefill(false)}>
+          <div className="pe-modal" onClick={e => e.stopPropagation()}>
+            <button className="pe-modal-close" onClick={() => setShowRefill(false)} aria-label="Close"><X size={16} /></button>
+            <h2 className="pe-modal-title">You're out of AI credits</h2>
+            <p className="pe-modal-sub">Each AI draft (and re-draft) uses one credit. Your work so far is saved — top up to keep drafting.</p>
+            <div className="pe-check ok" style={{ marginTop: 16 }}>
+              <Sparkles size={16} />
+              <span>Refills are honor-system during beta: send a tip on the Support page, email <strong>admin@fass.systems</strong>, and we'll top up your balance.</span>
+            </div>
+            <div className="pe-modal-actions" style={{ marginTop: 18 }}>
+              <button className="fx-btn fx-btn-ghost" onClick={() => setShowRefill(false)}>Not now</button>
+              <Link className="fx-btn fx-btn-primary" to="/support" style={{ textDecoration: 'none' }}>Get more credits</Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {preflightOpen && (() => {
         const totalPages = doc.sections.reduce((a, s) => a + (s.pageEstimate || 0), 0)

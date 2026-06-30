@@ -417,6 +417,7 @@ export default function Fill({ embedded = false } = {}) {
         solicitationSummary: aiAnalysis?.fields?.plain_summary || activeDoc.title,
         profile,
         pastPerformance: profile?.past_performance || [],
+        userId: session?.user?.id, // metered: 1 AI credit per draft
       })
       setDrafts(prev => ({ ...prev, [item.id]: result }))
     } catch (e) {

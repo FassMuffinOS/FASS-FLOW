@@ -85,6 +85,15 @@
 .pe-modal-note { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 18px; line-height: 1.5; }
 .pe-modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
 
+/* AI credits pill */
+.pe-credits {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.76rem; font-weight: 700; white-space: nowrap;
+  color: var(--accent-hover); background: var(--accent-tint);
+  border-radius: var(--radius-pill); padding: 5px 11px;
+}
+.pe-credits.is-empty { color: #B91C1C; background: #FEF2F2; }
+
 /* Real AI drafting */
 .pe-spin { animation: pe-spin 0.8s linear infinite; }
 @keyframes pe-spin { to { transform: rotate(360deg); } }
