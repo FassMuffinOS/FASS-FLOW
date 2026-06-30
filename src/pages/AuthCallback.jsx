@@ -58,11 +58,11 @@ export default function AuthCallback() {
       }
       try {
         const profile = await getBusinessProfile(session.user.id)
-        // With a business set up, land on the Get-Started hub (the guided
-        // map of where you are in the contract lifecycle) rather than the
-        // dense Dashboard — first thing everyone sees. No profile yet still
-        // goes to the /start wizard, which routes back into the hub after.
-        navigate(profile ? '/get-started' : '/start', { replace: true })
+        // Returning users (business set up) land on the Get-Started hub.
+        // Brand-new users go through the 3-screen onboarding wizard, which
+        // initializes their Passport, picks their track, and sets their
+        // view + AI before dropping them into the hub.
+        navigate(profile ? '/get-started' : '/onboarding', { replace: true })
       } catch {
         // If the profile lookup itself fails (e.g. backend hiccup), don't
         // strand a successfully-authenticated user — send them to the

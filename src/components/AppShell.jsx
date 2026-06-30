@@ -14,6 +14,7 @@ import AlertsBell from './AlertsBell'
 import ChatDock from './ChatDock'
 import BottomNav from './BottomNav'
 import { loadSidebarConfig, saveSidebarConfig, newViewId, MAX_TOOLS_PER_VIEW } from '../lib/sidebarViews'
+import { getTrack, setTrack, TRACKS, TRACK_TO_VIEW, TRACK_EVENT } from '../lib/track'
 import './AppShell.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -106,6 +107,20 @@ export default function AppShell({ children }) {
   const [cfg, setCfg] = useState(() => loadSidebarConfig())
   const [editingView, setEditingView] = useState(null)
   useEffect(() => { saveSidebarConfig(cfg) }, [cfg])
+
+  // The user's track is the source of truth. Switching it (here or from the
+  // dashboard/onboarding) flips the sidebar view to match. One listener keeps
+  // every surface in sync without prop-drilling.
+  const [track, setTrackState] = useState(() => getTrack())
+  useEffect(() => {
+    const onChange = e => {
+      const id = e.detail || getTrack()
+      setTrackState(id)
+      setCfg(c => ({ ...c, activeView: TRACK_TO_VIEW[id] || c.activeView }))
+    }
+    window.addEventListener(TRACK_EVENT, onChange)
+    return () => window.removeEventListener(TRACK_EVENT, onChange)
+  }, [])
 
   // Close the mobile drawer whenever the route changes.
   useEffect(() => { setMenuOpen(false) }, [location.pathname])
@@ -247,6 +262,17 @@ export default function AppShell({ children }) {
             <X size={18} />
           </button>
         </div>
+
+        {/* Track switcher — the user's business identity; switching it flips
+            the view + guided path + AI framing in one move. */}
+        {!compact && (
+          <div className="shell-track">
+            <span className="shell-track-label">Track</span>
+            <select className="shell-track-select" value={track} onChange={e => setTrack(e.target.value)}>
+              {TRACKS.map(t => <option key={t.id} value={t.id}>{t.short}</option>)}
+            </select>
+          </div>
+        )}
 
         {/* View switcher — hidden in compact rail (no room for chips) */}
         {!compact && (

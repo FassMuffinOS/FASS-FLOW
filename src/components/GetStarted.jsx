@@ -6,10 +6,10 @@ import {
   Check, ArrowRight, IdCard, Radar, ClipboardCheck, ClipboardList, Kanban,
   Calculator, Send, Camera, Rocket, BookOpen, X,
 } from 'lucide-react'
+import { getTrack, setTrack, TRACK_EVENT } from '../lib/track'
 import './GetStarted.css'
 
 const DISMISS = 'fass_getstarted_dismissed'
-const TRACK_KEY = 'fass_track'
 const MANUAL_KEY = 'fass_track_manual' // steps with no data signal, checked by hand
 
 // The guided paths. Each track is an ordered set of steps; a step with a
@@ -61,9 +61,16 @@ export default function GetStarted() {
   const navigate = useNavigate()
   const userId = session?.user?.id
   const [signals, setSignals] = useState(null)
-  const [trackId, setTrackId] = useState(() => localStorage.getItem(TRACK_KEY) || 'govcon')
+  const [trackId, setTrackId] = useState(() => getTrack())
   const [manual, setManual] = useState(loadManual)
   const [dismissed, setDismissed] = useState(() => localStorage.getItem(DISMISS) === '1')
+
+  // Stay in sync when the track is switched from the sidebar or onboarding.
+  useEffect(() => {
+    const onChange = e => setTrackId(e.detail || getTrack())
+    window.addEventListener(TRACK_EVENT, onChange)
+    return () => window.removeEventListener(TRACK_EVENT, onChange)
+  }, [])
 
   useEffect(() => {
     if (!userId) return
@@ -108,7 +115,7 @@ export default function GetStarted() {
 
   function chooseTrack(id) {
     setTrackId(id)
-    try { localStorage.setItem(TRACK_KEY, id) } catch { /* ignore */ }
+    setTrack(id) // persists + broadcasts so the sidebar view + AI follow
   }
   function toggleManual(step) {
     if (step.signal) return // data-backed steps aren't hand-checkable

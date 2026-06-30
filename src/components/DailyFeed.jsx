@@ -4,6 +4,7 @@ import { Sparkles, ArrowRight, CheckCircle2, MessageCircleQuestion, Loader2 } fr
 import { useAuth } from '../context/AuthContext'
 import { fetchDailyFeed, fetchDailyBrief } from '../lib/dailyFeed'
 import { askChiefOfStaff } from '../lib/chiefOfStaff'
+import { getTrack, trackById } from '../lib/track'
 import './DailyFeed.css'
 
 const PROMPT_CHIPS = ['I need money', 'What should I focus on today?', 'Help me grow']
@@ -73,7 +74,10 @@ export default function DailyFeed() {
     setAskError('')
     setAnswer(null)
     try {
-      const result = await askChiefOfStaff(session.user.id, text, items.map(i => i.text))
+      // Lead the context with the user's track so the AI frames its answer
+      // for their kind of business (govcon vs commercial vs just starting).
+      const trackContext = `This business focuses on ${trackById(getTrack()).ai}.`
+      const result = await askChiefOfStaff(session.user.id, text, [trackContext, ...items.map(i => i.text)])
       setAnswer(result.answer)
     } catch (e) {
       setAskError(e.message || 'Could not get an answer right now')

@@ -26,6 +26,7 @@ import SignIn from './pages/SignIn'
 import AuthCallback from './pages/AuthCallback'
 import Dashboard from './pages/Dashboard'
 import GetStartedHub from './pages/GetStartedHub'
+import Onboarding from './pages/Onboarding'
 import Wardog from './pages/Wardog'
 import Read from './pages/Read'
 import OpportunityWorkspace from './pages/OpportunityWorkspace'
@@ -109,6 +110,15 @@ function ProtectedRoute({ children }) {
   if (loading) return null
   if (!session) return <Navigate to="/signin" replace />
   return <AppShell>{children}</AppShell>
+}
+
+// Authenticated but chrome-free — for the full-screen onboarding wizard,
+// which shouldn't render the sidebar it's about to set up.
+function AuthOnly({ children }) {
+  const { session, loading } = useAuth()
+  if (loading) return null
+  if (!session) return <Navigate to="/signin" replace />
+  return children
 }
 
 // Support / BD Partner are sales pages a logged-out visitor can land on
@@ -277,6 +287,9 @@ function AppRoutes() {
       } />
       <Route path="/get-started" element={
         <ProtectedRoute><GetStartedHub /></ProtectedRoute>
+      } />
+      <Route path="/onboarding" element={
+        <AuthOnly><Onboarding /></AuthOnly>
       } />
       <Route path="/wardog" element={
         <ProtectedRoute><Wardog /></ProtectedRoute>
