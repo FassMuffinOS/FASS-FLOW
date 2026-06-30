@@ -16,8 +16,9 @@ import { assembleProposal, assembledToHtml } from '../lib/assembleProposal'
 import { buildComplianceMatrix } from '../lib/complianceMatrix'
 import { buildDocxBlob } from '../lib/exportDocx'
 import { listReuseBlocks, createReuseBlock, markReuseBlockUsed, deleteReuseBlock, guessCategory } from '../lib/reuseLibrary'
-import { ensureDoc, listComments, addComment as apiAddComment, deleteComment as apiDeleteComment, resolveComment as apiResolveComment, listSectionState, setSectionApproved } from '../lib/proposalReview'
+import { ensureDoc, listComments, addComment as apiAddComment, deleteComment as apiDeleteComment, resolveComment as apiResolveComment, listSectionState, setSectionApproved, listMyDocs, saveDocContent } from '../lib/proposalReview'
 import { getCreditBalance } from '../lib/credits'
+import { buildTemplateDoc } from '../lib/proposalTemplates'
 import useSeo from '../hooks/useSeo'
 import './ProposalEditor.css'
 
@@ -43,9 +44,13 @@ export default function ProposalEditor() {
   const { session } = useAuth()
   const userId = session?.user?.id
 
-  // Three ways in: an industry template (from the Templates gallery), a real
-  // parsed solicitation (from FASS FILL), or the built-in sample.
-  const templateDoc = location.state?.template || null
+  // Ways in: an industry template (from the gallery or a saved template-based
+  // doc reopened via proposal_id), a real parsed solicitation (FASS FILL), or
+  // the built-in sample. A saved template doc is rebuilt from its proposal_id
+  // so its structure/TOC are correct even after a reload.
+  const stateProposalId = location.state?.proposalId || ''
+  const templateDoc = location.state?.template
+    || (stateProposalId.startsWith('template-') ? buildTemplateDoc(stateProposalId.replace('template-', '')) : null)
   const { parsed, outline, baseTitle } = useMemo(() => {
     if (templateDoc) return { parsed: null, outline: null, baseTitle: templateDoc.title }
     const p = location.state?.parsed || parseSolicitation(SAMPLE)
@@ -62,6 +67,18 @@ export default function ProposalEditor() {
   const [draftError, setDraftError] = useState(null)
   const [credits, setCredits] = useState(null)    // AI-credit balance (null = unknown)
   const [showRefill, setShowRefill] = useState(false)
+  const [savedContent, setSavedContent] = useState(null) // persisted editor JSON
+  const [saveStatus, setSaveStatus] = useState('')        // '' | 'saving' | 'saved'
+  const [myDocs, setMyDocs] = useState([])                // saved drafts for the switcher
+  const [switchOpen, setSwitchOpen] = useState(false)
+
+  // Load the user's saved drafts for the solicitation switcher.
+  useEffect(() => {
+    if (!userId) return
+    let cancelled = false
+    listMyDocs(userId).then(d => { if (!cancelled) setMyDocs(d) })
+    return () => { cancelled = true }
+  }, [userId])
 
   // Load the AI-credit balance so the editor can show it + gate drafting.
   useEffect(() => {
@@ -112,6 +129,7 @@ export default function ProposalEditor() {
     ensureDoc(userId, { proposalId, title: baseTitle }).then(async d => {
       if (cancelled || !d?.id) return
       setDocumentId(d.id)
+      if (d.content) setSavedContent(d.content)  // restore the persisted draft body
       const [serverComments, states] = await Promise.all([
         listComments(userId, d.id),
         listSectionState(userId, d.id),
@@ -168,10 +186,32 @@ export default function ProposalEditor() {
     editable: true,
   })
 
-  // Reset content if the assembled doc changes (new solicitation).
+  // Set the editor content: prefer a persisted draft body on (re)load; once
+  // the user starts AI-drafting (drafts populated), reflect the assembled doc.
   useEffect(() => {
-    if (editor) editor.commands.setContent(assembledToHtml(doc))
-  }, [editor, doc])
+    if (!editor) return
+    if (savedContent && Object.keys(drafts).length === 0) {
+      editor.commands.setContent(savedContent)
+    } else {
+      editor.commands.setContent(assembledToHtml(doc))
+    }
+  }, [editor, doc, savedContent])
+
+  async function saveDraft() {
+    if (!editor || !documentId) return
+    setSaveStatus('saving')
+    const ok = await saveDocContent(userId, documentId, {
+      content: editor.getJSON(),
+      title: doc.title,
+      format: doc.format,
+    })
+    setSaveStatus(ok ? 'saved' : '')
+    if (ok) {
+      setSavedContent(editor.getJSON())
+      listMyDocs(userId).then(setMyDocs)
+      setTimeout(() => setSaveStatus(''), 2000)
+    }
+  }
 
   // Scroll the editor to the Nth section heading (index-based, robust to
   // TipTap not preserving custom heading attributes).
@@ -386,7 +426,30 @@ export default function ProposalEditor() {
       {/* Header */}
       <header className="pe-head">
         <div className="pe-head-main">
-          <span className="fx-eyebrow">Proposal Editor</span>
+          <div className="pe-eyebrow-row">
+            <span className="fx-eyebrow">Proposal Editor</span>
+            {myDocs.length > 0 && (
+              <div className="pe-switch">
+                <button className="pe-switch-btn" onClick={() => setSwitchOpen(o => !o)}>
+                  Switch solicitation <ChevronDown size={13} />
+                </button>
+                {switchOpen && (
+                  <div className="pe-switch-menu" onMouseLeave={() => setSwitchOpen(false)}>
+                    {myDocs.map(d => (
+                      <button
+                        key={d.id}
+                        className="pe-switch-item"
+                        onClick={() => { setSwitchOpen(false); navigate('/proposal-editor', { state: { proposalId: d.proposal_id, title: d.title } }) }}
+                      >
+                        <span className="pe-switch-title">{d.title || d.proposal_id}</span>
+                        <span className="pe-switch-meta">{new Date(d.updated_at).toLocaleDateString()}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
           <h1>{doc.title}</h1>
           <div className="pe-chips">
             {fmtChips.map((c, i) => {
@@ -431,6 +494,10 @@ export default function ProposalEditor() {
               </div>
             )}
           </div>
+
+          <button className="fx-btn fx-btn-ghost" onClick={saveDraft} disabled={saveStatus === 'saving' || !documentId}>
+            <Check size={15} /> {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? 'Saved' : 'Save draft'}
+          </button>
 
           <button className="fx-btn fx-btn-primary" onClick={() => setPreflightOpen(true)}>
             <Download size={15} /> Export .docx

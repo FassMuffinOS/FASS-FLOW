@@ -21,6 +21,32 @@ export async function ensureDoc(userId, { proposalId = 'sample', title } = {}) {
   }
 }
 
+export async function listMyDocs(userId) {
+  if (!userId || !apiAvailable()) return []
+  try {
+    const res = await apiFetch(`/api/v1/proposal-docs/mine?user_id=${userId}`)
+    if (!res.ok) return []
+    const data = await res.json()
+    return data.documents || []
+  } catch {
+    return []
+  }
+}
+
+export async function saveDocContent(userId, documentId, { content, title, format }) {
+  if (!userId || !documentId || !apiAvailable()) return false
+  try {
+    const res = await apiFetch(`/api/v1/proposal-docs/${documentId}/content`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, content, title, format }),
+    })
+    return res.ok
+  } catch {
+    return false
+  }
+}
+
 export async function listComments(userId, documentId) {
   if (!userId || !documentId || !apiAvailable()) return []
   try {

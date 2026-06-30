@@ -11,6 +11,30 @@
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
 }
+/* Eyebrow row + solicitation switcher */
+.pe-eyebrow-row { display: flex; align-items: center; gap: 14px; }
+.pe-switch { position: relative; }
+.pe-switch-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: none; border: none; cursor: pointer; font-family: inherit;
+  font-size: 0.74rem; font-weight: 700; color: var(--accent-hover);
+}
+.pe-switch-btn:hover { text-decoration: underline; }
+.pe-switch-menu {
+  position: absolute; left: 0; top: calc(100% + 6px); z-index: 20;
+  width: 300px; max-height: 360px; overflow-y: auto;
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: 6px;
+}
+.pe-switch-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;
+  text-align: left; background: none; border: none; cursor: pointer;
+  padding: 9px 10px; border-radius: var(--radius-sm); font-family: inherit;
+}
+.pe-switch-item:hover { background: var(--bg-base); }
+.pe-switch-title { font-size: 0.85rem; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pe-switch-meta { font-size: 0.72rem; color: var(--text-muted); flex: none; }
+
 .pe-head-main h1 {
   font-size: 1.5rem; font-weight: 800; color: var(--ink);
   margin-top: 4px; letter-spacing: -0.02em;
