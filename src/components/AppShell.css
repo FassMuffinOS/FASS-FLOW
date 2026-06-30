@@ -368,3 +368,9 @@ a.shell-nav-item:hover {
     padding-bottom: calc(58px + env(safe-area-inset-bottom));
   }
 }
+
+/* Clear the floating chat dock so page content never hides behind it (desktop;
+   mobile already pads for the bottom nav above). */
+@media (min-width: 901px) {
+  .shell-content { padding-bottom: 76px; }
+}
