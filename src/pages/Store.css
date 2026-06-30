@@ -1,0 +1,174 @@
+.store {
+  background: var(--gray-50);
+  min-height: 100vh;
+  padding: 56px 0 80px;
+}
+
+.store-header {
+  text-align: center;
+  max-width: 560px;
+  margin: 0 auto 48px;
+}
+
+.store-eyebrow {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 10px;
+}
+
+.store-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 10px;
+}
+
+.store-sub {
+  font-size: 0.95rem;
+  color: var(--gray-600);
+}
+
+.store-error {
+  text-align: center;
+  color: #DC2626;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+}
+
+.store-section {
+  max-width: 880px;
+  margin: 0 auto 44px;
+}
+
+.store-section-head h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+.store-section-head svg { color: var(--teal); }
+
+.store-section-head p {
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  margin-bottom: 16px;
+}
+
+/* Wide single-CTA card */
+.store-wide-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  padding: 22px 24px;
+  text-decoration: none;
+  transition: border-color 0.15s, transform 0.1s;
+}
+.store-wide-card:hover { border-color: var(--teal); transform: translateY(-1px); }
+.store-wide-card-action { cursor: default; }
+.store-wide-card-action:hover { transform: none; }
+.store-wide-card-regulars:hover { border-color: var(--dark-teal); }
+
+.store-wide-card > svg { color: var(--gray-400); flex-shrink: 0; }
+
+.store-wide-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 2px;
+}
+
+.store-wide-desc {
+  font-size: 0.82rem;
+  color: var(--gray-600);
+}
+
+/* Credit pack grid */
+.store-signin-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--dark-teal);
+  background: var(--light-teal);
+  padding: 8px 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  margin-bottom: 14px;
+}
+
+.store-pack-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+.store-pack-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 16px 10px;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  background: var(--white);
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+  font-family: 'Inter', sans-serif;
+}
+.store-pack-card:hover:not(:disabled) { border-color: var(--teal); transform: translateY(-1px); }
+.store-pack-card:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.store-pack-price { font-size: 1.15rem; font-weight: 800; color: var(--navy); }
+.store-pack-credits { font-size: 0.72rem; color: var(--gray-600); }
+.store-pack-loading { font-size: 0.68rem; color: var(--teal); margin-top: 2px; }
+
+.store-empty { font-size: 0.85rem; color: var(--gray-400); }
+
+/* Plain card grid (ebook/masterclass) */
+.store-plain-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 640px) {
+  .store-plain-grid { grid-template-columns: 1fr; }
+}
+
+.store-plain-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  padding: 22px;
+}
+
+.store-plain-icon { color: var(--teal); margin-bottom: 10px; }
+
+.store-plain-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 6px;
+}
+
+.store-plain-desc {
+  font-size: 0.82rem;
+  color: var(--gray-600);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.store-plain-cta { width: 100%; justify-content: center; }

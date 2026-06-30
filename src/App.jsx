@@ -85,6 +85,7 @@ import GrowthChallenge from './pages/GrowthChallenge'
 import SettingsPage from './pages/Settings'
 import RegularsSignup from './pages/RegularsSignup'
 import RegularsDashboard from './pages/RegularsDashboard'
+import Store from './pages/Store'
 import AppShell from './components/AppShell'
 import SmoothScroll from './components/SmoothScroll'
 import useSeo from './hooks/useSeo'
@@ -255,6 +256,13 @@ function AppRoutes() {
       <Route path="/" element={<><Nav /><main><Landing /></main><Footer /></>} />
       <Route path="/masterclass" element={<MasterclassRoute />} />
       <Route path="/support" element={<AuthAwarePage><Support /></AuthAwarePage>} />
+
+      {/* Unified storefront — surfaces AI credit packs, WARDOG Intel à la
+          carte, the ebook, Masterclass, subscriptions, and Regulars in one
+          place. GovCon product surface (not on either allow-list), so
+          AuthAwarePage's existing affiliate/wallet gates bounce those
+          accounts to their own area same as any other GovCon-only route. */}
+      <Route path="/store" element={<AuthAwarePage><Store /></AuthAwarePage>} />
       <Route path="/bd-partner" element={<BDPartnerRoute />} />
 
       {/* Free resize/reformat utility — the no-login "come back just for

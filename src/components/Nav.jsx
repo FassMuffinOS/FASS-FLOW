@@ -91,6 +91,7 @@ export default function Nav() {
             </div>
           </li>
           <li><a href="/pricing">Pricing</a></li>
+          <li><a href="/store">Store</a></li>
           <li><a href="/masterclass">Masterclass</a></li>
           <li><a href="/bd-partner">BD Partner</a></li>
           <li><a href="/updates">Updates</a></li>
@@ -125,6 +126,7 @@ export default function Nav() {
           ))}
           <span className="nav-drawer-label">More</span>
           <a href="/pricing" onClick={() => setOpen(false)}>Pricing</a>
+          <a href="/store" onClick={() => setOpen(false)}>Store</a>
           <a href="/masterclass" onClick={() => setOpen(false)}>Masterclass</a>
           <a href="/bd-partner" onClick={() => setOpen(false)}>BD Partner</a>
           <a href="/updates" onClick={() => setOpen(false)}>Updates</a>

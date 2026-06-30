@@ -25,8 +25,10 @@ export default function Footer() {
           <div className="footer-col">
             <h4>Platform</h4>
             <ul>
+              <li><a href="/store">Store</a></li>
               <li><a href="/masterclass">Masterclass</a></li>
               <li><a href="/bd-partner">BD Partner</a></li>
+              <li><a href="/regulars">Regulars</a></li>
               <li><a href="/signin">Wardog</a></li>
               <li><a href="/signin">Wallet</a></li>
               <li><a href="/signin">Procure</a></li>

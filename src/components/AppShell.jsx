@@ -8,7 +8,7 @@ import {
   LifeBuoy, Handshake, Calculator, HardHat, Camera,
   Radar, Images, Trophy, Flame, Menu, X, Send, Lock, ChevronDown, Stamp, Wallet, Rocket, Crop, Megaphone, Gift, Landmark,
   Sparkles, Users, Award, MessageCircle, Newspaper, LayoutGrid, PenSquare,
-  PanelLeft, Plus, Pencil, Check, Trash2, Settings as SettingsIcon, ArrowLeft,
+  PanelLeft, Plus, Pencil, Check, Trash2, Settings as SettingsIcon, ArrowLeft, Store,
 } from 'lucide-react'
 import ChatDock from './ChatDock'
 import BottomNav from './BottomNav'
@@ -76,6 +76,7 @@ const NAV_GROUPS = [
     { name: 'Glossary', icon: GraduationCap, to: '/glossary', match: ['/glossary'], tier: 'free' },
   ] },
   { label: 'Account', items: [
+    { name: 'Store', icon: Store, to: '/store', match: ['/store'], tier: 'free' },
     { name: 'Passport', icon: IdCard, to: '/passport', match: ['/passport'], tier: 'free' },
     { name: 'Wallet', icon: Wallet, to: '/wallet', match: ['/wallet'], tier: 'free' },
     { name: 'Payouts', icon: Landmark, to: '/payouts', match: ['/payouts'], tier: 'free' },

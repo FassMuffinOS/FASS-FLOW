@@ -30,6 +30,7 @@ const TOOLS = [
   { name: 'CONTRACTOR CAMERA', sub: 'Walk the site, capture it', status: 'live', desc: 'Open it on your phone, walk the job, and snap photos with a spoken or typed note on each one — every capture maps back to the bid and feeds Witness, Foreman, and Restoration. Installs to your home screen.', href: '/camera' },
   { name: 'COMMS HUB', sub: 'Text reminders & replies', status: 'live', desc: 'A CRM-style message timeline per contact, sent and received through your own iMessage/SMS relay — deadline reminders, confirmations, and two-way replies in one place.', href: '/comms' },
   { name: 'AFFILIATES', sub: 'Earn 30% commission', status: 'live', desc: 'Your referral link, click/signup stats, and a content calendar of post ideas — earn 30% on everyone who signs up through your link.', href: '/affiliates/dashboard' },
+  { name: 'STORE', sub: 'Credits, WARDOG Intel & more', status: 'live', desc: 'AI credit packs, WARDOG Intel à la carte reports, the govcon ebook, and Masterclass — everything you can buy, in one place.', href: '/store' },
 ]
 
 export default function Dashboard() {
