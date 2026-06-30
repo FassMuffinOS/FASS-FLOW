@@ -163,6 +163,18 @@
   display: inline-flex;
 }
 
+/* Secondary "pay another way" link under the primary Buy button. */
+.sup-offer-altlink {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.82rem;
+  color: var(--gray-500);
+  text-decoration: underline;
+}
+.sup-offer-altlink:hover {
+  color: var(--teal);
+}
+
 .sup-bottom {
   text-align: center;
 }

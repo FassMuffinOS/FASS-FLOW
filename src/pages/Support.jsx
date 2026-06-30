@@ -211,19 +211,28 @@ export default function Support() {
             <div className="sup-offer-card sup-offer-card-stack">
               <BookOpen size={22} className="sup-offer-icon" />
               <div className="sup-offer-body">
-                <span className="sup-offer-badge">Buy one, give one free</span>
-                <h3 className="sup-offer-title">Ebook — $20, instant</h3>
+                <span className="sup-offer-badge">Instant download</span>
+                <h3 className="sup-offer-title">Ebook — $9, instant</h3>
                 <p>
-                  <strong>$20</strong> gets you the full self-paced ebook, plus a second copy you can
-                  give to anyone — a partner business, a friend bidding their first contract — at no
-                  extra cost. It also includes <strong>one free run</strong> of the AI Solicitation
-                  Synthesis tool below, the same grounded breakdown R-E-A-D uses on a real solicitation.
+                  <strong>$9</strong> gets you the full self-paced ebook — same content as the
+                  Masterclass, in book form — delivered the moment you pay. It also includes{' '}
+                  <strong>one free run</strong> of the AI Solicitation Synthesis tool below, the same
+                  grounded breakdown R-E-A-D uses on a real solicitation. Got value from it? Pass your
+                  copy to a partner or a friend bidding their first contract.
                 </p>
                 <a
-                  href="mailto:admin@fass.systems?subject=Ebook Purchase (%2420)&body=Paid via Cash App/Venmo — here's my email and the email for the free second copy:"
+                  href="https://buy.stripe.com/3cI3co4Rc6c69UIco3fnO0e"
+                  target="_blank"
+                  rel="noreferrer"
                   className="btn-primary sup-offer-cta"
                 >
-                  Pay $20 above, then email us
+                  Buy the ebook — $9
+                </a>
+                <a
+                  href="mailto:admin@fass.systems?subject=Ebook Purchase (%249)&body=Paid via Cash App/Venmo — here's my email:"
+                  className="sup-offer-altlink"
+                >
+                  Prefer Cash App/Venmo? Pay above, then email us
                 </a>
               </div>
             </div>
