@@ -1,14 +1,15 @@
-/* "Icy" application page — cool-blue gradient backdrop, frosted-glass
-   (backdrop-filter blur) card, faint crystalline shard accents. Distinct on
-   purpose from the rest of the app's navy/teal palette: this is a separate
-   funnel for people who aren't FASS Flow customers yet, and it should feel
-   like a different, slightly more special front door. */
+/* "Icy" application page — dark frosted-glass card on a deep navy backdrop,
+   faint crystalline shard accents. Distinct in LAYOUT from the rest of the
+   app (split two-column hero + form, not a centered sign-in box) so it
+   never gets confused with SignIn.jsx — but themed in FASS Flow's own
+   navy/teal brand colors (see :root in index.css) so it still feels like
+   the same product, just a different, more special front door. */
 
 .afa-page {
   position: relative;
   min-height: 100vh;
   padding: 56px 20px 64px;
-  background: radial-gradient(circle at 15% 10%, #1e3a5f 0%, #0b1b2e 45%, #060e18 100%);
+  background: radial-gradient(circle at 15% 10%, #20415f 0%, #122236 45%, #0a1622 100%);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -18,8 +19,8 @@
 .afa-shard {
   position: absolute;
   border-radius: 32px;
-  background: linear-gradient(135deg, rgba(173, 216, 255, 0.14), rgba(99, 179, 237, 0.03));
-  border: 1px solid rgba(173, 216, 255, 0.12);
+  background: linear-gradient(135deg, rgba(29, 158, 117, 0.16), rgba(29, 158, 117, 0.03));
+  border: 1px solid rgba(29, 158, 117, 0.16);
   filter: blur(0.5px);
   pointer-events: none;
 }
@@ -77,9 +78,9 @@
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #8ecbff;
-  background: rgba(142, 203, 255, 0.12);
-  border: 1px solid rgba(142, 203, 255, 0.3);
+  color: #5fe3b8;
+  background: rgba(29, 158, 117, 0.16);
+  border: 1px solid rgba(29, 158, 117, 0.4);
   border-radius: 999px;
   padding: 6px 12px;
   margin-bottom: 18px;
@@ -90,7 +91,7 @@
   font-weight: 800;
   line-height: 1.15;
   margin: 0 0 14px;
-  background: linear-gradient(135deg, #ffffff, #bfe3ff);
+  background: linear-gradient(135deg, #ffffff, #bfeede);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -125,13 +126,13 @@
 .afa-why li svg {
   flex-shrink: 0;
   margin-top: 2px;
-  color: #6fd6ff;
+  color: #5fe3b8;
 }
 
 .afa-card {
   position: relative;
   background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(173, 216, 255, 0.22);
+  border: 1px solid rgba(29, 158, 117, 0.28);
   border-radius: 22px;
   padding: 28px;
   backdrop-filter: blur(18px);
@@ -175,7 +176,7 @@
 .afa-field select,
 .afa-field textarea {
   background: rgba(8, 22, 38, 0.55);
-  border: 1px solid rgba(173, 216, 255, 0.25);
+  border: 1px solid rgba(29, 158, 117, 0.3);
   border-radius: 10px;
   color: #fff;
   padding: 10px 12px;
@@ -193,8 +194,8 @@
 .afa-field select:focus,
 .afa-field textarea:focus {
   outline: none;
-  border-color: #6fd6ff;
-  box-shadow: 0 0 0 3px rgba(111, 214, 255, 0.18);
+  border-color: #1D9E75;
+  box-shadow: 0 0 0 3px rgba(29, 158, 117, 0.22);
 }
 
 .afa-field-row {
@@ -214,8 +215,8 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  background: linear-gradient(135deg, #4fc3ff, #2d8fe0);
-  color: #04141f;
+  background: linear-gradient(135deg, #1D9E75, #0F6E56);
+  color: #fff;
   font-weight: 700;
   font-size: 0.94rem;
   border: none;
@@ -228,7 +229,7 @@
 
 .afa-submit:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(79, 195, 255, 0.3);
+  box-shadow: 0 10px 24px rgba(29, 158, 117, 0.35);
 }
 
 .afa-submit:disabled {
@@ -244,7 +245,7 @@
 }
 
 .afa-fine a {
-  color: #8ecbff;
+  color: #5fe3b8;
 }
 
 .afa-success {
@@ -257,9 +258,9 @@
   height: 52px;
   margin: 0 auto 16px;
   border-radius: 16px;
-  background: rgba(111, 214, 255, 0.15);
-  border: 1px solid rgba(111, 214, 255, 0.35);
-  color: #6fd6ff;
+  background: rgba(29, 158, 117, 0.18);
+  border: 1px solid rgba(29, 158, 117, 0.4);
+  color: #5fe3b8;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -280,7 +281,7 @@
 
 .afa-link-box {
   background: rgba(8, 22, 38, 0.55);
-  border: 1px solid rgba(173, 216, 255, 0.25);
+  border: 1px solid rgba(29, 158, 117, 0.3);
   border-radius: 14px;
   padding: 16px;
   margin-bottom: 18px;
@@ -304,7 +305,7 @@
 .afa-link-row input {
   flex: 1;
   background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(173, 216, 255, 0.2);
+  border: 1px solid rgba(29, 158, 117, 0.25);
   border-radius: 8px;
   color: #fff;
   padding: 9px 12px;
@@ -316,9 +317,9 @@
   align-items: center;
   gap: 6px;
   white-space: nowrap;
-  background: rgba(111, 214, 255, 0.12);
-  border: 1px solid rgba(111, 214, 255, 0.3);
-  color: #6fd6ff;
+  background: rgba(29, 158, 117, 0.16);
+  border: 1px solid rgba(29, 158, 117, 0.4);
+  color: #5fe3b8;
   border-radius: 8px;
   padding: 9px 12px;
   font-size: 0.82rem;
