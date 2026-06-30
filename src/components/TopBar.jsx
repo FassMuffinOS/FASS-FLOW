@@ -64,6 +64,15 @@ export default function TopBar({ items = [], userId, affiliateOnly = false }) {
   // Current location label, matched off the same route patterns the sidebar uses.
   const current = items.find(i => i.match?.some(p => location.pathname.startsWith(p)))
 
+  // A regular (non-affiliate-only) customer can still browse into /affiliates/*
+  // — e.g. checking their own creator dashboard. The GovCon "Next:" nudge and
+  // quick-create menu are scoped to the bid workflow and make no sense there
+  // ("Next: Score it with R-E-A-D" while looking at referral stats), so this
+  // is suppressed by ROUTE, distinct from `affiliateOnly` which suppresses by
+  // ACCOUNT TYPE everywhere. Get Started/Dashboard links stay — they're how
+  // this user gets back to the main product from the affiliate area.
+  const onAffiliatePage = location.pathname.startsWith('/affiliates')
+
   const query = q.trim().toLowerCase()
   const results = query
     ? items.filter(i => i.name.toLowerCase().includes(query)).slice(0, 8)
@@ -95,7 +104,7 @@ export default function TopBar({ items = [], userId, affiliateOnly = false }) {
         <span>{current ? current.name : 'FASS Flow'}</span>
       </div>
 
-      {!affiliateOnly && progress && !progress.allDone && progress.next && (
+      {!affiliateOnly && !onAffiliatePage && progress && !progress.allDone && progress.next && (
         <Link to={progress.next.href} className="topbar-next" title={`${progress.doneCount}/${progress.total} · Next: ${progress.next.title}`}>
           <span className="topbar-next-bar"><span className="topbar-next-fill" style={{ width: `${progress.pct}%` }} /></span>
           <span className="topbar-next-label"><b>Next:</b> {progress.next.title}</span>
@@ -130,7 +139,7 @@ export default function TopBar({ items = [], userId, affiliateOnly = false }) {
       </div>
 
       <div className="topbar-quick">
-        {!affiliateOnly && (
+        {!affiliateOnly && !onAffiliatePage && (
           <div className="topbar-actions" ref={actionsRef}>
             <button className="topbar-new" onClick={() => setActionsOpen(o => !o)} title="Quick create">
               <Plus size={15} /> New <ChevronDown size={13} />
