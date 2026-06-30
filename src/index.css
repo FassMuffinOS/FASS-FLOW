@@ -16,6 +16,12 @@
   --gray-400:   #9CA3AF;
   --gray-600:   #4B5563;
   --gray-800:   #1F2937;
+  /* Darkest "ink" gray. Flips with the theme like --navy does (dark in light
+     mode, light in dark mode) so it's safe both as text AND as a header
+     surface paired with var(--white): components like ChatDock's popup header
+     rely on it. Was referenced in 9 files but never defined — leaving it unset
+     made those headers transparent and their white-on-it text/icons invisible. */
+  --gray-900:   #111827;
 
   /* Semantic tokens (light) */
   --bg-base:       #F9FAFB;
@@ -88,6 +94,7 @@
   --gray-400:   #64748B;
   --gray-600:   #94A3B8;
   --gray-800:   #CBD5E1;
+  --gray-900:   #E2E8F0;  /* ink flips light in dark mode, mirroring --navy */
   --navy:       #E2E8F0;
 
   /* Ice teal — brighter in dark */

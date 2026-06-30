@@ -136,20 +136,28 @@ export default function ChatDock({ userId }) {
 
   return (
     <div className="dock-root">
-      {popups.map(p => (
-        <ChatPopup
-          key={p.id}
-          userId={userId}
-          threadId={p.id}
-          name={p.name}
-          otherId={p.otherId}
-          minimized={p.minimized}
-          online={p.otherId ? onlineIds.has(p.otherId) : false}
-          onClose={() => closePopup(p.id)}
-          onToggleMinimize={() => toggleMinimize(p.id)}
-          onMessageSent={loadThreads}
-        />
-      ))}
+      {popups.map(p => {
+        const t = threads.find(x => x.id === p.id)
+        return (
+          <ChatPopup
+            key={p.id}
+            userId={userId}
+            threadId={p.id}
+            name={p.name}
+            otherId={p.otherId}
+            minimized={p.minimized}
+            online={p.otherId ? onlineIds.has(p.otherId) : false}
+            // The thread list (refreshed by the always-on, unfiltered list
+            // subscription) is the source of truth for "a new message exists."
+            // Passing its latest id down lets the popup pull that message in
+            // even if its own filtered realtime channel missed it.
+            latestMsgId={t?.last_message?.id || null}
+            onClose={() => closePopup(p.id)}
+            onToggleMinimize={() => toggleMinimize(p.id)}
+            onMessageSent={loadThreads}
+          />
+        )
+      })}
 
       <div className="dock-bar">
         <button className="dock-bar-head" onClick={() => setCollapsed(v => !v)}>
@@ -205,7 +213,7 @@ export default function ChatDock({ userId }) {
   )
 }
 
-function ChatPopup({ userId, threadId, name, otherId, minimized, online, onClose, onToggleMinimize, onMessageSent }) {
+function ChatPopup({ userId, threadId, name, otherId, minimized, online, latestMsgId, onClose, onToggleMinimize, onMessageSent }) {
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(true)
   const [draft, setDraft] = useState('')
@@ -241,6 +249,41 @@ function ChatPopup({ userId, threadId, name, otherId, minimized, online, onClose
   }, [threadId, userId])
 
   useEffect(() => { loadMessages() }, [loadMessages])
+
+  // Quiet refetch (no loading spinner) — used by the realtime fallback below
+  // so pulling in a missed message doesn't flash the whole thread.
+  const reloadSilent = useCallback(async () => {
+    if (!API_BASE) return
+    try {
+      const res = await apiFetch(`/api/v1/chat/threads/${threadId}/messages?user_id=${userId}`)
+      if (res.ok) setMessages((await res.json()).messages || [])
+      apiFetch(`/api/v1/chat/threads/${threadId}/read`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId }),
+      }).catch(() => {})
+    } catch (err) {
+      console.error('ChatPopup: silent reload failed', err)
+    }
+  }, [threadId, userId])
+
+  // Fallback for messages the filtered realtime channel doesn't deliver —
+  // notably server-inserted AI auto-replies, which otherwise show up in the
+  // dock's conversation list (unfiltered subscription) but never append to the
+  // open box. The parent passes the thread's latest message id; when it
+  // changes to something we haven't rendered, we quietly pull it in.
+  const messagesRef = useRef([])
+  useEffect(() => { messagesRef.current = messages }, [messages])
+  const seenLatest = useRef(null)
+  useEffect(() => {
+    if (!latestMsgId) return
+    const firstRun = seenLatest.current === null
+    if (latestMsgId === seenLatest.current) return
+    seenLatest.current = latestMsgId
+    if (firstRun) return
+    if (messagesRef.current.some(m => m.id === latestMsgId)) return
+    reloadSilent()
+  }, [latestMsgId, reloadSilent])
 
   useEffect(() => {
     if (!minimized) bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
