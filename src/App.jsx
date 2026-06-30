@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { isAffiliateAllowedPath, useAffiliateOnly } from './lib/affiliateGate'
+import { isWalletAllowedPath, useWalletOnly } from './lib/regularsGate'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
 import HomeBand from './components/HomeBand'
@@ -82,6 +83,8 @@ import Payouts from './pages/Payouts'
 import Resize from './pages/Resize'
 import GrowthChallenge from './pages/GrowthChallenge'
 import SettingsPage from './pages/Settings'
+import RegularsSignup from './pages/RegularsSignup'
+import RegularsDashboard from './pages/RegularsDashboard'
 import AppShell from './components/AppShell'
 import SmoothScroll from './components/SmoothScroll'
 import useSeo from './hooks/useSeo'
@@ -114,14 +117,19 @@ function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
   const location = useLocation()
   const affiliateOnly = useAffiliateOnly(session)
+  const walletOnly = useWalletOnly(session)
   if (loading) return null
   if (!session) return <Navigate to="/signin" replace />
   // Route-level wall: an affiliate-only account typing a GovCon URL directly
   // gets bounced, not just left without a matching sidebar item. See
-  // src/lib/affiliateGate.js.
-  if (affiliateOnly === null) return null
+  // src/lib/affiliateGate.js. Same idea for Regulars (profiles.is_wallet_only)
+  // accounts — see src/lib/regularsGate.js.
+  if (affiliateOnly === null || walletOnly === null) return null
   if (affiliateOnly && !isAffiliateAllowedPath(location.pathname)) {
     return <Navigate to="/affiliates/dashboard" replace />
+  }
+  if (walletOnly && !isWalletAllowedPath(location.pathname)) {
+    return <Navigate to="/regulars/dashboard" replace />
   }
   return <AppShell>{children}</AppShell>
 }
@@ -151,14 +159,19 @@ function AuthAwarePage({ children }) {
   const { session, loading } = useAuth()
   const location = useLocation()
   const affiliateOnly = useAffiliateOnly(session)
+  const walletOnly = useWalletOnly(session)
   if (loading) return null
   if (session) {
-    if (affiliateOnly === null) return null
+    if (affiliateOnly === null || walletOnly === null) return null
     // /support and /affiliates are on the affiliate allow-list; /resize and
     // /trust are GovCon-adjacent utilities an affiliate-only account has no
-    // use for, so those bounce same as any other GovCon route.
+    // use for, so those bounce same as any other GovCon route. /support is
+    // also on the Regulars allow-list.
     if (affiliateOnly && !isAffiliateAllowedPath(location.pathname)) {
       return <Navigate to="/affiliates/dashboard" replace />
+    }
+    if (walletOnly && !isWalletAllowedPath(location.pathname)) {
+      return <Navigate to="/regulars/dashboard" replace />
     }
     return <AppShell>{children}</AppShell>
   }
@@ -274,6 +287,18 @@ function AppRoutes() {
           points to, so it must be reachable without an account. */}
       <Route path="/extension-privacy" element={<ExtensionPrivacy />} />
       <Route path="/pricing" element={<><Nav /><main><Pricing /></main><Footer /></>} />
+
+      {/* Regulars — the standalone Wallet/loyalty product for non-govcon
+          local businesses (gift cards, rewards punch cards, campaigns, SMS).
+          /regulars is the public pricing + signup page (own full-bleed
+          chrome, no GovCon Nav/Footer, same pattern as AffiliateApply.jsx).
+          /regulars/dashboard is the trimmed, Wallet-only landing page for an
+          already-signed-up account — protected like any other dashboard
+          page; AppShell renders the stripped nav for is_wallet_only profiles. */}
+      <Route path="/regulars" element={<RegularsSignup />} />
+      <Route path="/regulars/dashboard" element={
+        <ProtectedRoute><RegularsDashboard /></ProtectedRoute>
+      } />
 
       {/* Public Careers page — applicants can submit without an account
           (job_applicants table, careers.py /careers/apply); on submit they're

@@ -122,6 +122,25 @@ const PLAN_LABELS = {
   promo: 'Promo Access',
 }
 
+// Regulars — a profiles.is_wallet_only account (provisioned by
+// RegularsSignup.jsx's standalone /regulars signup) has no GovCon use for
+// the other ~30 nav items, same situation as an affiliate-only account.
+// This nav is just the 5 Wallet-system tools, which already have zero
+// govcon dependency (see wallet.py, rewards.py, gift_cards.py,
+// wallet_campaigns.py, comms.py).
+const WALLET_HUB_ITEMS = [
+  { name: 'Dashboard', icon: Compass, to: '/regulars/dashboard', match: ['/regulars/dashboard'] },
+  { name: 'Wallet', icon: Wallet, to: '/wallet', match: ['/wallet'] },
+  { name: 'Rewards', icon: Stamp, to: '/rewards', match: ['/rewards'] },
+  { name: 'Gift Cards', icon: Gift, to: '/giftcards', match: ['/giftcards'] },
+  { name: 'Campaigns', icon: Megaphone, to: '/campaigns', match: ['/campaigns'] },
+  { name: 'Messages', icon: MessageCircle, to: '/comms', match: ['/comms'] },
+  { name: 'Settings', icon: SettingsIcon, to: '/settings', match: ['/settings'] },
+  { name: 'Support', icon: LifeBuoy, to: '/support', match: ['/support'] },
+]
+
+const WALLET_PLAN_LABELS = { starter: 'Starter', pro: 'Pro' }
+
 export default function AppShell({ children }) {
   const { session, signOut } = useAuth()
   const navigate = useNavigate()
@@ -203,6 +222,12 @@ export default function AppShell({ children }) {
   const fromAffiliates = new URLSearchParams(location.search).get('from') === 'affiliates'
   const inAffiliateArea = location.pathname.startsWith('/affiliates') || fromAffiliates
   const showMarketingHub = affiliateOnly || inAffiliateArea
+  // Regulars (profiles.is_wallet_only) — always shows the stripped
+  // Wallet-only chrome, no "regular user visiting" case the way affiliates
+  // has, since Regulars accounts are a fully separate signup with no
+  // GovCon platform to leave.
+  const walletOnly = !!profile?.is_wallet_only
+  const showWalletHub = walletOnly && !showMarketingHub
 
   // ── view config helpers ──
   const compact = cfg.compact && !menuOpen   // compact only on the docked desktop rail
@@ -308,7 +333,7 @@ export default function AppShell({ children }) {
             the view + guided path + AI framing in one move. Hidden in the
             marketing hub (an affiliate-only account has no track at all, and a
             regular user in /affiliates/* is doing creator work, not bidding). */}
-        {!compact && !showMarketingHub && (
+        {!compact && !showMarketingHub && !showWalletHub && (
           <div className="shell-track">
             <span className="shell-track-label">Track</span>
             <select className="shell-track-select" value={track} onChange={e => setTrack(e.target.value)}>
@@ -319,7 +344,7 @@ export default function AppShell({ children }) {
 
         {/* View switcher — hidden in compact rail (no room for chips), and in
             the marketing hub (nothing to customize there). */}
-        {!compact && !showMarketingHub && (
+        {!compact && !showMarketingHub && !showWalletHub && (
           <div className="shell-views">
             <button className={`shell-view-chip ${cfg.activeView === 'all' ? 'is-active' : ''}`} onClick={() => setActiveView('all')}>All</button>
             {cfg.views.map(v => (
@@ -344,6 +369,13 @@ export default function AppShell({ children }) {
               )}
               <span className="shell-navgroup-label">Marketing Hub</span>
               {MARKETING_HUB_ITEMS.map(renderItem)}
+            </div>
+          </nav>
+        ) : showWalletHub ? (
+          <nav className="shell-nav">
+            <div className="shell-navgroup">
+              <span className="shell-navgroup-label">Regulars</span>
+              {WALLET_HUB_ITEMS.map(renderItem)}
             </div>
           </nav>
         ) : editingObj && !compact ? (
@@ -458,6 +490,10 @@ export default function AppShell({ children }) {
         <div className="shell-user">
           {affiliateOnly ? (
             <span className="shell-plan-badge plan-active">Creator Partner</span>
+          ) : walletOnly ? (
+            <span className={`shell-plan-badge ${profile?.wallet_subscription_status === 'active' ? 'plan-active' : 'plan-inactive'}`}>
+              Regulars {WALLET_PLAN_LABELS[profile?.wallet_plan] || ''} · {profile?.wallet_subscription_status === 'active' ? 'Active' : profile?.wallet_subscription_status || 'inactive'}
+            </span>
           ) : profile && (
             <span className={`shell-plan-badge ${isActive ? 'plan-active' : 'plan-inactive'}`}>
               {PLAN_LABELS[plan] || plan || 'No plan'} · {isActive ? 'Active' : status || 'inactive'}
@@ -471,7 +507,7 @@ export default function AppShell({ children }) {
       </aside>
 
       <div className="shell-content">
-        <TopBar items={affiliateOnly ? MARKETING_HUB_ITEMS : ALL_ITEMS} userId={userId} affiliateOnly={affiliateOnly} />
+        <TopBar items={affiliateOnly ? MARKETING_HUB_ITEMS : walletOnly ? WALLET_HUB_ITEMS : ALL_ITEMS} userId={userId} affiliateOnly={affiliateOnly} />
         {children}
       </div>
 
@@ -480,9 +516,11 @@ export default function AppShell({ children }) {
           quick actions, mobile nav to /dashboard /network etc.) with nothing
           relevant in the marketing hub — suppressed for affiliate-only
           accounts AND for a regular user while they're inside /affiliates/*,
-          so the creator area stays focused on promotion. */}
-      {!showMarketingHub && !location.pathname.startsWith('/messages') && <ChatDock userId={userId} />}
-      {!showMarketingHub && <BottomNav userId={userId} />}
+          so the creator area stays focused on promotion. Same reasoning for
+          Regulars (is_wallet_only) accounts — no proposals/quick-actions to
+          show them either. */}
+      {!showMarketingHub && !showWalletHub && !location.pathname.startsWith('/messages') && <ChatDock userId={userId} />}
+      {!showMarketingHub && !showWalletHub && <BottomNav userId={userId} />}
       <InstallPrompt />
     </div>
   )
