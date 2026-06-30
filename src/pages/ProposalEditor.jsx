@@ -301,7 +301,7 @@ export default function ProposalEditor() {
     if (!editor) return
     setExporting(true)
     try {
-      const blob = await buildDocxBlob(editor.getJSON(), doc)
+      const blob = await buildDocxBlob(editor.getJSON(), doc, { companyName: profile?.company_name })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
