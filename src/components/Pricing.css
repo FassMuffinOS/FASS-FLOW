@@ -70,6 +70,19 @@
 .pricing-grid-4 .plan-price {
   font-size: 2.5rem;
 }
+.pricing-grid-5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+.pricing-grid-5 .plan-card {
+  padding: 28px 20px 24px;
+  gap: 22px;
+}
+.pricing-grid-5 .plan-price {
+  font-size: 2.1rem;
+}
+.pricing-grid-5 .plan-features li {
+  font-size: 0.82rem;
+}
 
 /* Base card */
 .plan-card {
@@ -109,6 +122,42 @@
 .plan-navy {
   border-color: var(--navy);
   background: var(--white);
+}
+
+/* Enterprise (WARDOG Intel) */
+.plan-enterprise {
+  border-color: var(--navy);
+  background: linear-gradient(160deg, var(--navy) 0%, #0b1f3a 100%);
+  box-shadow: 0 16px 44px rgba(15,30,60,0.22);
+}
+.plan-enterprise:hover {
+  box-shadow: 0 22px 56px rgba(15,30,60,0.32);
+}
+.plan-enterprise .plan-badge {
+  background: var(--teal);
+}
+.plan-enterprise .plan-name,
+.plan-enterprise .plan-currency,
+.plan-enterprise .plan-price {
+  color: #fff;
+}
+.plan-enterprise .plan-tagline,
+.plan-enterprise .plan-period {
+  color: rgba(255,255,255,0.6);
+}
+.plan-enterprise .plan-features li {
+  color: rgba(255,255,255,0.82);
+}
+.plan-enterprise .check-icon {
+  color: #6ee7c0;
+}
+.plan-enterprise .plan-cta-outline {
+  border-color: rgba(255,255,255,0.5);
+  color: #fff;
+}
+.plan-enterprise .plan-cta-outline:hover {
+  border-color: var(--teal);
+  color: #6ee7c0;
 }
 
 /* Badge */
@@ -243,11 +292,23 @@
   color: var(--gray-400);
 }
 
+@media (max-width: 1400px) {
+  .pricing-grid-5 {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 880px;
+    margin: 0 auto;
+  }
+}
+
 @media (max-width: 1200px) {
   .pricing-grid-4 {
     grid-template-columns: repeat(2, 1fr);
     max-width: 760px;
     margin: 0 auto;
+  }
+  .pricing-grid-5 {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 760px;
   }
 }
 
@@ -257,7 +318,8 @@
     max-width: 440px;
     margin: 0 auto;
   }
-  .pricing-grid-4 {
+  .pricing-grid-4,
+  .pricing-grid-5 {
     grid-template-columns: 1fr;
   }
   .plan-featured { transform: scale(1); }

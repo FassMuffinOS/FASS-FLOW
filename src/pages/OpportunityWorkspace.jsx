@@ -2,11 +2,12 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import {
   ClipboardCheck, ClipboardList, Building2, Calendar, Hash, LayoutGrid,
-  Sparkles, TrendingUp, Users, DollarSign, ShieldAlert, AlertTriangle,
+  Sparkles, TrendingUp, Users, DollarSign, ShieldAlert, AlertTriangle, Radar,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { aiEnabled, scoreOpportunity } from '../lib/aiClient'
+import { intelEnabled, getIncumbentHistory, forecastRecompete } from '../lib/intelligenceClient'
 import Read from './Read'
 import Fill from './Fill'
 import OpportunityContext from '../components/OpportunityContext'
@@ -107,6 +108,68 @@ export default function OpportunityWorkspace() {
     run()
     return () => { cancelled = true }
   }, [proposalId]) // eslint-disable-line
+
+  // WARDOG Intel — Enterprise-only incumbent & award-history read. Gated
+  // server-side too (intelligence.py 402s anyone not on the Enterprise
+  // plan), but checking profiles.plan here first avoids firing a request
+  // that's just going to come back as a paywall for everyone else.
+  const [enterprisePlan, setEnterprisePlan] = useState(false)
+  const [intel, setIntel] = useState(null)
+  const [intelLoading, setIntelLoading] = useState(false)
+  const [intelError, setIntelError] = useState('')
+  const [forecast, setForecast] = useState(null)
+  const [forecastLoading, setForecastLoading] = useState(false)
+  const [forecastError, setForecastError] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+    if (!user?.id || !intelEnabled()) return
+
+    async function checkPlan() {
+      const { data } = await supabase.from('profiles').select('plan').eq('id', user.id).single()
+      if (!cancelled) setEnterprisePlan(data?.plan === 'enterprise')
+    }
+    checkPlan()
+    return () => { cancelled = true }
+  }, [user?.id])
+
+  useEffect(() => {
+    let cancelled = false
+    setIntel(null)
+    setIntelError('')
+    setForecast(null)
+    setForecastError('')
+    if (!enterprisePlan || !naics || !user?.id) return
+
+    async function run() {
+      setIntelLoading(true)
+      try {
+        const result = await getIncumbentHistory({ naics, agency, userId: user.id })
+        if (!cancelled) setIntel(result)
+      } catch (e) {
+        if (!cancelled) setIntelError(e.message || 'Could not pull award history')
+      } finally {
+        if (!cancelled) setIntelLoading(false)
+      }
+    }
+    run()
+    return () => { cancelled = true }
+  }, [enterprisePlan, naics, agency, user?.id])
+
+  async function runForecast() {
+    setForecastLoading(true)
+    setForecastError('')
+    try {
+      const result = await forecastRecompete({
+        naics, agency, title, awards: intel?.awards || [], userId: user.id,
+      })
+      setForecast(result)
+    } catch (e) {
+      setForecastError(e.message || 'Could not generate a forecast')
+    } finally {
+      setForecastLoading(false)
+    }
+  }
 
   // Make sure proposalId is always present in the query string so Read/Fill
   // (which read it via their own useSearchParams) stay attached to this
@@ -221,6 +284,49 @@ export default function OpportunityWorkspace() {
 
         {!scoreLoading && scoreError && (
           <div className="ow-score ow-score-error">{scoreError}</div>
+        )}
+
+        {enterprisePlan && (
+          <div className="ow-intel">
+            <div className="ow-intel-header">
+              <Radar size={14} /> WARDOG Intel — incumbent &amp; award history
+            </div>
+
+            {intelLoading && (
+              <div className="ow-score-loading">
+                <Sparkles size={14} className="ow-spin" /> Pulling award history from USASpending.gov…
+              </div>
+            )}
+
+            {!intelLoading && intelError && <div className="ow-score-error">{intelError}</div>}
+
+            {!intelLoading && intel && intel.awards.length === 0 && (
+              <p className="ow-score-summary">No prior prime awards found for this NAICS{agency ? ' / agency' : ''} pair — this looks like open ground.</p>
+            )}
+
+            {!intelLoading && intel && intel.awards.length > 0 && (
+              <>
+                <ul className="ow-intel-awards">
+                  {intel.awards.slice(0, 5).map((a, i) => (
+                    <li key={i}>
+                      <span className="ow-intel-recipient">{a.recipient_name || 'Unknown recipient'}</span>
+                      {a.award_amount != null && <span className="ow-intel-amount">${Math.round(a.award_amount).toLocaleString()}</span>}
+                    </li>
+                  ))}
+                </ul>
+
+                {!forecast && (
+                  <button type="button" className="ow-intel-cta" disabled={forecastLoading} onClick={runForecast}>
+                    {forecastLoading ? 'Reading the re-compete…' : 'Run re-compete forecast (1 AI credit)'}
+                  </button>
+                )}
+
+                {forecastError && <div className="ow-score-error">{forecastError}</div>}
+
+                {forecast && <p className="ow-score-summary ow-intel-forecast">{forecast.forecast}</p>}
+              </>
+            )}
+          </div>
         )}
       </header>
 

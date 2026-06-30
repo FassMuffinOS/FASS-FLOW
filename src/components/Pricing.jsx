@@ -88,6 +88,23 @@ const PLANS = [
     ],
     cta: 'Contact sales',
   },
+  {
+    key: 'enterprise',
+    name: 'Enterprise',
+    price: 899,
+    tagline: 'Win with intelligence',
+    color: 'enterprise',
+    badge: 'WARDOG Intel',
+    features: [
+      'Everything in Team',
+      'WARDOG Intel — incumbent & award-history intelligence',
+      'Who held it, what they were paid, who else bids it',
+      'AI forecast: re-compete odds, likely price band, entry strategy',
+      'Dedicated onboarding',
+      'Priority roadmap input',
+    ],
+    cta: 'Start free trial',
+  },
 ]
 
 export default function Pricing() {
@@ -157,7 +174,7 @@ export default function Pricing() {
           they stay subscribed — even after we raise it.
         </Reveal>
 
-        <div className="pricing-grid pricing-grid-4">
+        <div className="pricing-grid pricing-grid-5">
           {PLANS.map((plan, i) => (
             <Reveal
               as="div"

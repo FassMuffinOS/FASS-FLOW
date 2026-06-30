@@ -206,6 +206,85 @@
   color: var(--text-muted, #6b7280);
 }
 
+.ow-intel {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  background: var(--navy, #1b2a4a);
+  border-radius: 10px;
+  color: #fff;
+}
+
+.ow-intel-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--teal, #1d9e75);
+  margin-bottom: 8px;
+}
+
+.ow-intel .ow-score-loading,
+.ow-intel .ow-score-error {
+  color: rgba(255,255,255,0.7);
+}
+
+.ow-intel .ow-score-summary {
+  color: rgba(255,255,255,0.85);
+}
+
+.ow-intel-awards {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ow-intel-awards li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.85);
+}
+
+.ow-intel-amount {
+  font-weight: 700;
+  color: #6ee7c0;
+  flex-shrink: 0;
+}
+
+.ow-intel-cta {
+  border: 1px solid rgba(255,255,255,0.35);
+  background: transparent;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.ow-intel-cta:hover {
+  border-color: var(--teal, #1d9e75);
+  color: #6ee7c0;
+}
+
+.ow-intel-cta:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.ow-intel-forecast {
+  margin-top: 10px;
+  white-space: pre-wrap;
+}
+
 /* The pinned header eats vertical space the embedded Read/Fill panels don't
    expect (they were each designed to own the full viewport height under
    their own header). On small screens, where space is already tight thanks
