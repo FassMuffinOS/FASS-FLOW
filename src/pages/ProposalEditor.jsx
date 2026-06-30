@@ -14,6 +14,7 @@ import { assembleProposal, assembledToHtml } from '../lib/assembleProposal'
 import { buildComplianceMatrix } from '../lib/complianceMatrix'
 import { buildDocxBlob } from '../lib/exportDocx'
 import { listReuseBlocks, createReuseBlock, markReuseBlockUsed, deleteReuseBlock, guessCategory } from '../lib/reuseLibrary'
+import { ensureDoc, listComments, addComment as apiAddComment, deleteComment as apiDeleteComment, listSectionState, setSectionApproved } from '../lib/proposalReview'
 import useSeo from '../hooks/useSeo'
 import './ProposalEditor.css'
 
@@ -59,6 +60,7 @@ export default function ProposalEditor() {
   const [exporting, setExporting] = useState(false)
   const [libraryBlocks, setLibraryBlocks] = useState([])
   const [librarySaving, setLibrarySaving] = useState(null)
+  const [documentId, setDocumentId] = useState(null)
 
   // Load the company reuse library once.
   useEffect(() => {
@@ -67,6 +69,37 @@ export default function ProposalEditor() {
     listReuseBlocks(userId).then(b => { if (!cancelled) setLibraryBlocks(b) })
     return () => { cancelled = true }
   }, [userId])
+
+  // Ensure a persisted document for this proposal, then hydrate the review
+  // loop (comments keyed by section heading + approved sections) from it.
+  // All of this degrades gracefully if the backend/migration isn't there:
+  // ensureDoc returns null, documentId stays null, and the editor behaves
+  // exactly like the old local-only version.
+  useEffect(() => {
+    if (!userId) return
+    let cancelled = false
+    const proposalId = location.state?.proposalId || 'sample'
+    ensureDoc(userId, { proposalId, title: doc.title }).then(async d => {
+      if (cancelled || !d?.id) return
+      setDocumentId(d.id)
+      const [serverComments, states] = await Promise.all([
+        listComments(userId, d.id),
+        listSectionState(userId, d.id),
+      ])
+      if (cancelled) return
+      // Comments → keyed by section heading.
+      const byHeading = {}
+      for (const c of serverComments) {
+        (byHeading[c.section_key] = byHeading[c.section_key] || []).push(c)
+      }
+      setComments(byHeading)
+      // Approvals → resolve persisted headings back to current section ids.
+      const approvedHeadings = new Set(states.filter(s => s.approved).map(s => s.section_key))
+      const ids = doc.sections.filter(s => approvedHeadings.has(s.heading)).map(s => s.id)
+      setApproved(new Set(ids))
+    })
+    return () => { cancelled = true }
+  }, [userId, doc, location.state])
 
   // Pull the shared business profile so the user can drop their own
   // UEI / CAGE / set-aside / signer info into the draft instead of retyping.
@@ -207,19 +240,37 @@ export default function ProposalEditor() {
     }
   }
 
-  function toggleApprove(id) {
+  function toggleApprove(section) {
+    const willApprove = !approved.has(section.id)
     setApproved(prev => {
       const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      if (willApprove) next.add(section.id); else next.delete(section.id)
       return next
     })
+    if (documentId) setSectionApproved(userId, documentId, section.heading, willApprove)
   }
 
-  function addComment(id) {
+  async function addComment(section) {
     const text = commentDraft.trim()
     if (!text) return
-    setComments(prev => ({ ...prev, [id]: [...(prev[id] || []), text] }))
     setCommentDraft('')
+    const key = section.heading
+    if (documentId) {
+      const saved = await apiAddComment(userId, documentId, key, text)
+      if (saved) {
+        setComments(prev => ({ ...prev, [key]: [...(prev[key] || []), saved] }))
+        return
+      }
+    }
+    // Offline / pre-migration fallback: keep it local so the UX still works.
+    const local = { id: 'local-' + Date.now(), body: text }
+    setComments(prev => ({ ...prev, [key]: [...(prev[key] || []), local] }))
+  }
+
+  function removeComment(section, commentId) {
+    const key = section.heading
+    setComments(prev => ({ ...prev, [key]: (prev[key] || []).filter(c => c.id !== commentId) }))
+    if (documentId && !String(commentId).startsWith('local-')) apiDeleteComment(userId, commentId)
   }
 
   const total = doc.sections.length
@@ -391,7 +442,7 @@ export default function ProposalEditor() {
                   </button>
                   {activeSec === s.id && (
                     <div className="pe-review-detail">
-                      <button className="fx-btn fx-btn-ghost pe-approve" onClick={() => toggleApprove(s.id)}>
+                      <button className="fx-btn fx-btn-ghost pe-approve" onClick={() => toggleApprove(s)}>
                         {isApproved ? 'Approved ✓' : 'Approve section'}
                       </button>
 
@@ -410,17 +461,20 @@ export default function ProposalEditor() {
                       <button className="pe-save-lib" onClick={() => saveToLibrary(s)} disabled={librarySaving === s.id}>
                         <BookmarkPlus size={13} /> {librarySaving === s.id ? 'Saving…' : 'Save to library'}
                       </button>
-                      {(comments[s.id] || []).map((c, ci) => (
-                        <p className="pe-comment" key={ci}>{c}</p>
+                      {(comments[s.heading] || []).map(c => (
+                        <div className="pe-comment" key={c.id}>
+                          <span>{c.body}</span>
+                          <button className="pe-comment-del" onClick={() => removeComment(s, c.id)} aria-label="Delete note"><X size={11} /></button>
+                        </div>
                       ))}
                       <div className="pe-comment-add">
                         <input
                           value={commentDraft}
                           onChange={e => setCommentDraft(e.target.value)}
-                          onKeyDown={e => { if (e.key === 'Enter') addComment(s.id) }}
+                          onKeyDown={e => { if (e.key === 'Enter') addComment(s) }}
                           placeholder="Add a note…"
                         />
-                        <button className="fx-btn fx-btn-primary" onClick={() => addComment(s.id)}>Add</button>
+                        <button className="fx-btn fx-btn-primary" onClick={() => addComment(s)}>Add</button>
                       </div>
                     </div>
                   )}

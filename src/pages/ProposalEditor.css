@@ -236,10 +236,14 @@
 .pe-review-detail { padding: 4px 10px 14px; }
 .pe-approve { width: 100%; justify-content: center; margin-bottom: 8px; }
 .pe-comment {
+  display: flex; align-items: flex-start; gap: 6px;
   font-size: 0.8rem; color: var(--text-secondary);
   background: var(--bg-base); border-left: 2px solid var(--border);
   padding: 6px 10px; border-radius: var(--radius-xs); margin-bottom: 6px;
 }
+.pe-comment span { flex: 1; }
+.pe-comment-del { flex: none; background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 1px; }
+.pe-comment-del:hover { color: #DC2626; }
 .pe-comment-add { display: flex; gap: 6px; }
 .pe-comment-add input {
   flex: 1; min-width: 0;
