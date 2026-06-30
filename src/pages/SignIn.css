@@ -200,6 +200,18 @@
   line-height: 1.45;
 }
 
+.signin-resend-input {
+  width: 100%;
+  padding: 11px 14px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  border: 1px solid var(--gray-200, #e5e7eb);
+  border-radius: 8px;
+  outline: none;
+  margin-bottom: 8px;
+}
+.signin-resend-input:focus { border-color: var(--teal, #1D9E75); }
+
 .signin-switch {
   background: none;
   border: none;

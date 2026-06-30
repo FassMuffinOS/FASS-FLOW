@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabase'
 import { getBusinessProfile } from '../lib/businessProfile'
 import { consumePostAuthRedirect } from '../lib/postAuthRedirect'
 import { Loader } from 'lucide-react'
@@ -31,6 +32,20 @@ export default function AuthCallback() {
     return errDescription ? errDescription.replace(/\+/g, ' ') : ''
   })
   const routed = useRef(false)
+
+  // Expired/invalid email links are common (inbox security scanners often
+  // "click" the one-time link before the user does, consuming it). Let the
+  // user resend instead of dead-ending on "Back to sign in".
+  const isExpiredLink = /expired|invalid/i.test(error)
+  const [resendEmail, setResendEmail] = useState('')
+  const [resendStatus, setResendStatus] = useState('') // '' | 'sending' | 'sent' | error
+
+  async function handleResend() {
+    if (!resendEmail.trim()) { setResendStatus('Enter your email first.'); return }
+    setResendStatus('sending')
+    const { error: err } = await supabase.auth.resend({ type: 'signup', email: resendEmail.trim() })
+    setResendStatus(err ? err.message : 'sent')
+  }
 
   useEffect(() => {
     if (error || loading || routed.current) return
@@ -83,7 +98,29 @@ export default function AuthCallback() {
           <>
             <h1 className="signin-title">Sign-in didn't go through</h1>
             <p className="signin-error">{error}</p>
-            <a className="btn-primary signin-btn" href="/signin" style={{ display: 'inline-block', textAlign: 'center', textDecoration: 'none' }}>
+            {isExpiredLink && (
+              <div className="signin-reset" style={{ marginTop: 4 }}>
+                {resendStatus === 'sent' ? (
+                  <p className="signin-notice">New confirmation link sent to {resendEmail}. Open it soon — and if your inbox keeps marking it expired, try a different email or device.</p>
+                ) : (
+                  <>
+                    <p className="signin-reset-hint">Links expire fast (some inboxes open them automatically). Send yourself a fresh one:</p>
+                    <input
+                      type="email"
+                      className="signin-resend-input"
+                      placeholder="you@example.com"
+                      value={resendEmail}
+                      onChange={e => setResendEmail(e.target.value)}
+                    />
+                    <button className="btn-outline signin-reset-btn" onClick={handleResend} disabled={resendStatus === 'sending'}>
+                      {resendStatus === 'sending' ? 'Sending…' : 'Resend confirmation link'}
+                    </button>
+                    {resendStatus && resendStatus !== 'sending' && resendStatus !== 'sent' && <p className="signin-error">{resendStatus}</p>}
+                  </>
+                )}
+              </div>
+            )}
+            <a className="btn-primary signin-btn" href="/signin" style={{ display: 'inline-block', textAlign: 'center', textDecoration: 'none', marginTop: 12 }}>
               Back to sign in
             </a>
           </>
