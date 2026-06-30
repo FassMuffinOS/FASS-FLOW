@@ -91,7 +91,7 @@ const PLANS = [
   {
     key: 'enterprise',
     name: 'Enterprise',
-    price: 899,
+    price: 3500,
     tagline: 'Win with intelligence',
     color: 'enterprise',
     badge: 'WARDOG Intel',
