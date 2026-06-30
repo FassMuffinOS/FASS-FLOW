@@ -12,6 +12,20 @@ export default function TopBar({ items = [] }) {
   const [q, setQ] = useState('')
   const [open, setOpen] = useState(false)
   const wrapRef = useRef(null)
+  const inputRef = useRef(null)
+
+  // ⌘K / Ctrl-K focuses the jump search from anywhere.
+  useEffect(() => {
+    function onKey(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        inputRef.current?.focus()
+        setOpen(true)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   // Current location label, matched off the same route patterns the sidebar uses.
   const current = items.find(i => i.match?.some(p => location.pathname.startsWith(p)))
@@ -47,12 +61,14 @@ export default function TopBar({ items = [] }) {
       <div className="topbar-search" ref={wrapRef}>
         <Search size={15} className="topbar-search-icon" />
         <input
+          ref={inputRef}
           value={q}
           onChange={e => { setQ(e.target.value); setOpen(true) }}
           onFocus={() => setOpen(true)}
           onKeyDown={onKeyDown}
           placeholder="Jump to any tool — type to search…"
         />
+        {!q && <span className="topbar-kbd">⌘K</span>}
         {open && results.length > 0 && (
           <div className="topbar-results">
             {results.map((item, i) => (

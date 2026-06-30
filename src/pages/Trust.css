@@ -1,0 +1,39 @@
+.trust-hero {
+  padding: 64px 0 40px; text-align: center;
+  background: linear-gradient(180deg, var(--light-teal), transparent);
+}
+.trust-hero-icon { color: var(--teal); }
+.trust-hero h1 { font-size: clamp(1.9rem, 4vw, 2.6rem); font-weight: 800; color: var(--navy); margin-top: 10px; letter-spacing: -0.02em; }
+.trust-hero p { max-width: 640px; margin: 12px auto 0; color: var(--gray-600); font-size: 1.05rem; line-height: 1.55; }
+
+.trust-section { padding: 44px 0; }
+.trust-section-alt { background: var(--gray-50); }
+.trust-h2 { font-size: 1.5rem; font-weight: 800; color: var(--navy); }
+.trust-sub { color: var(--gray-600); margin-top: 8px; max-width: 680px; line-height: 1.5; }
+
+.trust-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: 24px; }
+@media (max-width: 760px) { .trust-grid { grid-template-columns: 1fr; } }
+.trust-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: 14px; padding: 22px; }
+.trust-card-ic { display: inline-grid; place-items: center; width: 42px; height: 42px; border-radius: 10px; background: var(--light-teal); color: var(--dark-teal); margin-bottom: 12px; }
+.trust-card h3 { font-size: 1.02rem; font-weight: 700; color: var(--navy); }
+.trust-card p { font-size: 0.9rem; color: var(--gray-600); line-height: 1.55; margin-top: 6px; }
+
+.trust-compliance { display: flex; flex-direction: column; gap: 12px; margin-top: 22px; }
+.trust-comp-row { background: var(--white); border: 1px solid var(--gray-200); border-radius: 12px; padding: 18px 20px; }
+.trust-comp-main { display: flex; align-items: center; gap: 10px; }
+.trust-comp-ic { color: var(--teal); flex: none; }
+.trust-comp-name { font-size: 1.02rem; font-weight: 800; color: var(--navy); }
+.trust-status {
+  margin-left: auto; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  padding: 4px 10px; border-radius: 999px;
+}
+.trust-status-progress { background: var(--light-teal); color: var(--dark-teal); }
+.trust-status-planned { background: #FEF3C7; color: #92400E; }
+.trust-status-notyet { background: var(--gray-100); color: var(--gray-600); }
+.trust-comp-note { font-size: 0.88rem; color: var(--gray-600); line-height: 1.55; margin-top: 8px; }
+
+.trust-contact { display: flex; align-items: flex-start; gap: 14px; background: var(--white); border: 1px solid var(--gray-200); border-radius: 14px; padding: 22px 24px; }
+.trust-contact svg { color: var(--teal); flex: none; margin-top: 2px; }
+.trust-contact h3 { font-size: 1rem; font-weight: 700; color: var(--navy); }
+.trust-contact p { font-size: 0.9rem; color: var(--gray-600); margin-top: 4px; }
+.trust-contact a { color: var(--teal); font-weight: 600; }
