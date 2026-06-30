@@ -59,6 +59,22 @@
 .ob-track-tag { font-size: 0.84rem; color: var(--text-secondary); }
 .ob-track-check { color: var(--accent); flex: none; }
 
+/* Set-aside certifications checklist */
+.ob-certs { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; }
+.ob-cert {
+  display: flex; align-items: center; gap: 11px; width: 100%; text-align: left;
+  background: var(--bg-surface); border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  padding: 12px 14px; cursor: pointer; font-family: inherit; font-size: 0.9rem; font-weight: 600; color: var(--ink);
+  transition: .14s;
+}
+.ob-cert:hover { border-color: var(--accent); }
+.ob-cert.is-on { border-color: var(--accent); background: var(--accent-tint); }
+.ob-cert-box {
+  flex: none; width: 18px; height: 18px; border-radius: 5px;
+  border: 1.5px solid var(--border); display: grid; place-items: center; color: #fff;
+}
+.ob-cert-box.is-on { background: var(--accent); border-color: var(--accent); }
+
 .ob-perks { list-style: none; padding: 0; margin: 18px 0 0; display: flex; flex-direction: column; gap: 10px; }
 .ob-perks li { display: flex; align-items: flex-start; gap: 9px; font-size: 0.92rem; color: var(--text-secondary); line-height: 1.4; }
 .ob-perks svg { flex: none; margin-top: 2px; color: var(--accent); }
