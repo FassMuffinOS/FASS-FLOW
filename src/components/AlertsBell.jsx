@@ -15,7 +15,7 @@ function daysLeft(str) {
 // miss — bids closing soon, milestones due/overdue — plus a personalized
 // "new opportunities match your NAICS" nudge from the live feed. Computed on
 // load from the user's own data, so it works with no email setup.
-export default function AlertsBell() {
+export default function AlertsBell({ inline = false }) {
   const { session } = useAuth()
   const navigate = useNavigate()
   const userId = session?.user?.id
@@ -100,6 +100,9 @@ export default function AlertsBell() {
 
   const urgentCount = alerts.filter(a => a.urgent || a.kind === 'overdue').length
   const count = alerts.length
+  // Health: red = something urgent/overdue, amber = items but nothing urgent,
+  // green = all clear.
+  const level = urgentCount > 0 ? 'red' : count > 0 ? 'amber' : 'green'
 
   function go(href) { setOpen(false); navigate(href) }
 
@@ -110,19 +113,32 @@ export default function AlertsBell() {
 
   return (
     <>
-      <button
-        className={`ab-bell ${urgentCount ? 'ab-bell-urgent' : ''}`}
-        onClick={() => setOpen(o => !o)}
-        aria-label="Alerts"
-      >
-        <Bell size={20} />
-        {count > 0 && <span className="ab-badge">{count > 9 ? '9+' : count}</span>}
-      </button>
+      {inline ? (
+        <button
+          className={`ab-inline ab-inline-${level}`}
+          onClick={() => setOpen(o => !o)}
+          aria-label="Alerts and status"
+          title={count === 0 ? 'All clear' : `${count} item${count === 1 ? '' : 's'} need attention`}
+        >
+          <span className={`ab-dot ab-dot-${level}`} />
+          <Bell size={15} />
+          {count > 0 && <span className="ab-inline-count">{count > 9 ? '9+' : count}</span>}
+        </button>
+      ) : (
+        <button
+          className={`ab-bell ${urgentCount ? 'ab-bell-urgent' : ''}`}
+          onClick={() => setOpen(o => !o)}
+          aria-label="Alerts"
+        >
+          <Bell size={20} />
+          {count > 0 && <span className="ab-badge">{count > 9 ? '9+' : count}</span>}
+        </button>
+      )}
 
       {open && (
         <>
           <div className="ab-scrim" onClick={() => setOpen(false)} />
-          <div className="ab-panel">
+          <div className={`ab-panel ${inline ? 'ab-panel-top' : ''}`}>
             <div className="ab-head">
               <span>Alerts {count > 0 && <em>· {count}</em>}</span>
               <button className="ab-close" onClick={() => setOpen(false)}><X size={16} /></button>

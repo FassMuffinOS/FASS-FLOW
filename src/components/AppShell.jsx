@@ -10,7 +10,6 @@ import {
   Sparkles, Users, Award, MessageCircle, Newspaper, LayoutGrid, PenSquare,
   PanelLeft, Plus, Pencil, Check, Trash2,
 } from 'lucide-react'
-import AlertsBell from './AlertsBell'
 import ChatDock from './ChatDock'
 import BottomNav from './BottomNav'
 import TopBar from './TopBar'
@@ -415,7 +414,7 @@ export default function AppShell({ children }) {
         {children}
       </div>
 
-      <AlertsBell />
+      {/* AlertsBell now lives in the TopBar as the inline health light. */}
       {!location.pathname.startsWith('/messages') && <ChatDock userId={userId} />}
       <BottomNav userId={userId} />
     </div>

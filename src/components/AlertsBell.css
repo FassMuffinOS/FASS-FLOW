@@ -23,6 +23,29 @@
 }
 .ab-bell-urgent .ab-badge { color: #b23a22; border-color: #e2563b; }
 
+/* Inline "health light" variant — lives in the top bar instead of floating. */
+.ab-inline {
+  position: relative; display: inline-flex; align-items: center; gap: 7px;
+  background: var(--bg-surface, #fff); border: 1px solid var(--border, #e5e7eb);
+  border-radius: var(--radius-sm, 8px); padding: 7px 11px; cursor: pointer;
+  font-family: inherit; color: var(--ink, #1B2A4A); transition: border-color .15s;
+}
+.ab-inline:hover { border-color: var(--accent, #1D9E75); }
+.ab-inline svg { color: var(--text-secondary, #4b5563); }
+.ab-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.ab-dot-green { background: #1D9E75; }
+.ab-dot-amber { background: #BA7517; }
+.ab-dot-red   { background: #e2563b; }
+.ab-inline-red { border-color: #f3c0b6; }
+.ab-inline-count {
+  font-size: 0.72rem; font-weight: 800; color: var(--text-secondary, #4b5563);
+  background: var(--gray-100, #f3f4f6); border-radius: 999px; padding: 1px 7px;
+}
+.ab-inline-red .ab-inline-count { background: #fde7e2; color: #b23a22; }
+
+/* When triggered from the top bar, the panel drops from the top-right. */
+.ab-panel-top { top: 62px; bottom: auto; }
+
 .ab-scrim {
   position: fixed; inset: 0; z-index: 899;
   background: rgba(0,0,0,0.08);

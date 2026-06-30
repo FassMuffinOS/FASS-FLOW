@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { Search, LayoutGrid, Compass, CornerDownLeft, Plus, ChevronDown, LayoutTemplate, ClipboardCheck, ClipboardList, Send, Radar } from 'lucide-react'
+import AlertsBell from './AlertsBell'
 import './TopBar.css'
 
 // High-frequency "create" actions, reachable from anywhere without hunting
@@ -117,6 +118,7 @@ export default function TopBar({ items = [] }) {
         </div>
         <Link to="/get-started" className="topbar-quick-btn" title="Get Started — the map of everything"><LayoutGrid size={15} /> Get Started</Link>
         <Link to="/dashboard" className="topbar-quick-btn topbar-quick-icon" title="Dashboard"><Compass size={16} /></Link>
+        <AlertsBell inline />
       </div>
     </div>
   )
