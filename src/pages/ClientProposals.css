@@ -87,6 +87,38 @@
   display: flex; flex-direction: column; align-items: center; gap: 12px;
 }
 
+.cp-pull { cursor: pointer; }
+
+/* ── Margin Guard ── */
+.cp-margin { border-left: 4px solid var(--border); }
+.cp-margin-ok { border-left-color: var(--teal, #1D9E75); }
+.cp-margin-low { border-left-color: var(--amber, #BA7517); }
+.cp-margin-loss { border-left-color: #DC2626; }
+.cp-margin-head {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 800; color: var(--navy, #1B2A4A); font-size: 0.95rem;
+}
+.cp-margin-ok .cp-margin-head svg { color: var(--teal, #1D9E75); }
+.cp-margin-low .cp-margin-head svg { color: var(--amber, #BA7517); }
+.cp-margin-loss .cp-margin-head svg { color: #DC2626; }
+.cp-margin-pct { margin-left: auto; font-size: 0.82rem; font-weight: 700; color: var(--text-secondary, #4b5563); }
+.cp-margin-bar {
+  position: relative; height: 8px; margin: 14px 0 12px;
+  background: var(--gray-100, #f3f4f6); border-radius: 999px; overflow: hidden;
+}
+.cp-margin-fill { height: 100%; border-radius: 999px; background: var(--teal, #1D9E75); transition: width .25s; }
+.cp-margin-low .cp-margin-fill { background: var(--amber, #BA7517); }
+.cp-margin-loss .cp-margin-fill { background: #DC2626; }
+.cp-margin-target {
+  position: absolute; top: -3px; width: 2px; height: 14px;
+  background: var(--navy, #1B2A4A); opacity: .55;
+}
+.cp-margin-nums { display: flex; gap: 18px; font-size: 0.84rem; color: var(--text-secondary, #4b5563); }
+.cp-margin-nums strong { color: var(--navy, #1B2A4A); font-weight: 800; }
+.cp-margin-nums .cp-neg { color: #DC2626; }
+.cp-margin-msg { margin-top: 10px; font-size: 0.82rem; color: var(--text-secondary, #4b5563); }
+.cp-margin-loss .cp-margin-msg, .cp-margin-low .cp-margin-msg { font-weight: 600; }
+
 @media (max-width: 640px) {
   .cp-list-item { flex-direction: column; align-items: stretch; }
   .cp-row2 { grid-template-columns: 1fr; }

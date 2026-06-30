@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import {
-  Plus, Trash2, Check, ArrowLeft, Link2, Send, Layers, ListChecks,
+  Plus, Trash2, Check, ArrowLeft, Link2, Send, Layers, ListChecks, Calculator, ShieldAlert,
 } from 'lucide-react'
 import { defaultSelections, computeTotal, money } from '../lib/estimateTotal'
 import './ClientProposals.css'
@@ -15,7 +15,7 @@ const KINDS = [
 ]
 
 function blankForm() {
-  return { title: '', company_name: '', intro: '', base_total: '', sections: [] }
+  return { title: '', company_name: '', intro: '', base_total: '', sections: [], cost_basis: '', target_margin: 20 }
 }
 
 export default function ClientProposals() {
@@ -26,6 +26,7 @@ export default function ClientProposals() {
   const [form, setForm] = useState(blankForm())
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState('')
+  const [savedEstimates, setSavedEstimates] = useState([])
 
   useEffect(() => { if (userId) load() }, [userId]) // eslint-disable-line
 
@@ -36,11 +37,29 @@ export default function ClientProposals() {
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
     setList(data || [])
+    // Saved Estimator estimates — the source the Margin Guard can pull a real
+    // cost basis from (degrades to [] if the columns/table aren't there yet).
+    const { data: ests } = await supabase
+      .from('estimator_saved_estimates')
+      .select('id, name, subtotal_high, total_high')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+    setSavedEstimates(ests || [])
+  }
+
+  function pullFromEstimate(estId) {
+    const est = savedEstimates.find(e => String(e.id) === String(estId))
+    if (!est) return
+    setForm(f => ({
+      ...f,
+      cost_basis: est.subtotal_high != null ? String(Math.round(est.subtotal_high)) : f.cost_basis,
+      base_total: est.total_high != null ? String(Math.round(est.total_high)) : f.base_total,
+    }))
   }
 
   function startNew() { setForm(blankForm()); setEditing('new') }
   function startEdit(p) {
-    setForm({ id: p.id, title: p.title, company_name: p.company_name || '', intro: p.intro || '', base_total: p.base_total ?? '', sections: p.sections || [] })
+    setForm({ id: p.id, title: p.title, company_name: p.company_name || '', intro: p.intro || '', base_total: p.base_total ?? '', sections: p.sections || [], cost_basis: p.cost_basis ?? '', target_margin: p.target_margin ?? 20 })
     setEditing(p)
   }
 
@@ -75,6 +94,8 @@ export default function ClientProposals() {
       base_total: Number(form.base_total) || 0,
       sections: form.sections,
       selections: defaultSelections(form.sections),
+      cost_basis: form.cost_basis === '' ? null : Number(form.cost_basis),
+      target_margin: Number(form.target_margin) || 0,
     }
     if (form.id) {
       await supabase.from('client_estimates').update(payload).eq('id', form.id)
@@ -95,6 +116,20 @@ export default function ClientProposals() {
 
   const previewTotal = computeTotal(form.base_total, form.sections, defaultSelections(form.sections))
 
+  // ── Margin Guard ── live profit health as the price/cost change.
+  const price = previewTotal
+  const cost = Number(form.cost_basis) || 0
+  const profit = price - cost
+  const marginPct = price > 0 ? (profit / price) * 100 : 0
+  const target = Number(form.target_margin) || 0
+  const marginState = cost <= 0 ? 'none' : profit < 0 ? 'loss' : marginPct < target ? 'low' : 'ok'
+  const marginMsg = {
+    none: 'Add your cost basis to see your profit margin.',
+    loss: 'Below break-even — this bid loses money at the current price.',
+    low: `Below your ${target}% target margin — consider raising the price or cutting cost.`,
+    ok: `Healthy — above your ${target}% target margin.`,
+  }[marginState]
+
   // ── editor view ──
   if (editing) {
     return (
@@ -112,7 +147,38 @@ export default function ClientProposals() {
               <input className="cp-input" placeholder="Your company name" value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))} />
               <input className="cp-input" type="number" placeholder="Base price (included)" value={form.base_total} onChange={e => setForm(f => ({ ...f, base_total: e.target.value }))} />
             </div>
+            <div className="cp-row2">
+              <input className="cp-input" type="number" placeholder="Your cost basis (what the job costs you)" value={form.cost_basis} onChange={e => setForm(f => ({ ...f, cost_basis: e.target.value }))} />
+              <input className="cp-input" type="number" placeholder="Target margin %" value={form.target_margin} onChange={e => setForm(f => ({ ...f, target_margin: e.target.value }))} />
+            </div>
+            {savedEstimates.length > 0 && (
+              <select className="cp-input cp-pull" defaultValue="" onChange={e => { pullFromEstimate(e.target.value); e.target.value = '' }}>
+                <option value="" disabled>＋ Pull cost & price from a saved Estimator estimate…</option>
+                {savedEstimates.map(est => (
+                  <option key={est.id} value={est.id}>{est.name}{est.total_high != null ? ` — ${money(est.total_high)}` : ''}</option>
+                ))}
+              </select>
+            )}
             <textarea className="cp-input cp-intro" placeholder="Intro / note to the customer (optional)" value={form.intro} onChange={e => setForm(f => ({ ...f, intro: e.target.value }))} />
+          </div>
+
+          {/* Margin Guard — live profit health so you never accidentally underbid. */}
+          <div className={`cp-card cp-margin cp-margin-${marginState}`}>
+            <div className="cp-margin-head">
+              {marginState === 'loss' || marginState === 'low' ? <ShieldAlert size={16} /> : <Calculator size={16} />}
+              <span>Margin Guard</span>
+              {marginState !== 'none' && <span className="cp-margin-pct">{marginPct.toFixed(0)}% margin</span>}
+            </div>
+            <div className="cp-margin-bar">
+              <div className="cp-margin-fill" style={{ width: `${Math.max(0, Math.min(100, marginPct))}%` }} />
+              <div className="cp-margin-target" style={{ left: `${Math.max(0, Math.min(100, target))}%` }} title={`Target ${target}%`} />
+            </div>
+            <div className="cp-margin-nums">
+              <span>Price <strong>{money(price)}</strong></span>
+              <span>Cost <strong>{money(cost)}</strong></span>
+              <span>Profit <strong className={profit < 0 ? 'cp-neg' : ''}>{money(profit)}</strong></span>
+            </div>
+            <p className="cp-margin-msg">{marginMsg}</p>
           </div>
 
           {form.sections.map(sec => (

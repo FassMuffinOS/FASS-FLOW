@@ -216,6 +216,12 @@ export default function Estimator() {
         : { tradeId: l.tradeId, qty: l.qty }),
       overhead_pct: overheadPct,
       proposal_id: linkProposalId || null,
+      // Snapshot computed cost (subtotal, pre-overhead) + priced total so a
+      // Client Proposal can pull real numbers for its Margin Guard later.
+      subtotal_low: subtotalLow,
+      subtotal_high: subtotalHigh,
+      total_low: totalLow,
+      total_high: totalHigh,
     }
     const { data, error } = await supabase.from('estimator_saved_estimates').insert(payload).select().single()
     setSaving(false)
