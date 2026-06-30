@@ -13,6 +13,7 @@ import {
 import AlertsBell from './AlertsBell'
 import ChatDock from './ChatDock'
 import BottomNav from './BottomNav'
+import TopBar from './TopBar'
 import { loadSidebarConfig, saveSidebarConfig, newViewId, MAX_TOOLS_PER_VIEW } from '../lib/sidebarViews'
 import { getTrack, setTrack, TRACKS, TRACK_TO_VIEW, TRACK_EVENT } from '../lib/track'
 import './AppShell.css'
@@ -409,7 +410,10 @@ export default function AppShell({ children }) {
         </div>
       </aside>
 
-      <div className="shell-content">{children}</div>
+      <div className="shell-content">
+        <TopBar items={ALL_ITEMS} />
+        {children}
+      </div>
 
       <AlertsBell />
       {!location.pathname.startsWith('/messages') && <ChatDock userId={userId} />}

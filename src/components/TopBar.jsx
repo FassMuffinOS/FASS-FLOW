@@ -1,0 +1,78 @@
+import { useState, useRef, useEffect } from 'react'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { Search, LayoutGrid, Compass, CornerDownLeft } from 'lucide-react'
+import './TopBar.css'
+
+// Persistent orientation strip on every signed-in page. Tells you where you
+// are and lets you jump to any of the 30+ tools by typing — the antidote to
+// "lost in the sauce" navigation. `items` is AppShell's flat tool list.
+export default function TopBar({ items = [] }) {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [q, setQ] = useState('')
+  const [open, setOpen] = useState(false)
+  const wrapRef = useRef(null)
+
+  // Current location label, matched off the same route patterns the sidebar uses.
+  const current = items.find(i => i.match?.some(p => location.pathname.startsWith(p)))
+
+  const query = q.trim().toLowerCase()
+  const results = query
+    ? items.filter(i => i.name.toLowerCase().includes(query)).slice(0, 8)
+    : []
+
+  // Close the dropdown on outside click.
+  useEffect(() => {
+    function onDoc(e) { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [])
+
+  function go(item) {
+    setQ(''); setOpen(false)
+    navigate(item.to)
+  }
+  function onKeyDown(e) {
+    if (e.key === 'Enter' && results.length) { e.preventDefault(); go(results[0]) }
+    if (e.key === 'Escape') { setQ(''); setOpen(false) }
+  }
+
+  return (
+    <div className="topbar">
+      <div className="topbar-loc">
+        {current ? <current.icon size={15} /> : <Compass size={15} />}
+        <span>{current ? current.name : 'FASS Flow'}</span>
+      </div>
+
+      <div className="topbar-search" ref={wrapRef}>
+        <Search size={15} className="topbar-search-icon" />
+        <input
+          value={q}
+          onChange={e => { setQ(e.target.value); setOpen(true) }}
+          onFocus={() => setOpen(true)}
+          onKeyDown={onKeyDown}
+          placeholder="Jump to any tool — type to search…"
+        />
+        {open && results.length > 0 && (
+          <div className="topbar-results">
+            {results.map((item, i) => (
+              <button key={item.name} className="topbar-result" onClick={() => go(item)}>
+                <item.icon size={15} />
+                <span>{item.name}</span>
+                {i === 0 && <span className="topbar-enter"><CornerDownLeft size={12} /> enter</span>}
+              </button>
+            ))}
+          </div>
+        )}
+        {open && query && results.length === 0 && (
+          <div className="topbar-results"><span className="topbar-empty">No tool matches "{q}"</span></div>
+        )}
+      </div>
+
+      <div className="topbar-quick">
+        <Link to="/get-started" className="topbar-quick-btn" title="Get Started — the map of everything"><LayoutGrid size={15} /> Get Started</Link>
+        <Link to="/dashboard" className="topbar-quick-btn topbar-quick-icon" title="Dashboard"><Compass size={16} /></Link>
+      </div>
+    </div>
+  )
+}
