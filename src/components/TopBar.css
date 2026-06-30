@@ -14,6 +14,20 @@
 }
 .topbar-loc svg { color: var(--accent); }
 
+/* Zero-to-Hero progress / next-step (desktop: compact chip; mobile: primary) */
+.topbar-next {
+  display: inline-flex; align-items: center; gap: 9px; flex-shrink: 0;
+  max-width: 240px; text-decoration: none;
+  background: var(--bg-base); border: 1px solid var(--border);
+  border-radius: var(--radius-pill); padding: 6px 13px 6px 10px;
+  transition: border-color .15s;
+}
+.topbar-next:hover { border-color: var(--accent); }
+.topbar-next-bar { width: 42px; height: 5px; border-radius: 999px; background: var(--gray-200); overflow: hidden; flex: none; }
+.topbar-next-fill { display: block; height: 100%; background: var(--accent); transition: width .3s; }
+.topbar-next-label { font-size: 0.78rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar-next-label b { color: var(--ink); font-weight: 700; }
+
 /* Jump-to search */
 .topbar-search { position: relative; flex: 1; max-width: 520px; }
 .topbar-search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
@@ -100,4 +114,8 @@
   .topbar-quick-btn span, .topbar-quick-btn { font-size: 0; }
   .topbar-quick-btn svg { width: 16px; height: 16px; }
   .topbar-quick-btn { padding: 8px; }
+  /* Single-action mode: the search collapses, the next-step button leads. */
+  .topbar-search { display: none; }
+  .topbar-next { flex: 1; max-width: none; }
+  .topbar-next-label { font-size: 0.82rem; }
 }

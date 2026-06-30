@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { Search, LayoutGrid, Compass, CornerDownLeft, Plus, ChevronDown, LayoutTemplate, ClipboardCheck, ClipboardList, Send, Radar } from 'lucide-react'
 import AlertsBell from './AlertsBell'
+import { getTrack, TRACK_EVENT } from '../lib/track'
+import { fetchTrackSignals, progressFor, loadManual } from '../lib/trackProgress'
 import './TopBar.css'
 
 // High-frequency "create" actions, reachable from anywhere without hunting
@@ -17,9 +19,25 @@ const QUICK_ACTIONS = [
 // Persistent orientation strip on every signed-in page. Tells you where you
 // are and lets you jump to any of the 30+ tools by typing — the antidote to
 // "lost in the sauce" navigation. `items` is AppShell's flat tool list.
-export default function TopBar({ items = [] }) {
+export default function TopBar({ items = [], userId }) {
   const navigate = useNavigate()
   const location = useLocation()
+  const [progress, setProgress] = useState(null)
+
+  // Guided-track progress for the Zero-to-Hero bar + mobile next-step button.
+  // Recompute on mount and whenever the track is switched.
+  useEffect(() => {
+    if (!userId) return
+    let cancelled = false
+    async function recompute() {
+      const signals = await fetchTrackSignals(userId)
+      if (!cancelled) setProgress(progressFor(getTrack(), signals, loadManual()))
+    }
+    recompute()
+    const onChange = () => recompute()
+    window.addEventListener(TRACK_EVENT, onChange)
+    return () => { cancelled = true; window.removeEventListener(TRACK_EVENT, onChange) }
+  }, [userId])
   const [q, setQ] = useState('')
   const [open, setOpen] = useState(false)
   const [actionsOpen, setActionsOpen] = useState(false)
@@ -73,6 +91,13 @@ export default function TopBar({ items = [] }) {
         {current ? <current.icon size={15} /> : <Compass size={15} />}
         <span>{current ? current.name : 'FASS Flow'}</span>
       </div>
+
+      {progress && !progress.allDone && progress.next && (
+        <Link to={progress.next.href} className="topbar-next" title={`${progress.doneCount}/${progress.total} · Next: ${progress.next.title}`}>
+          <span className="topbar-next-bar"><span className="topbar-next-fill" style={{ width: `${progress.pct}%` }} /></span>
+          <span className="topbar-next-label"><b>Next:</b> {progress.next.title}</span>
+        </Link>
+      )}
 
       <div className="topbar-search" ref={wrapRef}>
         <Search size={15} className="topbar-search-icon" />

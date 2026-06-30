@@ -1,61 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { supabase } from '../lib/supabase'
-import {
-  Check, ArrowRight, IdCard, Radar, ClipboardCheck, ClipboardList, Kanban,
-  Calculator, Send, Camera, Rocket, BookOpen, X,
-} from 'lucide-react'
-import { getTrack, setTrack, TRACK_EVENT } from '../lib/track'
+import { Check, ArrowRight, Rocket, X } from 'lucide-react'
+import { getTrack, setTrack, TRACKS, TRACK_EVENT } from '../lib/track'
+import { fetchTrackSignals, progressFor, loadManual, MANUAL_KEY } from '../lib/trackProgress'
 import './GetStarted.css'
 
 const DISMISS = 'fass_getstarted_dismissed'
-const MANUAL_KEY = 'fass_track_manual' // steps with no data signal, checked by hand
 
-// The guided paths. Each track is an ordered set of steps; a step with a
-// `signal` auto-checks the moment that data exists (real progress, never a
-// separate to-do to keep in sync). Steps without a signal (e.g. "walk the
-// job site") can be checked off by hand. FASS serves more than one kind of
-// contractor, so the path you see matches the business you're actually
-// running — not one generic checklist.
-const TRACKS = [
-  {
-    id: 'govcon',
-    name: 'Win government contracts',
-    steps: [
-      { key: 'profile', signal: 'profile', icon: IdCard, title: 'Set up your Passport', body: 'Add your NAICS codes and set-aside status so WARDOG matches the right work.', cta: 'Open Passport', href: '/passport' },
-      { key: 'opportunity', signal: 'opportunity', icon: Radar, title: 'Find your first opportunity', body: 'Browse the live SAM.gov feed and save one that fits.', cta: 'Open WARDOG', href: '/wardog' },
-      { key: 'scored', signal: 'scored', icon: ClipboardCheck, title: 'Score it with R-E-A-D', body: 'Six questions tell you bid or no-bid before you sink time in.', cta: 'Open R-E-A-D', href: '/read' },
-      { key: 'drafted', signal: 'fill', icon: ClipboardList, title: 'Draft your response', body: 'Turn it into a compliance matrix and capability statement in FASS FILL.', cta: 'Open FASS FILL', href: '/fill' },
-      { key: 'tracked', signal: 'opportunity', icon: Kanban, title: 'Track it in Pipeline', body: 'Watch every bid in motion with a self-checking submission checklist.', cta: 'Open Pipeline', href: '/pipeline' },
-    ],
-  },
-  {
-    id: 'commercial',
-    name: 'Bid commercial jobs',
-    steps: [
-      { key: 'profile', signal: 'profile', icon: IdCard, title: 'Set up your business profile', body: 'Your company details flow into every estimate and proposal automatically.', cta: 'Open Passport', href: '/passport' },
-      { key: 'estimate', signal: 'estimate', icon: Calculator, title: 'Build your first estimate', body: 'Add the trades on the job and get a zip-adjusted line-item cost range.', cta: 'Open Estimator', href: '/estimator' },
-      { key: 'proposal', signal: 'proposalSent', icon: Send, title: 'Send a client proposal', body: 'Turn the estimate into an interactive proposal the client approves online.', cta: 'Open Client Proposals', href: '/proposals' },
-      { key: 'capture', signal: null, icon: Camera, title: 'Capture the job site', body: 'Walk the job on your phone and snap photos tied to the contract.', cta: 'Open Contractor Camera', href: '/camera' },
-    ],
-  },
-  {
-    id: 'startup',
-    name: 'Start & set up my business',
-    steps: [
-      { key: 'start', signal: null, icon: Rocket, title: 'Set up your business', body: 'Structure, path, and the checklist to get legally operational.', cta: 'Open Start a Business', href: '/start' },
-      { key: 'profile', signal: 'profile', icon: IdCard, title: 'Add your Passport details', body: 'UEI, CAGE, and set-aside status — the identity every contract needs.', cta: 'Open Passport', href: '/passport' },
-      { key: 'learn', signal: 'masterclass', icon: BookOpen, title: 'Start the Masterclass', body: 'Mission 1 of the Government Contracting Masterclass — learn the fundamentals.', cta: 'Open Classroom', href: '/classroom' },
-      { key: 'browse', signal: 'opportunity', icon: Radar, title: 'Browse live opportunities', body: 'See what real work looks like in WARDOG, matched to your codes.', cta: 'Open WARDOG', href: '/wardog' },
-    ],
-  },
-]
-
-function loadManual() {
-  try { return new Set(JSON.parse(localStorage.getItem(MANUAL_KEY) || '[]')) } catch { return new Set() }
-}
-
+// The Dashboard's guided path. Tracks, steps, and the data-driven completion
+// all come from the shared trackProgress lib, so the top-bar progress and this
+// card never disagree.
 export default function GetStarted() {
   const { session } = useAuth()
   const navigate = useNavigate()
@@ -75,43 +30,14 @@ export default function GetStarted() {
   useEffect(() => {
     if (!userId) return
     let cancelled = false
-    async function load() {
-      // allSettled so one missing table never blanks the whole card.
-      const [prof, props, fill, ests, mc] = await Promise.allSettled([
-        supabase.from('profiles').select('naics_codes, certifications').eq('id', userId).single(),
-        supabase.from('proposals').select('id, read_score').eq('user_id', userId),
-        supabase.from('fass_fill_documents').select('id', { count: 'exact', head: true }).eq('user_id', userId),
-        supabase.from('client_estimates').select('status').eq('user_id', userId),
-        supabase.from('masterclass_progress').select('id', { count: 'exact', head: true }).eq('user_id', userId),
-      ])
-      if (cancelled) return
-      const profData = prof.status === 'fulfilled' ? prof.value.data : null
-      const propList = props.status === 'fulfilled' ? (props.value.data || []) : []
-      const estList = ests.status === 'fulfilled' ? (ests.value.data || []) : []
-      setSignals({
-        profile: (Array.isArray(profData?.naics_codes) && profData.naics_codes.length > 0) ||
-                 (Array.isArray(profData?.certifications) && profData.certifications.length > 0),
-        opportunity: propList.length > 0,
-        scored: propList.some(p => p.read_score != null),
-        fill: fill.status === 'fulfilled' && (fill.value.count || 0) > 0,
-        estimate: estList.length > 0,
-        proposalSent: estList.some(e => e.status && e.status !== 'draft'),
-        masterclass: mc.status === 'fulfilled' && (mc.value.count || 0) > 0,
-      })
-    }
-    load()
+    fetchTrackSignals(userId).then(s => { if (!cancelled) setSignals(s) })
     return () => { cancelled = true }
   }, [userId])
 
   if (dismissed || !signals) return null
 
-  const track = TRACKS.find(t => t.id === trackId) || TRACKS[0]
-  const isDone = step => step.signal ? !!signals[step.signal] : manual.has(`${track.id}:${step.key}`)
-  const steps = track.steps.map(s => ({ ...s, done: isDone(s) }))
-  const doneCount = steps.filter(s => s.done).length
-  const pct = Math.round((doneCount / steps.length) * 100)
+  const { steps, doneCount, pct, allDone } = progressFor(trackId, signals, manual)
   const nextIdx = steps.findIndex(s => !s.done)
-  const allDone = doneCount === steps.length
 
   function chooseTrack(id) {
     setTrackId(id)
@@ -119,7 +45,7 @@ export default function GetStarted() {
   }
   function toggleManual(step) {
     if (step.signal) return // data-backed steps aren't hand-checkable
-    const id = `${track.id}:${step.key}`
+    const id = `${trackId}:${step.key}`
     setManual(prev => {
       const next = new Set(prev)
       next.has(id) ? next.delete(id) : next.add(id)
@@ -144,15 +70,15 @@ export default function GetStarted() {
         </div>
       </div>
 
-      {/* Track switcher — the missing piece: a path per kind of contractor. */}
+      {/* Track switcher — a path per kind of contractor. */}
       <div className="gs-tracks">
         {TRACKS.map(t => (
           <button
             key={t.id}
-            className={`gs-track-chip ${t.id === track.id ? 'is-active' : ''}`}
+            className={`gs-track-chip ${t.id === trackId ? 'is-active' : ''}`}
             onClick={() => chooseTrack(t.id)}
           >
-            {t.name}
+            {t.short}
           </button>
         ))}
       </div>
