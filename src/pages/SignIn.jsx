@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { consumePostAuthRedirect } from '../lib/postAuthRedirect'
+import { getBusinessProfile } from '../lib/businessProfile'
 import './SignIn.css'
 
 // Minimal inline brand marks — lucide-react doesn't ship logo glyphs, and
@@ -85,8 +86,19 @@ export default function SignIn() {
     if (error) {
       setError(error.message)
       setLoading(false)
-    } else {
-      navigate(consumePostAuthRedirect() || '/get-started')
+      return
+    }
+    // An explicit redirect intent (e.g. affiliate CTA) wins. Otherwise route
+    // the same way OAuth does: no business profile yet → 3-screen onboarding
+    // wizard; profile already set up → straight to the Get-Started hub.
+    const redirect = consumePostAuthRedirect()
+    if (redirect) { navigate(redirect); return }
+    try {
+      const { data } = await supabase.auth.getUser()
+      const profile = data?.user ? await getBusinessProfile(data.user.id) : null
+      navigate(profile ? '/get-started' : '/onboarding')
+    } catch {
+      navigate('/get-started')
     }
   }
 
