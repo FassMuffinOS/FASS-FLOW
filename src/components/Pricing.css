@@ -37,6 +37,60 @@
   flex-shrink: 0;
 }
 
+/* Billing interval toggle */
+.billing-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: fit-content;
+  margin: 0 auto 36px;
+  padding: 4px;
+  border-radius: 999px;
+  border: 2px solid var(--gray-200);
+  background: var(--white);
+}
+
+.billing-toggle-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  padding: 9px 18px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--gray-400);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.billing-toggle-opt.is-active {
+  background: var(--navy);
+  color: #fff;
+}
+
+.billing-toggle-save {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--teal);
+  color: #fff;
+}
+
+.plan-annual-note {
+  font-size: 0.74rem;
+  color: var(--gray-400);
+  margin-top: -8px;
+}
+.plan-featured .plan-annual-note,
+.plan-enterprise .plan-annual-note {
+  color: rgba(255,255,255,0.55);
+}
+
 .plan-founders-note {
   display: flex;
   align-items: center;

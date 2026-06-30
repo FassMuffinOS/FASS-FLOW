@@ -38,6 +38,7 @@ const PLANS = [
     key: 'starter',
     name: 'Core',
     price: 99,
+    annualPrice: 986.04,
     tagline: 'Start winning work',
     color: 'default',
     features: [
@@ -55,6 +56,7 @@ const PLANS = [
     key: 'pro',
     name: 'Pro',
     price: 200,
+    annualPrice: 1992,
     tagline: 'Run the full business',
     color: 'featured',
     badge: 'Most Popular',
@@ -75,6 +77,7 @@ const PLANS = [
     key: 'team',
     name: 'Team',
     price: 499,
+    annualPrice: 4970.04,
     tagline: 'Scale operations',
     color: 'navy',
     features: [
@@ -91,6 +94,7 @@ const PLANS = [
     key: 'enterprise',
     name: 'Enterprise',
     price: 1500,
+    annualPrice: 14940,
     tagline: 'Win with intelligence',
     color: 'enterprise',
     badge: 'WARDOG Intel',
@@ -117,6 +121,7 @@ export default function Pricing() {
   const navigate = useNavigate()
   const [checkingOut, setCheckingOut] = useState(null) // plan key in flight, or null
   const [error, setError] = useState('')
+  const [annual, setAnnual] = useState(false) // false = monthly, true = annual (17% off)
 
   async function handleCta(plan) {
     if (plan.key === 'team') {
@@ -141,7 +146,12 @@ export default function Pricing() {
       const res = await apiFetch('/api/v1/subscriptions/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: plan.key, user_id: session.user.id, email: session.user.email }),
+        body: JSON.stringify({
+          plan: plan.key,
+          user_id: session.user.id,
+          email: session.user.email,
+          billing_interval: annual ? 'year' : 'month',
+        }),
       })
       const data = await res.json()
       if (data?.url) {
@@ -173,6 +183,23 @@ export default function Pricing() {
           they stay subscribed — even after we raise it.
         </Reveal>
 
+        <Reveal as="div" className="billing-toggle" delay={60}>
+          <button
+            type="button"
+            className={`billing-toggle-opt ${!annual ? 'is-active' : ''}`}
+            onClick={() => setAnnual(false)}
+          >
+            Monthly
+          </button>
+          <button
+            type="button"
+            className={`billing-toggle-opt ${annual ? 'is-active' : ''}`}
+            onClick={() => setAnnual(true)}
+          >
+            Annual <span className="billing-toggle-save">Save 17%</span>
+          </button>
+        </Reveal>
+
         <div className="pricing-grid pricing-grid-5">
           {PLANS.map((plan, i) => (
             <Reveal
@@ -194,6 +221,14 @@ export default function Pricing() {
                 <div className="plan-price-row">
                   {plan.price === 0 ? (
                     <span className="plan-price">Free</span>
+                  ) : annual && plan.annualPrice ? (
+                    <>
+                      <span className="plan-currency">$</span>
+                      <span className="plan-price">
+                        {plan.annualPrice % 1 === 0 ? plan.annualPrice : plan.annualPrice.toFixed(2)}
+                      </span>
+                      <span className="plan-period">/yr</span>
+                    </>
                   ) : (
                     <>
                       <span className="plan-currency">$</span>
@@ -202,6 +237,11 @@ export default function Pricing() {
                     </>
                   )}
                 </div>
+                {annual && plan.annualPrice && (
+                  <div className="plan-annual-note">
+                    vs. ${(plan.price * 12).toLocaleString()}/yr billed monthly
+                  </div>
+                )}
                 {plan.foundersNote && (
                   <div className="plan-founders-note">
                     <Lock size={11} />
