@@ -55,6 +55,22 @@
   padding: 8px 12px 3px;
 }
 
+/* "Back to platform" link shown to a regular customer who has stepped into
+   the Marketing Hub — visually set apart from the hub's own nav items (muted,
+   with a divider under it) so it reads as "leave this area," not as one of
+   the promotion tools. */
+.shell-nav-back {
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle, rgba(0, 0, 0, 0.08));
+  border-radius: 0;
+}
+a.shell-nav-back:hover {
+  color: var(--ink);
+  background: none;
+}
+
 /* Inside the Opportunity Workspace, non-active journeys fade back so the
    sidebar reads as "you're mid-flow on one record" rather than 18 equally
    weighted destinations. Still fully clickable — this is a visual cue,

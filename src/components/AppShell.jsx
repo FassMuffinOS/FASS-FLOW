@@ -8,7 +8,7 @@ import {
   LifeBuoy, Handshake, Calculator, HardHat, Camera,
   Radar, Images, Trophy, Flame, Menu, X, Send, Lock, ChevronDown, Stamp, Wallet, Rocket, Crop, Megaphone, Gift, Landmark,
   Sparkles, Users, Award, MessageCircle, Newspaper, LayoutGrid, PenSquare,
-  PanelLeft, Plus, Pencil, Check, Trash2, Settings as SettingsIcon,
+  PanelLeft, Plus, Pencil, Check, Trash2, Settings as SettingsIcon, ArrowLeft,
 } from 'lucide-react'
 import ChatDock from './ChatDock'
 import BottomNav from './BottomNav'
@@ -88,17 +88,23 @@ const NAV_GROUPS = [
 const ALL_ITEMS = NAV_GROUPS.flatMap(g => g.items)
 const ITEM_BY_NAME = Object.fromEntries(ALL_ITEMS.map(i => [i.name, i]))
 
-// Stripped nav for profiles.is_affiliate_only accounts — the external
-// "apply" flow (AffiliateApply.jsx) provisions a real auth.users row + a
-// real affiliates row so the dashboard, gamification, and recruiting all
-// work unmodified, but these accounts have no business/GovCon use for the
-// other ~30 nav items above. This is the UI-level half of the wall — the
-// route-level half (typing a GovCon URL directly bounces to
-// /affiliates/dashboard even though the sidebar here would never link to
-// it) lives in App.jsx's route guards, via src/lib/affiliateGate.js.
-const AFFILIATE_NAV_ITEMS = [
-  { name: 'Affiliate Dashboard', icon: Award, to: '/affiliates/dashboard', match: ['/affiliates/dashboard'] },
-  { name: 'Program Details', icon: Megaphone, to: '/affiliates', match: ['/affiliates'] },
+// The Marketing Hub nav — shown whenever the shell is in "promote FASS"
+// context, which is BOTH:
+//   1. an external profiles.is_affiliate_only account (the /affiliates/apply
+//      flow provisions a real auth.users + affiliates row, but the account
+//      has no business/GovCon use for the other ~30 nav items), and
+//   2. a regular GovCon customer who has navigated into /affiliates/* to work
+//      on their own creator/referral side — they should see only the promotion
+//      tools here, not the full bidding sidebar, with a "Back to platform"
+//      link to return to the product.
+// For case 1 this is the UI-level half of a hard wall (the route-level half,
+// which bounces an affiliate-only account that types a GovCon URL directly,
+// lives in App.jsx via src/lib/affiliateGate.js). For case 2 it's purely
+// contextual — the user keeps full platform access, the sidebar just reframes
+// to match where they are.
+const MARKETING_HUB_ITEMS = [
+  { name: 'Marketing Hub', icon: Megaphone, to: '/affiliates/dashboard', match: ['/affiliates/dashboard'] },
+  { name: 'Program Details', icon: Award, to: '/affiliates', match: ['/affiliates'] },
   { name: 'Settings', icon: SettingsIcon, to: '/settings', match: ['/settings'] },
   { name: 'Support', icon: LifeBuoy, to: '/support', match: ['/support'] },
 ]
@@ -183,6 +189,12 @@ export default function AppShell({ children }) {
   // External affiliate-only account (see AffiliateApply.jsx /affiliates/apply)
   // — render the stripped creator-only chrome instead of the full GovCon nav.
   const affiliateOnly = !!profile?.is_affiliate_only
+  // A regular GovCon customer is "in the marketing hub" whenever they're on an
+  // /affiliates/* page. showMarketingHub unifies both: an affiliate-only
+  // account is ALWAYS in the hub (no platform to leave); a regular user is in
+  // it only while inside the affiliate area, and gets a Back-to-platform link.
+  const inAffiliateArea = location.pathname.startsWith('/affiliates')
+  const showMarketingHub = affiliateOnly || inAffiliateArea
 
   // ── view config helpers ──
   const compact = cfg.compact && !menuOpen   // compact only on the docked desktop rail
@@ -285,9 +297,10 @@ export default function AppShell({ children }) {
         </div>
 
         {/* Track switcher — the user's business identity; switching it flips
-            the view + guided path + AI framing in one move. Not meaningful
-            for an affiliate-only account (no business/GovCon track at all). */}
-        {!compact && !affiliateOnly && (
+            the view + guided path + AI framing in one move. Hidden in the
+            marketing hub (an affiliate-only account has no track at all, and a
+            regular user in /affiliates/* is doing creator work, not bidding). */}
+        {!compact && !showMarketingHub && (
           <div className="shell-track">
             <span className="shell-track-label">Track</span>
             <select className="shell-track-select" value={track} onChange={e => setTrack(e.target.value)}>
@@ -296,9 +309,9 @@ export default function AppShell({ children }) {
           </div>
         )}
 
-        {/* View switcher — hidden in compact rail (no room for chips), and
-            for affiliate-only accounts (nothing to customize). */}
-        {!compact && !affiliateOnly && (
+        {/* View switcher — hidden in compact rail (no room for chips), and in
+            the marketing hub (nothing to customize there). */}
+        {!compact && !showMarketingHub && (
           <div className="shell-views">
             <button className={`shell-view-chip ${cfg.activeView === 'all' ? 'is-active' : ''}`} onClick={() => setActiveView('all')}>All</button>
             {cfg.views.map(v => (
@@ -309,10 +322,20 @@ export default function AppShell({ children }) {
         )}
 
         {/* View editor (rename + add/remove tools, max 7) */}
-        {affiliateOnly ? (
+        {showMarketingHub ? (
           <nav className="shell-nav">
             <div className="shell-navgroup">
-              {AFFILIATE_NAV_ITEMS.map(renderItem)}
+              {/* Regular customers keep full platform access — give them a
+                  one-tap way back. Affiliate-only accounts have no platform,
+                  so they don't see this. */}
+              {inAffiliateArea && !affiliateOnly && (
+                <Link to="/dashboard" className="shell-nav-item shell-nav-back" title="Back to the FASS Flow platform">
+                  <ArrowLeft size={16} />
+                  <span className="shell-nav-text">Back to platform</span>
+                </Link>
+              )}
+              <span className="shell-navgroup-label">Marketing Hub</span>
+              {MARKETING_HUB_ITEMS.map(renderItem)}
             </div>
           </nav>
         ) : editingObj && !compact ? (
@@ -440,17 +463,18 @@ export default function AppShell({ children }) {
       </aside>
 
       <div className="shell-content">
-        <TopBar items={affiliateOnly ? AFFILIATE_NAV_ITEMS : ALL_ITEMS} userId={userId} affiliateOnly={affiliateOnly} />
+        <TopBar items={affiliateOnly ? MARKETING_HUB_ITEMS : ALL_ITEMS} userId={userId} affiliateOnly={affiliateOnly} />
         {children}
       </div>
 
       {/* AlertsBell now lives in the TopBar as the inline health light.
           ChatDock and BottomNav are GovCon-product surfaces (proposals,
-          quick actions, mobile nav to /dashboard /network etc.) with
-          nothing relevant for an affiliate-only account — suppressed
-          entirely rather than partially adapted. */}
-      {!affiliateOnly && !location.pathname.startsWith('/messages') && <ChatDock userId={userId} />}
-      {!affiliateOnly && <BottomNav userId={userId} />}
+          quick actions, mobile nav to /dashboard /network etc.) with nothing
+          relevant in the marketing hub — suppressed for affiliate-only
+          accounts AND for a regular user while they're inside /affiliates/*,
+          so the creator area stays focused on promotion. */}
+      {!showMarketingHub && !location.pathname.startsWith('/messages') && <ChatDock userId={userId} />}
+      {!showMarketingHub && <BottomNav userId={userId} />}
       <InstallPrompt />
     </div>
   )
