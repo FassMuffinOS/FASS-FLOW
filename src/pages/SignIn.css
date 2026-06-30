@@ -190,6 +190,28 @@
   padding: 10px 14px;
 }
 
+.signin-notice {
+  font-size: 0.85rem;
+  color: var(--dark-teal, #0F6E56);
+  background: var(--light-teal, #E1F5EE);
+  border: 1px solid var(--teal, #1D9E75);
+  border-radius: 8px;
+  padding: 10px 14px;
+  line-height: 1.45;
+}
+
+.signin-switch {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--teal, #1D9E75);
+  padding: 0;
+}
+.signin-switch:hover { text-decoration: underline; }
+
 .signin-btn {
   width: 100%;
   padding: 14px;

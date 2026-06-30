@@ -68,6 +68,18 @@ export function AuthProvider({ children }) {
   const signIn = (email, password) =>
     supabase.auth.signInWithPassword({ email, password })
 
+  // Email/password account creation. If the Supabase project requires email
+  // confirmation, the returned session is null until the user confirms (the
+  // SignIn page handles that case); otherwise a session comes back right away
+  // and the user goes straight into onboarding. Confirmation links land on
+  // /auth/callback so a confirmed brand-new user routes into the wizard.
+  const signUp = (email, password) =>
+    supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+    })
+
   // OAuth sign-in/sign-up in one step — Supabase auto-creates the user on
   // first login with any of these, so this doubles as self-serve signup.
   // 'azure' is Microsoft's provider key in Supabase Auth; 'linkedin_oidc'
@@ -86,7 +98,7 @@ export function AuthProvider({ children }) {
   const signOut = () => supabase.auth.signOut()
 
   return (
-    <AuthContext.Provider value={{ session, signIn, signInWithProvider, signOut, loading: session === undefined }}>
+    <AuthContext.Provider value={{ session, signIn, signUp, signInWithProvider, signOut, loading: session === undefined }}>
       {children}
     </AuthContext.Provider>
   )
