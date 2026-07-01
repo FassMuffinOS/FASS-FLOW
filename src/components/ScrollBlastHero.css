@@ -53,11 +53,42 @@
   top: 50%;
   left: 50%;
   width: 480px;
-  max-width: none;
+  height: 480px;
   transform: translate(-50%, -50%);
   pointer-events: none;
-  mix-blend-mode: screen;
   will-change: transform, opacity;
+}
+
+.sbh-burst-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(45, 212, 191, 0.9) 0%, rgba(45, 212, 191, 0.35) 35%, rgba(45, 212, 191, 0) 70%);
+  filter: blur(2px);
+}
+
+.sbh-burst-rays {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, 0.9) 0deg 4deg, transparent 4deg 26deg,
+    rgba(255, 255, 255, 0.7) 26deg 30deg, transparent 30deg 56deg,
+    rgba(255, 255, 255, 0.9) 56deg 60deg, transparent 60deg 86deg,
+    rgba(255, 255, 255, 0.7) 86deg 90deg, transparent 90deg 116deg,
+    rgba(255, 255, 255, 0.9) 116deg 120deg, transparent 120deg 146deg,
+    rgba(255, 255, 255, 0.7) 146deg 150deg, transparent 150deg 176deg,
+    rgba(255, 255, 255, 0.9) 176deg 180deg, transparent 180deg 206deg,
+    rgba(255, 255, 255, 0.7) 206deg 210deg, transparent 210deg 236deg,
+    rgba(255, 255, 255, 0.9) 236deg 240deg, transparent 240deg 266deg,
+    rgba(255, 255, 255, 0.7) 266deg 270deg, transparent 270deg 296deg,
+    rgba(255, 255, 255, 0.9) 296deg 300deg, transparent 300deg 326deg,
+    rgba(255, 255, 255, 0.7) 326deg 330deg, transparent 330deg 360deg
+  );
+  -webkit-mask-image: radial-gradient(circle, black 0%, black 30%, transparent 72%);
+  mask-image: radial-gradient(circle, black 0%, black 30%, transparent 72%);
 }
 
 .sbh-icon {

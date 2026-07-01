@@ -7,7 +7,6 @@ import qrCoin from '../assets/scroll-blast/qr-coin.png'
 import megaphone from '../assets/scroll-blast/megaphone.png'
 import giftCard from '../assets/scroll-blast/gift-card.png'
 import badgeCoin from '../assets/scroll-blast/badge-coin.png'
-import particleBurst from '../assets/scroll-blast/particle-burst.png'
 import './ScrollBlastHero.css'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -100,7 +99,10 @@ export default function ScrollBlastHero() {
       <div className="sbh-stage">
         <p className="sbh-headline" ref={headlineRef}>One tap. Right into their Wallet.</p>
         <div className="sbh-center">
-          <img className="sbh-burst" ref={burstRef} src={particleBurst} alt="" aria-hidden="true" />
+          <div className="sbh-burst" ref={burstRef} aria-hidden="true">
+            <span className="sbh-burst-glow" />
+            <span className="sbh-burst-rays" />
+          </div>
           <img className="sbh-hero" ref={heroRef} src={heroWallet} alt="FASS Systems Regulars wallet pass" />
         </div>
         {ICONS.map((icon, i) => (
