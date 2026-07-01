@@ -99,17 +99,17 @@ export default function RegularsSignup() {
         <div className="rg-pitch">
           <span className="rg-eyebrow">By Fass.Systems</span>
           <h1 className="rg-title">Regulars</h1>
-          <p className="rg-tagline">Turn customers into regulars.</p>
+          <p className="rg-tagline">Most customers never come back — and you have no way to reach them.</p>
           <p className="rg-desc">
-            Branded Apple Wallet loyalty passes, punch cards, gift cards, and campaign
-            broadcasts — no app download, no hardware. Set up in minutes.
+            One tap adds your loyalty pass to their Apple Wallet — no app to
+            download, no card to lose, no email they'll ignore.
           </p>
 
           <ul className="rg-features">
-            <li><Wallet size={16} /> A loyalty pass that lives in your customer's Apple Wallet</li>
-            <li><Stamp size={16} /> Digital punch cards that redeem with any phone camera</li>
-            <li><Gift size={16} /> Prepaid gift cards you can sell online or in person</li>
-            <li><Megaphone size={16} /> Push an offer straight to every customer's lock screen</li>
+            <li><Wallet size={16} /> No app download — it's already in their pocket</li>
+            <li><Stamp size={16} /> Paper punch cards get lost. This one can't.</li>
+            <li><Gift size={16} /> Turn a slow Tuesday into cash in the bank</li>
+            <li><Megaphone size={16} /> Fill empty seats with one tap, not a $500 ad</li>
           </ul>
 
           <div className="rg-toggle">
