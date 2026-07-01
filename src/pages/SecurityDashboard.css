@@ -121,3 +121,83 @@
   padding-top: 12px;
   margin-top: 14px;
 }
+
+.sec-ipblock {
+  border-top: 1px solid var(--gray-200, #e5e7eb);
+  border-bottom: 1px solid var(--gray-200, #e5e7eb);
+  padding: 16px 0 18px;
+  margin: 10px 0 18px;
+}
+
+.sec-ipblock-header {
+  margin-bottom: 4px;
+}
+
+.sec-ipblock-header h2 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.sec-ipblock-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+
+.sec-ipblock-form input {
+  flex: 1 1 180px;
+  border: 1px solid var(--gray-200, #e5e7eb);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+}
+
+.sec-ipblock-form button {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  white-space: nowrap;
+}
+
+.sec-ipblock-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sec-ipblock-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--gray-200, #e5e7eb);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+}
+
+.sec-ipblock-ip {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 700;
+  color: var(--navy, #0f2940);
+}
+
+.sec-ipblock-reason {
+  color: var(--gray-400, #6b7280);
+  font-size: 0.8rem;
+}
+
+.sec-ipblock-remove {
+  margin-left: auto;
+  border: none;
+  background: none;
+  color: #b91c1c;
+  cursor: pointer;
+  padding: 4px;
+  display: inline-flex;
+}
