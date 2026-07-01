@@ -71,20 +71,6 @@
 }
 .rg-features svg { color: var(--teal); flex-shrink: 0; }
 
-.rg-demo {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 18px 10px 14px;
-  margin-bottom: 28px;
-}
-.rg-demo-caption {
-  text-align: center;
-  font-size: 0.76rem;
-  color: rgba(255, 255, 255, 0.55);
-  margin: 6px 0 0;
-}
-
 .rg-toggle {
   display: inline-flex;
   gap: 4px;
