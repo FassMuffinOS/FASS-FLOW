@@ -16,11 +16,12 @@ export default function PrivacyPolicy() {
     <div className="legal">
       <div className="legal-card">
         <h1>Privacy Policy</h1>
-        <p className="legal-updated">Last updated: June 28, 2026</p>
+        <p className="legal-updated">Last updated: July 1, 2026</p>
 
         <p>
-          FASS Technologies LLC ("FASS Flow," "we," "us") operates flow.fass.systems and the FASS Flow platform.
-          This policy explains what information we collect, how we use it, and the choices you have.
+          FASS Technologies LLC ("FASS Flow," "we," "us") operates flow.fass.systems, regulars.fass.systems, and
+          affiliated or white-labeled instances of either (together, the "platform"). This policy explains what
+          information we collect, how we use it, and the choices you have, across all of them.
         </p>
 
         <h2>Information We Collect</h2>
@@ -60,15 +61,25 @@ export default function PrivacyPolicy() {
         <h3>Usage and device data</h3>
         <p>
           We collect standard technical data (IP address, browser type, pages visited) to operate, secure, and
-          improve the platform.
+          improve the platform. IP addresses are also used directly for security purposes — rate-limiting requests
+          and blocking abusive traffic — as described below.
+        </p>
+        <h3>White Label tenant information</h3>
+        <p>
+          If your business is set up with a white-labeled instance of FASS Flow or Regulars, we also hold the
+          branding and contact information needed to operate that instance (business name, logo, brand colors,
+          contact name/email) — this is separate from, and doesn't include, your end users' own account data,
+          which is handled the same as any other FASS Flow or Regulars account under this policy.
         </p>
 
         <h2>Cookies and Local Storage</h2>
         <p>
-          We use essential session storage (via Supabase Auth) to keep you signed in. If you arrive via an
-          affiliate link, we store the referral code in your browser's local storage for up to 30 days so the
-          right affiliate gets credit if you sign up. See our <a href="/cookie-policy">Cookie Policy</a> for
-          details. We do not currently use third-party advertising trackers.
+          We use a session cookie (via Supabase Auth) to keep you signed in — scoped to fass.systems so that
+          signing in on one of our subdomains (flow., regulars., affiliates.) keeps you signed in across the
+          others, instead of requiring a separate login on each. If you arrive via an affiliate link, we store the
+          referral code in your browser's local storage for up to 30 days so the right affiliate gets credit if
+          you sign up. See our <a href="/cookie-policy">Cookie Policy</a> for details. We do not currently use
+          third-party advertising trackers.
         </p>
 
         <h2>How We Use Information</h2>
@@ -84,10 +95,11 @@ export default function PrivacyPolicy() {
         <h2>Who We Share Information With</h2>
         <p>
           We share information with the service providers that power the platform — Supabase (database, auth,
-          file storage), Stripe (payments and payouts), Twilio (SMS), Apple (Wallet pass push notifications), and
-          our AI infrastructure provider (for AI-powered features). We do not sell your personal information.
-          We may disclose information if required by law or to protect the rights, safety, or property of FASS
-          Flow or our users.
+          file storage), Stripe (payments and payouts), Twilio (SMS), Apple (Wallet pass push notifications),
+          Upstash (short-term caching, rate-limiting counters, and IP-based abuse prevention), and our AI
+          infrastructure provider (for AI-powered features). We do not sell your personal information. We may
+          disclose information if required by law or to protect the rights, safety, or property of FASS Flow or
+          our users.
         </p>
         <p>
           Some opportunity data shown in WARDOG (e.g. solicitation listings) is pulled from SAM.gov, a public

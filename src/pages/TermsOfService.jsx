@@ -14,34 +14,64 @@ export default function TermsOfService() {
     <div className="legal">
       <div className="legal-card">
         <h1>Terms of Service</h1>
-        <p className="legal-updated">Last updated: June 28, 2026</p>
+        <p className="legal-updated">Last updated: July 1, 2026</p>
 
         <p>
-          These Terms govern your use of FASS Flow (flow.fass.systems), operated by FASS Technologies LLC ("FASS
-          Flow," "we," "us"). By creating an account or using the platform, you agree to these Terms.
+          These Terms govern your use of FASS Flow (flow.fass.systems), Regulars (regulars.fass.systems), and any
+          affiliated or white-labeled instance of either, all operated by FASS Technologies LLC ("FASS Flow," "we,"
+          "us"). By creating an account or using any of these products, you agree to these Terms.
         </p>
 
         <h2>1. The Service</h2>
         <p>
           FASS Flow is a platform that helps small businesses find, evaluate, win, execute, and get paid on
-          government contracting work, plus related tools (FASS Wallet loyalty/gift cards, FASS Academy
-          masterclass, BD Partner services, and others). Features and pricing may change over time.
+          government contracting work, plus related tools (WARDOG opportunity intelligence and WARDOG Intel
+          reports, FASS Wallet loyalty/gift cards, FASS Academy masterclass, AI credit packs, BD Partner services,
+          and others). <strong>Regulars</strong> is a related but separate product for non-government local
+          businesses (loyalty cards, gift cards, campaigns) — a Regulars account is billed and managed
+          independently of a FASS Flow GovCon account. Some FASS Flow and Regulars customers may also participate
+          in our <strong>affiliate program</strong>, earning commission for referrals to either product. Features
+          and pricing may change over time.
         </p>
 
         <h2>2. Accounts</h2>
         <p>
-          You must be at least 18 years old and able to form a binding contract to use FASS Flow. You're
-          responsible for the accuracy of information you provide and for keeping your account credentials
-          secure. You're responsible for activity that happens under your account.
+          You must be at least 18 years old and able to form a binding contract to use FASS Flow or Regulars.
+          You're responsible for the accuracy of information you provide and for keeping your account credentials
+          secure. You're responsible for activity that happens under your account. Signing in on one FASS Flow or
+          Regulars subdomain may keep you signed in across our other subdomains for convenience; access to each
+          product's actual features still depends on your account type and plan.
         </p>
 
-        <h2>3. Subscriptions and Payments</h2>
+        <h2>3. Subscriptions, Purchases, and Refunds</h2>
         <p>
-          Paid plans, the FASS Academy masterclass, and BD Partner service are billed through Stripe on the terms
-          presented at checkout. Subscriptions renew automatically until cancelled. You can cancel at any time;
-          cancellation stops future billing but doesn't refund amounts already charged unless required by law.
-          Businesses that accept payments through FASS Wallet gift cards or rewards may be required to complete
-          Stripe Connect onboarding, which is governed by Stripe's own terms as well as these.
+          Recurring plans (FASS Flow and Regulars subscriptions, BD Partner service) are billed through Stripe on
+          the terms presented at checkout and renew automatically until cancelled. You can cancel at any time from
+          your billing portal; cancellation stops future billing but doesn't refund amounts already charged unless
+          required by law. FASS Flow and Regulars subscriptions are billed and cancelled independently of each
+          other if you have both.
+        </p>
+        <p>
+          One-time digital purchases — AI credit packs, WARDOG Intel à la carte reports, the FASS Academy
+          masterclass, and similar — are delivered to your account immediately or shortly after purchase and are
+          non-refundable once delivered, except as required by law or where a purchased item (like a WARDOG Intel
+          report) was never actually generated due to an error on our end, in which case contact{' '}
+          <a href="mailto:admin@fass.systems">admin@fass.systems</a> for a resolution.
+        </p>
+        <p>
+          Businesses that accept payments through FASS Wallet or Regulars gift cards, or issue gift cards for
+          sale, may be required to complete Stripe Connect onboarding, which is governed by Stripe's own terms as
+          well as these; FASS Flow may retain a platform fee on gift card purchases routed through a connected
+          account, disclosed at the time you complete onboarding.
+        </p>
+
+        <h2>3a. White Label / Enterprise Instances</h2>
+        <p>
+          We may provide an enterprise client with a separately branded instance of FASS Flow or Regulars tools
+          ("White Label"), managed by us, by the client, or by an authorized enterprise partner. Use of a White
+          Label instance is governed by these Terms plus any separate order form or agreement executed with that
+          client; where the two conflict, the separate agreement controls. A White Label instance does not create
+          a separate legal entity, and end users of a White Label instance are still subject to these Terms.
         </p>
 
         <h2>4. Acceptable Use</h2>

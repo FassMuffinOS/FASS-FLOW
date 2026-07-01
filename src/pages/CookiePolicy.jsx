@@ -14,18 +14,22 @@ export default function CookiePolicy() {
     <div className="legal">
       <div className="legal-card">
         <h1>Cookie Policy</h1>
-        <p className="legal-updated">Last updated: June 28, 2026</p>
+        <p className="legal-updated">Last updated: July 1, 2026</p>
 
         <p>
-          This page explains the cookies and similar storage technologies FASS Flow (flow.fass.systems) uses.
-          It's a companion to our <a href="/privacy-policy">Privacy Policy</a>.
+          This page explains the cookies and similar storage technologies FASS Flow (flow.fass.systems), Regulars
+          (regulars.fass.systems), and our affiliate program (affiliates.fass.systems) use. It's a companion to our{' '}
+          <a href="/privacy-policy">Privacy Policy</a>.
         </p>
 
         <h2>Essential — Authentication</h2>
         <p>
-          We use Supabase Auth to keep you signed in, which relies on a session token stored in your browser.
-          This is strictly necessary for the platform to function — without it, you'd be signed out on every
-          page load. There's no way to opt out of this and still use FASS Flow.
+          We use Supabase Auth to keep you signed in, via a session cookie scoped to fass.systems. This is
+          strictly necessary for the platform to function — without it, you'd be signed out on every page load.
+          Because the cookie is scoped to fass.systems rather than one specific subdomain, signing in on
+          flow.fass.systems, regulars.fass.systems, or affiliates.fass.systems keeps you signed in across all
+          three — this is what lets a "back to platform" link actually work instead of asking you to log in
+          again. There's no way to opt out of this and still use FASS Flow or Regulars.
         </p>
 
         <h2>Functional — Affiliate Attribution</h2>

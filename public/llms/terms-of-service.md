@@ -1,20 +1,24 @@
 # Terms of Service
 
-*Last updated: June 28, 2026*
+*Last updated: July 1, 2026*
 
-These terms govern your use of FASS Flow, operated by FASS Technologies LLC.
+These terms govern your use of FASS Flow, Regulars, and any white-labeled instance of either, all operated by FASS Technologies LLC.
 
 ## 1. The service
 
-FASS Flow is a platform that helps small businesses find, evaluate, win, and execute government contracts, and grow customer relationships through FASS Wallet.
+FASS Flow is a platform that helps small businesses find, evaluate, win, and execute government contracts, and grow customer relationships through FASS Wallet, WARDOG Intel reports, and AI credit packs. Regulars is a related but separately billed product for non-government local businesses (loyalty cards, gift cards, campaigns). Some customers also participate in our affiliate program, earning commission for referrals to either product.
 
 ## 2. Accounts
 
-You must be 18 or older to create an account.
+You must be 18 or older to create an account. Signing in on one FASS Flow/Regulars subdomain may keep you signed in across the others; access to each product still depends on your account type and plan.
 
-## 3. Subscriptions and payments
+## 3. Subscriptions, purchases, and refunds
 
-Subscriptions are billed through Stripe. Businesses accepting customer payments through FASS Wallet use Stripe Connect.
+FASS Flow and Regulars subscriptions are billed through Stripe and renew automatically until cancelled; each is billed and cancelled independently if you have both. One-time purchases (AI credit packs, WARDOG Intel reports, the masterclass) are delivered on purchase and non-refundable once delivered, except as required by law. Businesses accepting customer payments through FASS Wallet or Regulars gift cards use Stripe Connect, and a platform fee may apply, disclosed at onboarding.
+
+## 3a. White label / enterprise instances
+
+An enterprise client may run a separately branded instance of FASS Flow or Regulars tools, managed by us, the client, or an authorized partner, under these terms plus any separate order form.
 
 ## 4. Acceptable use
 

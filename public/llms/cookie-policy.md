@@ -1,12 +1,16 @@
 # Cookie Policy
 
-*Last updated: June 28, 2026*
+*Last updated: July 1, 2026*
 
-This policy describes the cookies and similar storage technologies FASS Flow uses, and your choices around them.
+This policy describes the cookies and similar storage technologies FASS Flow (flow.fass.systems), Regulars
+(regulars.fass.systems), and our affiliate program (affiliates.fass.systems) use, and your choices around them.
 
 ## Essential — Authentication
 
-A Supabase Auth session token is used to keep you signed in. There is no opt-out, since the service cannot function without it.
+We use Supabase Auth to keep you signed in, via a session cookie scoped to fass.systems rather than one specific
+subdomain. This means signing in on flow.fass.systems, regulars.fass.systems, or affiliates.fass.systems keeps you
+signed in across all three — this is what lets a "back to platform" link work without asking you to log in again.
+There is no opt-out, since the service cannot function without it.
 
 ## Functional — Affiliate attribution
 
