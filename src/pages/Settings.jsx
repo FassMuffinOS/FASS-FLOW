@@ -27,6 +27,10 @@ const SECTIONS = [
 ]
 
 const PLAN_LABELS = { lite: 'Lite', starter: 'Core', pro: 'Pro', team: 'Team', promo: 'Promo Access' }
+// Regulars (wallet-only) accounts have their own plan namespace
+// (wallet_plan/wallet_subscription_status/wallet_stripe_customer_id) —
+// same labels AppShell.jsx already uses for consistency.
+const WALLET_PLAN_LABELS = { starter: 'Starter', pro: 'Pro' }
 
 // User control center — General/Account/Notifications/Billing/Connectors/
 // Privacy, modeled on the left-nav-plus-detail-panel pattern. Each section
@@ -364,51 +368,68 @@ function BillingSection({ userId, email }) {
 
   if (loading) return <SectionLoading />
 
-  const plan = profile?.plan
-  const status = profile?.subscription_status
+  // Regulars (wallet-only) accounts live in a separate plan/Stripe
+  // namespace from GovCon customers (see subscriptions.py's dual-write
+  // webhook pattern) — reading profile.plan/subscription_status for them
+  // always showed "No plan · inactive" even on an active subscription,
+  // since those columns are never written for a wallet-only account.
+  const isWalletOnly = !!profile?.is_wallet_only
+  const plan = isWalletOnly ? profile?.wallet_plan : profile?.plan
+  const status = isWalletOnly ? profile?.wallet_subscription_status : profile?.subscription_status
   const isActive = status === 'active'
+  const hasBillingAccount = isWalletOnly ? !!profile?.wallet_stripe_customer_id : !!profile?.stripe_customer_id
+  const planLabel = isWalletOnly ? (WALLET_PLAN_LABELS[plan] || plan || 'Free') : (PLAN_LABELS[plan] || plan || 'Free')
+  const subscribePath = isWalletOnly ? '/regulars' : '/pricing'
 
   return (
     <div className="set-section">
-      <h2 className="set-section-title">Billing & AI Credits</h2>
+      <h2 className="set-section-title">Billing{!isWalletOnly ? ' & AI Credits' : ''}</h2>
 
       <Row title="Current plan" desc={isActive ? 'Active subscription' : (status || 'No active subscription')}>
-        <span className={`set-plan-badge ${isActive ? 'is-active' : ''}`}>{PLAN_LABELS[plan] || plan || 'Free'}</span>
+        <span className={`set-plan-badge ${isActive ? 'is-active' : ''}`}>{planLabel}</span>
       </Row>
 
       <Row title="Manage billing" desc="Update payment method, view invoices, or change/cancel your plan via Stripe.">
-        <button className="set-save-btn" onClick={openPortal} disabled={portalLoading || !profile?.stripe_customer_id}>
+        <button className="set-save-btn" onClick={openPortal} disabled={portalLoading || !hasBillingAccount}>
           {portalLoading ? 'Opening…' : 'Open billing portal'} <ExternalLink size={13} />
         </button>
       </Row>
-      {!profile?.stripe_customer_id && <p className="set-row-desc set-billing-note">No billing account yet — subscribe on the Pricing page to manage billing here.</p>}
+      {!hasBillingAccount && (
+        <p className="set-row-desc set-billing-note">
+          No billing account yet — subscribe on the <a href={subscribePath}>{isWalletOnly ? 'Regulars' : 'Pricing'} page</a> to manage billing here.
+        </p>
+      )}
 
-      <h3 className="set-subhead">AI Credits</h3>
-      {justBought && <p className="set-row-desc set-credits-success"><Check size={13} /> Credits added — thanks!</p>}
-      <Row title="Balance" desc="1 credit per AI-drafted proposal section.">
-        <span className="set-credit-balance">{balance == null ? '—' : balance}</span>
-      </Row>
+      {!isWalletOnly && (
+        <>
+          <h3 className="set-subhead">AI Credits</h3>
+          {justBought && <p className="set-row-desc set-credits-success"><Check size={13} /> Credits added — thanks!</p>}
+          <Row title="Balance" desc="1 credit per AI-drafted proposal section.">
+            <span className="set-credit-balance">{balance == null ? '—' : balance}</span>
+          </Row>
 
-      {packs.length > 0 ? (
-        <div className="set-credit-packs">
-          <p className="set-row-desc">Buy more — bigger packs come with a bonus, no subscription required.</p>
-          <div className="set-pack-grid">
-            {packs.map(pack => (
-              <button
-                key={pack.price_id}
-                className="set-pack-card"
-                onClick={() => buyPack(pack.price_id)}
-                disabled={buyingPack !== null}
-              >
-                <span className="set-pack-price">{pack.amount_display}</span>
-                <span className="set-pack-credits">{pack.credits.toLocaleString()} credits</span>
-                {buyingPack === pack.price_id && <span className="set-pack-loading">Starting checkout…</span>}
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <p className="set-row-desc">Need more? Reach out on the Support page — refills are honored honor-system during beta.</p>
+          {packs.length > 0 ? (
+            <div className="set-credit-packs">
+              <p className="set-row-desc">Buy more — bigger packs come with a bonus, no subscription required.</p>
+              <div className="set-pack-grid">
+                {packs.map(pack => (
+                  <button
+                    key={pack.price_id}
+                    className="set-pack-card"
+                    onClick={() => buyPack(pack.price_id)}
+                    disabled={buyingPack !== null}
+                  >
+                    <span className="set-pack-price">{pack.amount_display}</span>
+                    <span className="set-pack-credits">{pack.credits.toLocaleString()} credits</span>
+                    {buyingPack === pack.price_id && <span className="set-pack-loading">Starting checkout…</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p className="set-row-desc">Need more? Reach out on the Support page — refills are honored honor-system during beta.</p>
+          )}
+        </>
       )}
     </div>
   )
