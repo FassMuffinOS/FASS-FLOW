@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { Search, LayoutGrid, Compass, CornerDownLeft, Plus, ChevronDown, LayoutTemplate, ClipboardCheck, ClipboardList, Send, Radar } from 'lucide-react'
+import { Search, LayoutGrid, Compass, CornerDownLeft, Plus, ChevronDown, LayoutTemplate, ClipboardCheck, ClipboardList, Send, Radar, Moon, Sun } from 'lucide-react'
 import AlertsBell from './AlertsBell'
 import { getTrack, TRACK_EVENT } from '../lib/track'
 import { fetchTrackSignals, progressFor, loadManual } from '../lib/trackProgress'
+import { useTheme } from '../context/ThemeContext'
 import './TopBar.css'
 
 // High-frequency "create" actions, reachable from anywhere without hunting
@@ -26,6 +27,7 @@ export default function TopBar({ items = [], userId, affiliateOnly = false }) {
   const navigate = useNavigate()
   const location = useLocation()
   const [progress, setProgress] = useState(null)
+  const { theme, toggle: toggleTheme } = useTheme()
 
   // Guided-track progress for the Zero-to-Hero bar + mobile next-step button.
   // Recompute on mount and whenever the track is switched.
@@ -165,6 +167,13 @@ export default function TopBar({ items = [], userId, affiliateOnly = false }) {
             <Link to="/dashboard" className="topbar-quick-btn topbar-quick-icon" title="Dashboard"><Compass size={16} /></Link>
           </>
         )}
+        <button
+          className="topbar-theme"
+          onClick={toggleTheme}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
         {!affiliateOnly && <AlertsBell inline />}
       </div>
     </div>

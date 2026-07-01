@@ -109,6 +109,16 @@
 .topbar-quick-btn:hover { border-color: var(--accent); color: var(--accent-hover); }
 .topbar-quick-icon { padding: 8px; }
 
+.topbar-theme {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; flex-shrink: 0;
+  color: var(--text-secondary);
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); cursor: pointer;
+  transition: border-color .15s, color .15s;
+}
+.topbar-theme:hover { border-color: var(--accent); color: var(--accent-hover); }
+
 @media (max-width: 700px) {
   .topbar-loc span { display: none; }
   .topbar-quick-btn span, .topbar-quick-btn { font-size: 0; }
