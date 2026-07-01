@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { Stamp, Download, Loader } from 'lucide-react'
+import WalletCardFly from '../components/WalletCardFly'
 import './RewardsJoin.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -14,8 +15,13 @@ export default function RewardsJoin() {
   const { businessUserId } = useParams()
   const [slug, setSlug] = useState(null)
   const [businessName, setBusinessName] = useState('')
+  const [bgColor, setBgColor] = useState(null)
+  const [rewardThreshold, setRewardThreshold] = useState(10)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [adding, setAdding] = useState(false)
+  const cardFlyRef = useRef(null)
+  const navigatedRef = useRef(false)
 
   useEffect(() => {
     if (!businessUserId || !API_BASE) { setError('Link is missing some details.'); setLoading(false); return }
@@ -33,7 +39,12 @@ export default function RewardsJoin() {
           return
         }
         const data = await res.json()
-        if (!cancelled) setSlug(data.slug)
+        if (!cancelled) {
+          setSlug(data.slug)
+          setBusinessName(data.business_name || '')
+          setBgColor(data.bg_color || null)
+          setRewardThreshold(data.reward_threshold || 10)
+        }
       } catch {
         if (!cancelled) setError('Something went wrong claiming your card — try again.')
       } finally {
@@ -43,6 +54,24 @@ export default function RewardsJoin() {
     join()
     return () => { cancelled = true }
   }, [businessUserId])
+
+  // The animation is the appetizer, not a gate — it plays for feel, then
+  // hands off to the same real .pkpass download the plain link always did.
+  // If gsap somehow fails to fire onComplete, the button becomes a normal
+  // link fallback after a short timeout so nobody ever gets stuck.
+  function handleAddClick(e) {
+    e.preventDefault()
+    if (adding || !slug) return
+    setAdding(true)
+    cardFlyRef.current?.play()
+    setTimeout(goToWallet, 1600)
+  }
+
+  function goToWallet() {
+    if (navigatedRef.current) return
+    navigatedRef.current = true
+    window.location.href = `${API_BASE}/api/v1/rewards/pass?slug=${slug}`
+  }
 
   if (loading) return <div className="rj-state"><Loader className="rj-spin" size={18} /> Setting up your card…</div>
   if (error || !slug) return <div className="rj-state">{error || "This card isn't recognized — the link may be out of date."}</div>
@@ -56,9 +85,18 @@ export default function RewardsJoin() {
         <h1 className="rj-title">You're in!</h1>
         <p className="rj-sub">Add your stamp card to Apple Wallet — show it each visit and watch the stamps add up.</p>
 
-        <a className="btn-primary rj-btn" href={`${API_BASE}/api/v1/rewards/pass?slug=${slug}`}>
-          <Download size={16} /> Add to Apple Wallet
-        </a>
+        <WalletCardFly
+          ref={cardFlyRef}
+          businessName={businessName || 'Your Rewards Card'}
+          stamps={0}
+          stampGoal={rewardThreshold}
+          accentColor={bgColor || '#0f5132'}
+          onComplete={goToWallet}
+        />
+
+        <button type="button" className="btn-primary rj-btn" onClick={handleAddClick} disabled={adding}>
+          <Download size={16} /> {adding ? 'Adding to Wallet…' : 'Add to Apple Wallet'}
+        </button>
 
         <p className="rj-foot">After a stamp is added, re-open this same link from your Wallet pass to grab the updated count.</p>
         <p className="rj-foot rj-foot-brand">Powered by FASS Wallet</p>

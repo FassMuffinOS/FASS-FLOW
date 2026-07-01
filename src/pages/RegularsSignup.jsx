@@ -3,6 +3,7 @@ import { Check, Lock, Wallet, Gift, Stamp, Megaphone } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { listRegularsPrices, regularsSignup } from '../lib/regularsClient'
 import useSeo from '../hooks/useSeo'
+import WalletCardFly from '../components/WalletCardFly'
 import './RegularsSignup.css'
 
 const PLAN_FEATURES = {
@@ -108,6 +109,18 @@ export default function RegularsSignup() {
             <li><Gift size={16} /> Prepaid gift cards you can sell online or in person</li>
             <li><Megaphone size={16} /> Push an offer straight to every customer's lock screen</li>
           </ul>
+
+          <div className="rg-demo">
+            <WalletCardFly
+              businessName="Corner Coffee Co."
+              stamps={5}
+              stampGoal={8}
+              accentColor="#0F6E56"
+              autoPlay
+              loop
+            />
+            <p className="rg-demo-caption">This is what your customer sees — tap to add, watch it land in Wallet.</p>
+          </div>
 
           <div className="rg-toggle">
             <button type="button" className={`rg-toggle-opt ${!annual ? 'is-active' : ''}`} onClick={() => setAnnual(false)}>Monthly</button>
