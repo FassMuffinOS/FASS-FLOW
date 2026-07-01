@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { isAffiliateAllowedPath, useAffiliateOnly } from './lib/affiliateGate'
 import { isWalletAllowedPath, useWalletOnly } from './lib/regularsGate'
+import { hostProduct } from './lib/hostProduct'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
 import HomeBand from './components/HomeBand'
@@ -250,11 +251,25 @@ function BDPartnerRoute() {
   return <AppShell>{active ? <BDPartnerDashboard /> : <BDPartner />}</AppShell>
 }
 
+// 2026-07-01, subdomain rollout: the root "/" needs to show a different
+// landing page depending on which FASS subdomain served it —
+// regulars.fass.systems should land on the Regulars pitch, not the GovCon
+// homepage, same for affiliates.fass.systems. hostProduct() returns null
+// everywhere today (no DNS for these subdomains yet), so this is a
+// complete no-op until Vercel/DNS is actually pointed at them — every
+// visitor keeps seeing exactly what they see today.
+function RootRoute() {
+  const product = hostProduct()
+  if (product === 'regulars') return <Navigate to="/regulars" replace />
+  if (product === 'affiliates') return <Navigate to="/affiliates" replace />
+  return <><Nav /><main><Landing /></main><Footer /></>
+}
+
 function AppRoutes() {
   return (
     <Routes>
       {/* Public routes with Nav + Footer */}
-      <Route path="/" element={<><Nav /><main><Landing /></main><Footer /></>} />
+      <Route path="/" element={<RootRoute />} />
       <Route path="/masterclass" element={<MasterclassRoute />} />
       <Route path="/support" element={<AuthAwarePage><Support /></AuthAwarePage>} />
 

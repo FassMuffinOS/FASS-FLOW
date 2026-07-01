@@ -16,6 +16,7 @@ import TopBar from './TopBar'
 import InstallPrompt from './InstallPrompt'
 import { loadSidebarConfig, saveSidebarConfig, newViewId, MAX_TOOLS_PER_VIEW } from '../lib/sidebarViews'
 import { getTrack, setTrack, TRACKS, TRACK_TO_VIEW, TRACK_EVENT } from '../lib/track'
+import { hostProduct, crossDomainUrl, onRealSubdomain } from '../lib/hostProduct'
 import './AppShell.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -225,7 +226,11 @@ export default function AppShell({ children }) {
   // affiliate-only account is ALWAYS in the hub (no platform to leave); a
   // regular user is in it only in this context, and gets a Back-to-platform link.
   const fromAffiliates = new URLSearchParams(location.search).get('from') === 'affiliates'
-  const inAffiliateArea = location.pathname.startsWith('/affiliates') || fromAffiliates
+  // hostProduct() === 'affiliates' covers the case where the whole
+  // subdomain IS the affiliate area (affiliates.fass.systems) — returns
+  // null everywhere until that subdomain's DNS actually exists, so this
+  // is additive, not a behavior change yet.
+  const inAffiliateArea = location.pathname.startsWith('/affiliates') || fromAffiliates || hostProduct() === 'affiliates'
   const showMarketingHub = affiliateOnly || inAffiliateArea
   // Regulars (profiles.is_wallet_only) — always shows the stripped
   // Wallet-only chrome, no "regular user visiting" case the way affiliates
@@ -367,16 +372,30 @@ export default function AppShell({ children }) {
                   access — give them a one-tap way back to whichever one is
                   actually theirs. Affiliate-only accounts have no platform
                   at all, so they don't see this. */}
-              {inAffiliateArea && !affiliateOnly && (
-                <Link
-                  to={walletOnly ? '/regulars/dashboard' : '/dashboard'}
-                  className="shell-nav-item shell-nav-back"
-                  title={walletOnly ? 'Back to Regulars' : 'Back to the FASS Flow platform'}
-                >
-                  <ArrowLeft size={16} />
-                  <span className="shell-nav-text">{walletOnly ? 'Back to Regulars' : 'Back to platform'}</span>
-                </Link>
-              )}
+              {inAffiliateArea && !affiliateOnly && (() => {
+                const backPath = walletOnly ? '/regulars/dashboard' : '/dashboard'
+                const backLabel = walletOnly ? 'Back to Regulars' : 'Back to platform'
+                // Once affiliates.fass.systems is a real, separate origin,
+                // "back" crosses subdomains — a client-side <Link> can't do
+                // that, it needs a real navigation. onRealSubdomain() is
+                // false everywhere today (no DNS yet), so this keeps using
+                // <Link> exactly as before until the cutover actually happens.
+                if (onRealSubdomain()) {
+                  const href = crossDomainUrl(walletOnly ? 'regulars' : 'govcon', backPath)
+                  return (
+                    <a href={href} className="shell-nav-item shell-nav-back" title={backLabel}>
+                      <ArrowLeft size={16} />
+                      <span className="shell-nav-text">{backLabel}</span>
+                    </a>
+                  )
+                }
+                return (
+                  <Link to={backPath} className="shell-nav-item shell-nav-back" title={backLabel}>
+                    <ArrowLeft size={16} />
+                    <span className="shell-nav-text">{backLabel}</span>
+                  </Link>
+                )
+              })()}
               <span className="shell-navgroup-label">Marketing Hub</span>
               {MARKETING_HUB_ITEMS.map(renderItem)}
             </div>
