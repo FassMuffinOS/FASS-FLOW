@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { apiFetch } from '../lib/apiClient'
+import { useWalletOnly } from '../lib/regularsGate'
 import './AffiliateDashboard.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
@@ -14,9 +15,19 @@ const API_BASE = import.meta.env.VITE_API_URL || ''
 // Same four pitch points shown on the public /affiliates page — repeated
 // here inline so someone who lands on the dashboard before joining (the
 // account-first flow: sign up -> straight to dashboard) still sees the
-// offer instead of a bare "join" button with no context.
-const WHY = [
+// offer instead of a bare "join" button with no context. Forked by product
+// line — a Regulars (wallet-only) affiliate is recruiting local businesses
+// to Regulars, not GovCon customers to FASS Flow, and the old copy
+// ("bidding, contracts") would be actively wrong for them.
+const WHY_GOVCON = [
   '30% commission on every plan signup and Wallet unlock through your link',
+  'No application, no follower minimum — sign up and start sharing today',
+  'Your own link, stats dashboard, and a growth calendar of post ideas',
+  'Recruit other creators and earn 10% of everything they earn too',
+]
+
+const WHY_WALLET = [
+  '30% commission on every Regulars signup through your link',
   'No application, no follower minimum — sign up and start sharing today',
   'Your own link, stats dashboard, and a growth calendar of post ideas',
   'Recruit other creators and earn 10% of everything they earn too',
@@ -37,7 +48,7 @@ const ASSIGNMENTS = [
 
 // Copy-paste sales scripts — the actual asks, not just talking points.
 // Each one is meant to be used close to verbatim.
-const PITCH_SCRIPTS = [
+const PITCH_SCRIPTS_GOVCON = [
   {
     title: 'Cold DM to a small business owner',
     body: "Hey! Saw you run [business] — I started using a tool called FASS Flow that handles bidding, contracts, and a loyalty/rewards Wallet pass for local businesses. I get a small commission if you check it out, but honestly I'd send it your way either way: [your link]. No pressure, just thought of you.",
@@ -56,6 +67,25 @@ const PITCH_SCRIPTS = [
   },
 ]
 
+const PITCH_SCRIPTS_WALLET = [
+  {
+    title: 'Cold DM to a local business owner',
+    body: "Hey! Saw you run [business] — I started using Regulars, an Apple Wallet loyalty pass + gift card + punch card system for local businesses, no app download needed for your customers. I get a small commission if you check it out, but honestly I'd send it your way either way: [your link]. No pressure, just thought of you.",
+  },
+  {
+    title: 'Social post caption',
+    body: "If you run a local business and you're still doing paper punch cards or gift certificates, you need to see this. I've been using Regulars and my customers love having it in their Wallet — link in bio if you want to try it.",
+  },
+  {
+    title: 'Recruiting another creator',
+    body: "I'm promoting Regulars as an affiliate — 30% commission, no follower minimum, real dashboard to track everything. If you recruit other creators under your link, you also earn 10% of what they make. Want my link to check it out? [your link]",
+  },
+  {
+    title: 'Email newsletter footer',
+    body: "P.S. — I've been using Regulars to run loyalty and gift cards for my business. If you run a local business too, here's my link — using it helps support this newsletter too: [your link]",
+  },
+]
+
 // Rotating content-idea prompts, one per day-of-month slot. Generic enough
 // to work for any creator niche, specific enough to actually be useful —
 // the point is removing "what do I even post" as a reason not to share.
@@ -64,10 +94,10 @@ const CONTENT_IDEAS = [
   'Share a screen-record of you using FASS Flow for 30 seconds',
   'Story poll: "Do you run a small business? Comment YES for a tool I love"',
   'Quote-tweet a small-business win and mention how FASS Flow helped',
-  'Post a "day in the life" that includes you checking WARDOG opportunities',
+  'Post a "day in the life" that includes you checking your dashboard',
   'Share your own commission stats — transparency builds trust',
   'Reply to a question in your niche with your link as the answer',
-  'Post a carousel: "3 things small businesses get wrong about bidding"',
+  'Post a carousel: "3 things small businesses get wrong about customer retention"',
   'Go live for 5 minutes walking through one FASS Flow feature',
   'Pin a comment with your link under your highest-performing recent post',
   'Share a testimonial-style post about FASS Wallet for loyalty programs',
@@ -125,6 +155,14 @@ export default function AffiliateDashboard() {
   const { session } = useAuth()
   const navigate = useNavigate()
   const userId = session?.user?.id
+  // A Regulars (wallet-only) account promotes Regulars itself, not FASS
+  // Flow's GovCon platform — same commission mechanism, different landing
+  // page. Everything else on this page (stats, XP, join flow) is already
+  // product-agnostic; the referral link was the one GovCon-hardcoded piece.
+  const walletOnly = useWalletOnly(session)
+  const refLandingPath = walletOnly ? '/regulars' : '/'
+  const why = walletOnly ? WHY_WALLET : WHY_GOVCON
+  const pitchScripts = walletOnly ? PITCH_SCRIPTS_WALLET : PITCH_SCRIPTS_GOVCON
 
   const [loading, setLoading] = useState(true)
   const [affiliate, setAffiliate] = useState(null)
@@ -264,14 +302,14 @@ export default function AffiliateDashboard() {
     }
   }
 
-  const link = affiliate ? `${window.location.origin}/?ref=${affiliate.code}` : ''
+  const link = affiliate ? `${window.location.origin}${refLandingPath}?ref=${affiliate.code}` : ''
 
   // Same referral code, with a ?src= channel tag so clicks/earnings can be
   // traced back to where the link was posted. Used by the channel builder
   // and by each share button (which tags itself with its own platform id).
   function linkWithSource(src) {
     if (!affiliate) return ''
-    const base = `${window.location.origin}/?ref=${affiliate.code}`
+    const base = `${window.location.origin}${refLandingPath}?ref=${affiliate.code}`
     return src ? `${base}&src=${encodeURIComponent(src)}` : base
   }
 
@@ -398,7 +436,7 @@ export default function AffiliateDashboard() {
           <h2>Welcome — let's get you earning</h2>
           <p>You're signed in. One click sets up your referral link, stats, and growth calendar.</p>
           <ul className="afd-join-why">
-            {WHY.map(point => (
+            {why.map(point => (
               <li key={point}><Check size={14} /> {point}</li>
             ))}
           </ul>
@@ -678,7 +716,7 @@ export default function AffiliateDashboard() {
         <div className="afd-section-head"><MessageSquare size={17} /> Pitch scripts</div>
         <p className="afd-section-sub">Copy-paste scripts for selling and recruiting — your link gets dropped in automatically.</p>
         <div className="afd-scripts">
-          {PITCH_SCRIPTS.map((s, idx) => (
+          {pitchScripts.map((s, idx) => (
             <div className="afd-script" key={s.title}>
               <div className="afd-script-head">
                 <span className="afd-script-title">{s.title}</span>

@@ -136,6 +136,10 @@ const WALLET_HUB_ITEMS = [
   { name: 'Gift Cards', icon: Gift, to: '/giftcards', match: ['/giftcards'] },
   { name: 'Campaigns', icon: Megaphone, to: '/campaigns', match: ['/campaigns'] },
   { name: 'Messages', icon: MessageCircle, to: '/comms', match: ['/comms'] },
+  // Regulars can promote Regulars itself to other local businesses, same
+  // 30%-commission mechanism a GovCon customer uses to promote FASS Flow —
+  // see AffiliateDashboard.jsx for the wallet-aware referral link.
+  { name: 'Affiliates', icon: Award, to: '/affiliates/dashboard', match: ['/affiliates'] },
   { name: 'Settings', icon: SettingsIcon, to: '/settings', match: ['/settings'] },
   { name: 'Support', icon: LifeBuoy, to: '/support', match: ['/support'] },
 ]
@@ -359,13 +363,18 @@ export default function AppShell({ children }) {
         {showMarketingHub ? (
           <nav className="shell-nav">
             <div className="shell-navgroup">
-              {/* Regular customers keep full platform access — give them a
-                  one-tap way back. Affiliate-only accounts have no platform,
-                  so they don't see this. */}
+              {/* Regular customers (GovCon or Regulars) keep full product
+                  access — give them a one-tap way back to whichever one is
+                  actually theirs. Affiliate-only accounts have no platform
+                  at all, so they don't see this. */}
               {inAffiliateArea && !affiliateOnly && (
-                <Link to="/dashboard" className="shell-nav-item shell-nav-back" title="Back to the FASS Flow platform">
+                <Link
+                  to={walletOnly ? '/regulars/dashboard' : '/dashboard'}
+                  className="shell-nav-item shell-nav-back"
+                  title={walletOnly ? 'Back to Regulars' : 'Back to the FASS Flow platform'}
+                >
                   <ArrowLeft size={16} />
-                  <span className="shell-nav-text">Back to platform</span>
+                  <span className="shell-nav-text">{walletOnly ? 'Back to Regulars' : 'Back to platform'}</span>
                 </Link>
               )}
               <span className="shell-navgroup-label">Marketing Hub</span>

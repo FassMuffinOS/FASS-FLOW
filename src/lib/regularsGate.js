@@ -6,8 +6,16 @@ const API_BASE = import.meta.env.VITE_API_URL || ''
 // (profiles.is_wallet_only) accounts — same pattern as affiliateGate.js.
 // A Regulars signup gets a real Supabase Auth session, so without this
 // guard it could type any GovCon URL directly into the address bar.
+// /affiliates* is deliberately on this list — a Regulars (wallet-only)
+// account can promote Regulars itself to other local businesses the exact
+// same way a GovCon customer promotes FASS Flow. The affiliate backend
+// (join/attribute/commission) is already product-line-agnostic; the only
+// GovCon-specific piece was the referral link itself, fixed in
+// AffiliateDashboard.jsx to point wallet-only affiliates at /regulars
+// instead of the GovCon homepage.
 export const WALLET_ALLOWED_PATHS = [
   '/regulars/dashboard', '/wallet', '/rewards', '/campaigns', '/giftcards', '/comms', '/settings', '/support',
+  '/affiliates', '/affiliates/dashboard',
 ]
 
 export function isWalletAllowedPath(pathname) {
