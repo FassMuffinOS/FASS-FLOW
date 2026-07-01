@@ -72,7 +72,17 @@
   pointer-events: none;
 }
 
+.wcf-wallet-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .wcf-wallet {
+  position: relative;
+  z-index: 2;
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -90,6 +100,34 @@
   background: rgb(15, 81, 50);
   border-color: rgb(15, 81, 50);
   color: #fff;
+}
+
+.wcf-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: 50%;
+  border: 2.5px solid var(--wcf-accent, #1D9E75);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.wcf-spark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--wcf-accent, #1D9E75);
+  box-shadow: 0 0 6px var(--wcf-accent, #1D9E75);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {

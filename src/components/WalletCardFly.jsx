@@ -3,6 +3,8 @@ import { gsap } from 'gsap'
 import { Wallet as WalletIcon, Check, Stamp } from 'lucide-react'
 import './WalletCardFly.css'
 
+const SPARK_COUNT = 8
+
 // Reusable "flip and fly into Wallet" animation for a loyalty stamp card.
 // Two jobs, one component:
 //   1. RewardsJoin.jsx (real product) — the customer's actual card flips
@@ -12,6 +14,11 @@ import './WalletCardFly.css'
 //   2. RegularsSignup.jsx (marketing) — same component in autoPlay+loop
 //      mode with placeholder data, selling the feature to a business owner
 //      who will never see this exact moment themselves.
+//
+// Landing gets a deliberate flourish — elastic bounce on the wallet icon,
+// a shockwave ring, and a radiating spark burst — because this is the one
+// "wow" moment the whole feature hinges on selling; a quick fade would
+// undersell it.
 //
 // Exposes an imperative `play()` so callers can time the real navigation
 // to the animation's completion instead of guessing a delay. Respects
@@ -31,6 +38,8 @@ const WalletCardFly = forwardRef(function WalletCardFly(
   const stageRef = useRef(null)
   const cardRef = useRef(null)
   const walletRef = useRef(null)
+  const ringRef = useRef(null)
+  const sparkRefs = useRef([])
   const [landed, setLanded] = useState(false)
 
   function play() {
@@ -40,7 +49,7 @@ const WalletCardFly = forwardRef(function WalletCardFly(
 
     const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
     setLanded(false)
-    gsap.killTweensOf([card, wallet])
+    gsap.killTweensOf([card, wallet, ringRef.current, ...sparkRefs.current])
 
     if (reduced) {
       gsap.set(card, { clearProps: 'transform,opacity' })
@@ -54,33 +63,59 @@ const WalletCardFly = forwardRef(function WalletCardFly(
     const dy = (walletBox.top + walletBox.height / 2) - (cardBox.top + cardBox.height / 2)
 
     gsap.set(card, { x: 0, y: 0, scale: 1, opacity: 1, rotateY: 0, rotateZ: 0 })
+    gsap.set(wallet, { scale: 1, rotate: 0 })
+    if (ringRef.current) gsap.set(ringRef.current, { scale: 0.5, opacity: 0 })
+    if (sparkRefs.current.length) gsap.set(sparkRefs.current, { x: 0, y: 0, xPercent: -50, yPercent: -50, opacity: 0, scale: 1 })
 
+    // Wind-up, full 3D flip, then a slower, weightier flight into the
+    // wallet target — eased into with anticipation (back.in) so it reads
+    // as deliberate rather than rushed.
     const tl = gsap.timeline({
       onComplete: () => {
         setLanded(true)
-        gsap.fromTo(wallet, { scale: 1 }, { scale: 1.22, duration: 0.16, ease: 'back.out(3)', yoyo: true, repeat: 1 })
+
+        const flare = gsap.timeline()
+        flare
+          .fromTo(wallet, { scale: 1, rotate: 0 }, { scale: 1.55, rotate: -10, duration: 0.24, ease: 'back.out(2.6)' })
+          .to(wallet, { scale: 1, rotate: 0, duration: 0.55, ease: 'elastic.out(1, 0.4)' })
+        if (ringRef.current) {
+          flare.fromTo(ringRef.current, { scale: 0.5, opacity: 0.6 }, { scale: 2.6, opacity: 0, duration: 0.65, ease: 'power2.out' }, '<')
+        }
+        if (sparkRefs.current.length) {
+          flare.to(sparkRefs.current, {
+            x: (i) => Math.cos((i / SPARK_COUNT) * Math.PI * 2) * 44,
+            y: (i) => Math.sin((i / SPARK_COUNT) * Math.PI * 2) * 44,
+            opacity: 0,
+            scale: 0.35,
+            duration: 0.6,
+            ease: 'power2.out',
+            stagger: 0.015,
+          }, '<')
+          flare.set(sparkRefs.current, { opacity: 1 }, '<')
+        }
+
         onComplete?.()
       },
     })
-    tl.to(card, { scale: 1.045, y: -6, duration: 0.16, ease: 'power2.out' })
-      .to(card, { rotateY: 360, duration: 0.55, ease: 'power2.inOut' }, '<0.02')
-      .to(card, { x: dx, y: dy - 4, scale: 0.16, opacity: 0.12, rotateZ: 10, duration: 0.48, ease: 'back.in(1.5)' }, '-=0.12')
+    tl.to(card, { scale: 1.06, y: -8, duration: 0.24, ease: 'power2.out' })
+      .to(card, { rotateY: 360, duration: 0.78, ease: 'power3.inOut' }, '<0.05')
+      .to(card, { x: dx, y: dy - 6, scale: 0.16, opacity: 0.1, rotateZ: 12, duration: 0.66, ease: 'back.in(1.35)' }, '-=0.2')
   }
 
   useImperativeHandle(ref, () => ({ play }))
 
   useEffect(() => {
     if (!autoPlay) return undefined
-    const start = setTimeout(play, 600)
-    const interval = loop ? setInterval(play, 3600) : null
+    const start = setTimeout(play, 700)
+    const interval = loop ? setInterval(play, 4800) : null
     return () => { clearTimeout(start); if (interval) clearInterval(interval) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoPlay, loop])
 
   return (
-    <div className="wcf" ref={stageRef}>
+    <div className="wcf" ref={stageRef} style={{ '--wcf-accent': accentColor }}>
       <div className="wcf-stage">
-        <div className="wcf-card" ref={cardRef} style={{ '--wcf-accent': accentColor }}>
+        <div className="wcf-card" ref={cardRef}>
           <div className="wcf-card-top">
             <span className="wcf-card-name">{businessName}</span>
             <Stamp size={14} />
@@ -94,8 +129,14 @@ const WalletCardFly = forwardRef(function WalletCardFly(
           <div className="wcf-shine" />
         </div>
       </div>
-      <div className={`wcf-wallet ${landed ? 'is-landed' : ''}`} ref={walletRef}>
-        {landed ? <Check size={16} /> : <WalletIcon size={16} />}
+      <div className="wcf-wallet-wrap">
+        <span className="wcf-ring" ref={ringRef} />
+        {Array.from({ length: SPARK_COUNT }).map((_, i) => (
+          <span key={i} className="wcf-spark" ref={el => { sparkRefs.current[i] = el }} />
+        ))}
+        <div className={`wcf-wallet ${landed ? 'is-landed' : ''}`} ref={walletRef}>
+          {landed ? <Check size={16} /> : <WalletIcon size={16} />}
+        </div>
       </div>
     </div>
   )

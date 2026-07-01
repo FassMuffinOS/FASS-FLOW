@@ -64,7 +64,7 @@ export default function RewardsJoin() {
     if (adding || !slug) return
     setAdding(true)
     cardFlyRef.current?.play()
-    setTimeout(goToWallet, 1600)
+    setTimeout(goToWallet, 2400)
   }
 
   function goToWallet() {
