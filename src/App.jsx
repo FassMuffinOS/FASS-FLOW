@@ -45,6 +45,7 @@ import Passport from './pages/Passport'
 import ShowMeTheMoney from './pages/ShowMeTheMoney'
 import Admin from './pages/Admin'
 import SecurityDashboard from './pages/SecurityDashboard'
+import WhiteLabelAdmin from './pages/WhiteLabelAdmin'
 import BDPartnerAdmin from './pages/BDPartnerAdmin'
 import AffiliateProgram from './pages/AffiliateProgram'
 import AffiliateApply from './pages/AffiliateApply'
@@ -358,6 +359,10 @@ function AppRoutes() {
       {/* Founder-side Security Dashboard — runs scripts/security_scan.py via
           GET /admin/security-scan, same admin-secret gate, not linked in nav. */}
       <Route path="/admin/security" element={<SecurityDashboard />} />
+      {/* Founder-side white-label portal — create/manage enterprise tenants
+          (branding, enabled tools, management mode). Same admin-secret gate,
+          not linked in nav. See app/routers/tenants.py. */}
+      <Route path="/admin/white-label" element={<WhiteLabelAdmin />} />
 
       {/* Protected routes — no Nav/Footer (dashboard has its own header) */}
       <Route path="/dashboard" element={

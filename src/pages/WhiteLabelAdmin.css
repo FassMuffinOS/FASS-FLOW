@@ -1,0 +1,243 @@
+.wl-new-btn {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  margin: 4px 0 18px;
+}
+
+.wl-tenant-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wl-tenant-card {
+  border: 1px solid var(--gray-200, #e5e7eb);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.wl-status-archived {
+  opacity: 0.55;
+}
+
+.wl-tenant-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wl-tenant-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.wl-tenant-logo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--navy, #0f2940);
+  color: #fff;
+  font-weight: 700;
+}
+
+.wl-tenant-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.wl-tenant-info strong {
+  font-size: 0.95rem;
+}
+
+.wl-tenant-slug {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.76rem;
+  color: var(--gray-400, #6b7280);
+}
+
+.wl-badge {
+  margin-left: auto;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 12px;
+  background: var(--gray-100, #f1f5f9);
+  color: var(--gray-400, #6b7280);
+}
+
+.wl-badge-active { background: var(--light-teal, #e6f6f3); color: var(--dark-teal, #0a5c4d); }
+.wl-badge-paused { background: #fef3c7; color: #92400e; }
+.wl-badge-archived { background: var(--gray-100, #f1f5f9); color: var(--gray-400, #6b7280); }
+
+.wl-tenant-mode {
+  font-size: 0.82rem;
+  color: var(--gray-600, #4b5563);
+  margin: 8px 0 6px;
+}
+
+.wl-tenant-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.wl-tool-pill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--gray-100, #f1f5f9);
+  color: var(--navy, #0f2940);
+  padding: 3px 8px;
+  border-radius: 10px;
+}
+
+.wl-tenant-tools-empty {
+  font-size: 0.78rem;
+  color: var(--gray-400, #6b7280);
+  font-style: italic;
+}
+
+.wl-tenant-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.wl-tenant-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--gray-200, #e5e7eb);
+  background: #fff;
+  border-radius: 7px;
+  padding: 6px 10px;
+  cursor: pointer;
+  color: var(--navy, #0f2940);
+}
+
+.wl-archive-btn {
+  color: #b91c1c !important;
+}
+
+/* Modal */
+.wl-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 41, 64, 0.45);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 16px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.wl-modal {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px 22px 24px;
+  width: 100%;
+  max-width: 620px;
+}
+
+.wl-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.wl-modal-header h2 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.wl-modal-header button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--gray-400, #6b7280);
+}
+
+.wl-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wl-form-row {
+  display: flex;
+  gap: 10px;
+}
+
+.wl-form-row-colors label {
+  flex: 1;
+}
+
+.wl-form-row label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gray-600, #4b5563);
+}
+
+.wl-form-label-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gray-600, #4b5563);
+}
+
+.wl-hint-inline {
+  font-weight: 400;
+  color: var(--gray-400, #6b7280);
+  font-size: 0.72rem;
+}
+
+.wl-form input,
+.wl-form select,
+.wl-form textarea {
+  border: 1px solid var(--gray-200, #e5e7eb);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--navy, #0f2940);
+}
+
+.wl-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 6px 10px;
+  margin-top: 4px;
+}
+
+.wl-tool-checkbox {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 400 !important;
+  color: var(--navy, #0f2940) !important;
+}
+
+.wl-tool-checkbox input {
+  width: auto;
+}
