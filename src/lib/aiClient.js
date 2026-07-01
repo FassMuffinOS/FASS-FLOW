@@ -4,6 +4,14 @@
 // works fully without this. If VITE_API_URL isn't set (or the backend has
 // no provider key configured), callers should hide the AI buttons rather
 // than show a broken one.
+//
+// 2026-07-01 fix: this used plain unauthenticated fetch for every call.
+// /read-synthesis, /cost-breakdown, /scope-takeoff, and /score-opportunity
+// all hard-require a verified session on the backend (get_current_user,
+// added in the 2026-06-29 auth-gap review) — with no Authorization header
+// ever sent, every one of those calls was 401ing for every real user.
+// Same bug class as the intelligenceClient.js fix earlier this session.
+import { apiFetch } from './apiClient'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
 
@@ -12,7 +20,7 @@ export function aiEnabled() {
 }
 
 async function post(path, body) {
-  const res = await fetch(`${API_BASE}/api/v1/ai${path}`, {
+  const res = await apiFetch(`/api/v1/ai${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),

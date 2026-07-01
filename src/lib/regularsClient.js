@@ -1,8 +1,13 @@
 // ── Regulars client ──────────────────────────────────────────
 // Thin wrapper around the backend's /regulars endpoints — the standalone
 // Wallet/loyalty product for non-govcon local businesses. /signup is
-// unauthenticated by design (it's account creation), so this uses plain
-// fetch, not apiFetch, same as affiliates.js's /apply pattern.
+// unauthenticated by design (it's account creation), so that call uses
+// plain fetch, same as affiliates.js's /apply pattern. /status reads a
+// specific user's private plan/subscription state though, so it requires
+// a session (2026-07-01 fix — see regulars.py's docstring on that route)
+// and uses apiFetch, same as every other owner-scoped call in this app.
+import { apiFetch } from './apiClient'
+
 const API_BASE = import.meta.env.VITE_API_URL || ''
 
 export function regularsEnabled() {
@@ -41,7 +46,7 @@ export async function regularsSignup({ email, password, businessName, plan, bill
 export async function regularsStatus(userId) {
   if (!API_BASE || !userId) return null
   try {
-    const res = await fetch(`${API_BASE}/api/v1/regulars/status?user_id=${userId}`)
+    const res = await apiFetch(`/api/v1/regulars/status?user_id=${userId}`)
     if (!res.ok) return null
     return res.json()
   } catch {
