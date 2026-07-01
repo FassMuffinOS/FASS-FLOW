@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Wallet, Stamp, Gift, Megaphone, MessageCircle, Sparkles } from 'lucide-react'
+import { Wallet, Stamp, Gift, Megaphone, MessageCircle, Sparkles, LineChart } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { regularsStatus } from '../lib/regularsClient'
 import './RegularsDashboard.css'
@@ -10,6 +10,7 @@ const TOOLS = [
   { name: 'Rewards', icon: Stamp, desc: 'Set up a digital punch card. Customers join with a link or QR, no app download.', href: '/rewards' },
   { name: 'Gift Cards', icon: Gift, desc: 'Sell prepaid gift cards online or in person, redeemed with any phone camera.', href: '/giftcards' },
   { name: 'Campaigns', icon: Megaphone, desc: 'Push an offer straight onto every customer’s existing Wallet pass.', href: '/campaigns' },
+  { name: 'Insights', icon: LineChart, desc: 'See what’s working, who’s going quiet, and get an AI suggestion for what to try next.', href: '/insights' },
   { name: 'Messages', icon: MessageCircle, desc: 'Two-way SMS with your customers — reminders, confirmations, replies.', href: '/comms' },
 ]
 

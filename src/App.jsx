@@ -72,6 +72,7 @@ import Feed from './pages/Feed'
 import Rewards from './pages/Rewards'
 import RewardsJoin from './pages/RewardsJoin'
 import WalletCampaigns from './pages/WalletCampaigns'
+import RegularsInsights from './pages/RegularsInsights'
 import TeamUp from './pages/TeamUp'
 import Messages from './pages/Messages'
 import CommsHub from './pages/CommsHub'
@@ -463,6 +464,9 @@ function AppRoutes() {
       } />
       <Route path="/campaigns" element={
         <ProtectedRoute><WalletCampaigns /></ProtectedRoute>
+      } />
+      <Route path="/insights" element={
+        <ProtectedRoute><RegularsInsights /></ProtectedRoute>
       } />
       <Route path="/teamup" element={
         <ProtectedRoute><TeamUp /></ProtectedRoute>
