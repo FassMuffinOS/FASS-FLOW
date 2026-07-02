@@ -136,6 +136,7 @@ const WALLET_HUB_ITEMS = [
   { name: 'Rewards', icon: Stamp, to: '/rewards', match: ['/rewards'] },
   { name: 'Gift Cards', icon: Gift, to: '/giftcards', match: ['/giftcards'] },
   { name: 'Campaigns', icon: Megaphone, to: '/campaigns', match: ['/campaigns'] },
+  { name: 'Insights', icon: Sparkles, to: '/insights', match: ['/insights'] },
   { name: 'Messages', icon: MessageCircle, to: '/comms', match: ['/comms'] },
   // Regulars can promote Regulars itself to other local businesses, same
   // 30%-commission mechanism a GovCon customer uses to promote FASS Flow —
