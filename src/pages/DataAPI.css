@@ -1,0 +1,50 @@
+.dapi { max-width: 780px; margin: 0 auto; padding: 48px 24px 80px; font-family: 'Inter', system-ui, sans-serif; }
+
+.dapi-hero { text-align: center; margin-bottom: 36px; }
+.dapi-hero-icon { color: var(--teal, #1d9e75); margin-bottom: 10px; }
+.dapi-hero h1 { font-size: 2rem; font-weight: 800; margin: 0 0 12px; letter-spacing: -0.02em; }
+.dapi-hero p { font-size: 1rem; color: var(--gray-600, #4b5563); line-height: 1.65; max-width: 560px; margin: 0 auto; }
+
+.dapi-signup {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  background: var(--bg-surface, #f9fafb); border: 1px solid var(--border, #e5e7eb);
+  border-radius: 14px; padding: 20px; margin-bottom: 36px;
+}
+.dapi-field { display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; font-weight: 600; color: var(--text-secondary, #374151); }
+.dapi-field input {
+  border: 1px solid var(--border, #d1d5db); border-radius: 8px; padding: 10px 12px;
+  font-size: 0.9rem; font-family: inherit;
+}
+
+.dapi-loading { display: flex; align-items: center; gap: 8px; justify-content: center; padding: 40px 0; color: var(--gray-600); }
+.dapi-spin { animation: dapi-spin 1s linear infinite; }
+@keyframes dapi-spin { to { transform: rotate(360deg); } }
+
+.dapi-section { margin-bottom: 36px; }
+.dapi-section h2 { font-size: 1.1rem; font-weight: 800; margin: 0 0 6px; }
+.dapi-note { font-size: 0.84rem; color: var(--gray-500, #6b7280); margin: 0 0 14px; }
+
+.dapi-plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+.dapi-plan-card {
+  border: 1px solid var(--border, #e5e7eb); border-radius: 12px; padding: 18px;
+  display: flex; flex-direction: column; gap: 10px; text-align: center;
+}
+.dapi-plan-name { font-weight: 800; text-transform: capitalize; font-size: 0.95rem; }
+.dapi-plan-price { font-size: 1.5rem; font-weight: 800; }
+.dapi-plan-quota { display: inline-flex; align-items: center; gap: 5px; justify-content: center; font-size: 0.8rem; color: var(--gray-600); }
+
+.dapi-packs { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.dapi-pack-card {
+  border: 1px solid var(--border, #e5e7eb); border-radius: 12px; padding: 16px;
+  display: flex; flex-direction: column; gap: 8px; text-align: center;
+}
+.dapi-pack-credits { font-weight: 700; font-size: 0.9rem; }
+.dapi-pack-price { font-size: 1.2rem; font-weight: 800; }
+
+.dapi-included ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.dapi-included li { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--gray-700, #374151); }
+.dapi-included svg { color: var(--teal, #1d9e75); flex-shrink: 0; }
+
+@media (max-width: 560px) {
+  .dapi-signup { grid-template-columns: 1fr; }
+}

@@ -12,6 +12,8 @@ import HowItWorks from './components/HowItWorks'
 import Pricing from './components/Pricing'
 import Footer from './components/Footer'
 import Careers from './pages/Careers'
+import DataAPI from './pages/DataAPI'
+import DataAPIWelcome from './pages/DataAPIWelcome'
 import About from './pages/About'
 import Press from './pages/Press'
 import Trust from './pages/Trust'
@@ -330,6 +332,8 @@ function AppRoutes() {
           routed into /signin to create one. Plain Nav/Footer chrome, same as
           every other public marketing page. */}
       <Route path="/careers" element={<><Nav /><main><Careers /></main><Footer /></>} />
+      <Route path="/data-api" element={<><Nav /><main><DataAPI /></main><Footer /></>} />
+      <Route path="/data-api/welcome" element={<><Nav /><main><DataAPIWelcome /></main><Footer /></>} />
 
       {/* Public marketing/company pages — same plain Nav/Footer chrome as
           Careers, no account needed. */}
