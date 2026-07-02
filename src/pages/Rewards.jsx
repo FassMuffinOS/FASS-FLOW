@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Stamp, Gift, Copy, Check, Loader, Plus, Minus, PartyPopper } from 'lucide-react'
+import { Stamp, Gift, Copy, Check, Loader, Plus, Minus, PartyPopper, Download, QrCode } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { getBusinessProfile } from '../lib/businessProfile'
 import './Rewards.css'
@@ -28,6 +28,7 @@ export default function Rewards() {
   const [copied, setCopied] = useState(false)
   const [stampingSlug, setStampingSlug] = useState(null)
   const [redeemingSlug, setRedeemingSlug] = useState(null)
+  const [qrFailed, setQrFailed] = useState(false)
 
   const load = useCallback(async () => {
     if (!session?.user || !API_BASE) { setLoading(false); return }
@@ -117,12 +118,23 @@ export default function Rewards() {
     }
   }
 
+  function joinUrl() {
+    return `${window.location.origin}/rewards/join/${session.user.id}`
+  }
+
   function copyJoinLink() {
     if (!session?.user) return
-    const url = `${window.location.origin}/rewards/join/${session.user.id}`
-    navigator.clipboard?.writeText(url)
+    navigator.clipboard?.writeText(joinUrl())
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  // QR rendering is delegated to a public QR image service rather than a
+  // bundled generator — keeps this page dependency-free. If it's ever
+  // unreachable the <img> just fails silently and the text link above
+  // (already copy-pasteable) remains the primary, always-working path.
+  function qrImageUrl(size) {
+    return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&margin=12&data=${encodeURIComponent(joinUrl())}`
   }
 
   if (loading) return <div className="rw"><Loader className="rw-spin" size={18} /> Loading…</div>
@@ -167,10 +179,42 @@ export default function Rewards() {
             <div className="rw-card-head">Hand this out to customers</div>
             <p className="rw-note">Anyone who opens this link claims their own stamp card and can add it to Apple Wallet — no account needed.</p>
             <div className="rw-link-row">
-              <input readOnly value={`${window.location.origin}/rewards/join/${session.user.id}`} onFocus={e => e.target.select()} />
+              <input readOnly value={joinUrl()} onFocus={e => e.target.select()} />
               <button type="button" className="btn-outline" onClick={copyJoinLink}>
                 {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? 'Copied' : 'Copy link'}
               </button>
+            </div>
+
+            <div className="rw-qr-row">
+              {qrFailed ? (
+                <div className="rw-qr-fallback">
+                  <QrCode size={22} />
+                  <span>QR image didn't load — the link above still works for copy/paste or texting.</span>
+                </div>
+              ) : (
+                <>
+                  <img
+                    className="rw-qr-img"
+                    src={qrImageUrl(160)}
+                    alt="QR code that opens your rewards join link"
+                    width={160}
+                    height={160}
+                    onError={() => setQrFailed(true)}
+                  />
+                  <div className="rw-qr-side">
+                    <p className="rw-note">Print this on a table tent or by the register — customers scan it with their phone camera, no app needed.</p>
+                    <a
+                      className="btn-outline rw-qr-download"
+                      href={qrImageUrl(600)}
+                      download={`${(businessName || 'rewards').replace(/\s+/g, '-').toLowerCase()}-qr-code.png`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <Download size={14} /> Download for print
+                    </a>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
